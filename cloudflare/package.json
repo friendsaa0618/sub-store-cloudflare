@@ -17,7 +17,7 @@
     "types:check": "wrangler types ./src/worker-configuration.d.ts --config wrangler.jsonc --env-interface SubStoreEnv --include-runtime false --strict-vars false --check"
   },
   "dependencies": {
-    "hono": "^4.12.28",
+    "hono": "^4.13.9",
     "json5": "^2.2.3",
     "yaml": "^2.9.0"
   },
@@ -26,7 +26,7 @@
     "@cloudflare/workers-types": "^5.20260710.1",
     "@types/node": "^22.18.0",
     "typescript": "^5.9.3",
-    "vitest": "^4.1.10",
+    "vitest": "^4.1.11",
     "wrangler": "^4.110.0"
   }
 }
