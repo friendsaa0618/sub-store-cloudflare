@@ -2075,12 +2075,29 @@ function renderSingBoxJson(proxies: ProxyNode[]) {
   return JSON.stringify(
     {
       log: { level: "info" },
-      inbounds: [{ type: "mixed", tag: "mixed-in", listen: "127.0.0.1", listen_port: 7890 }],
+      dns: {
+        servers: [
+          { tag: "dns-proxy", type: "tls", server: "1.1.1.1", detour: "PROXY" },
+          { tag: "dns-bootstrap", type: "udp", server: "223.5.5.5" },
+        ],
+        final: "dns-proxy",
+      },
+      inbounds: [
+        {
+          type: "tun",
+          tag: "tun-in",
+          address: ["172.19.0.1/30", "fdfe:dcba:9876::1/126"],
+          auto_route: true,
+          strict_route: true,
+        },
+        { type: "mixed", tag: "mixed-in", listen: "127.0.0.1", listen_port: 7890 },
+      ],
       ...(endpoints.length > 0 ? { endpoints } : {}),
       outbounds,
       route: {
         auto_detect_interface: true,
-        rules: [{ action: "sniff" }],
+        default_domain_resolver: { server: "dns-bootstrap" },
+        rules: [{ action: "sniff" }, { protocol: "dns", action: "hijack-dns" }],
         final: "PROXY",
       },
     },
