@@ -16,6 +16,7 @@ This project follows semantic versioning where practical.
 
 ### Fixed
 
+- sing-box output no longer emits legacy inbound fields or a WireGuard outbound, so profiles decode on sing-box 1.13+ clients that removed them.
 - Editor save/preview bar no longer covers the common-options and action blocks.
 - Settings profile no longer duplicates the nav language switcher.
 - Workers Builds install now sees `@playwright/test` in the root lockfile and skips Playwright browser download during deploy.

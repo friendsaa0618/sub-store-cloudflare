@@ -39,6 +39,48 @@ describe("subscription parsing and limits", () => {
     }
   });
 
+  it("renders a sing-box profile without legacy inbound fields or WireGuard outbounds", async () => {
+    const output = await buildSubscription({
+      source: {
+        id: "sing-box-modern",
+        name: "Sing Box Modern",
+        type: "local",
+        url: "",
+        content: [
+          "trojan://password@example.com:443?sni=example.com#Trojan%20Node",
+          "wireguard://YNXtAzepDqRv9H52osJVDQnznT5AM11eCK3ESpwSt04%3D@wg.example.com:51820?ip=10.0.0.2&ipv6=fd00%3A%3A2&public-key=Z1XXLsKYkYxuiYjJIkRvtIKFepCYHTgON%2BGwPq7SOV4%3D&reserved=1%2C2%2C3#WireGuard%20Node",
+        ].join("\n"),
+      },
+      sources: [],
+      requestUrl: new URL("https://example.com/download/source/sing-box-modern/sing-box"),
+      target: "sing-box",
+    });
+    const config = JSON.parse(output) as {
+      inbounds: Array<Record<string, unknown>>;
+      endpoints?: Array<Record<string, unknown>>;
+      outbounds: Array<Record<string, unknown> & { tag?: string; outbounds?: string[] }>;
+      route: { rules: Array<Record<string, unknown>> };
+    };
+    expect(config.inbounds).toEqual([{ type: "mixed", tag: "mixed-in", listen: "127.0.0.1", listen_port: 7890 }]);
+    expect(config.route.rules).toEqual([{ action: "sniff" }]);
+    expect(config.outbounds.some((outbound) => outbound.type === "wireguard")).toBe(false);
+    expect(config.endpoints).toHaveLength(1);
+    expect(config.endpoints?.[0]).toMatchObject({
+      type: "wireguard",
+      tag: "WireGuard Node",
+      address: ["10.0.0.2/32", "fd00::2/128"],
+      peers: [{
+        address: "wg.example.com",
+        port: 51820,
+        public_key: "Z1XXLsKYkYxuiYjJIkRvtIKFepCYHTgON+GwPq7SOV4=",
+        allowed_ips: ["0.0.0.0/0", "::/0"],
+        reserved: [1, 2, 3],
+      }],
+    });
+    expect(config.outbounds.find((outbound) => outbound.tag === "PROXY")?.outbounds).toEqual(["AUTO", "Trojan Node", "WireGuard Node"]);
+    expect(config.outbounds.find((outbound) => outbound.tag === "AUTO")?.outbounds).toEqual(["Trojan Node", "WireGuard Node"]);
+  });
+
   it("parses JSON5 and converts Surge Mac-only node types", async () => {
     const json5 = `{
       // compatible comment

@@ -27,6 +27,15 @@ type SingBoxOutbound = Record<string, unknown> & {
   tag: string;
 };
 
+type SingBoxEndpoint = Record<string, unknown> & {
+  type: string;
+  tag: string;
+};
+
+type SingBoxNode =
+  | { kind: "outbound"; outbound: SingBoxOutbound }
+  | { kind: "endpoint"; endpoint: SingBoxEndpoint };
+
 type BuildOptions = {
   source?: SubscriptionSource;
   collection?: SubscriptionCollection;
@@ -2036,8 +2045,8 @@ function formatAlpn(value: unknown) {
 }
 
 function renderSingBoxJson(proxies: ProxyNode[]) {
-  const nodeOutbounds = proxies.map(toSingBoxOutbound).filter(isSingBoxOutbound);
-  const tags = nodeOutbounds.map((outbound) => String(outbound.tag));
+  const nodes = proxies.map(toSingBoxNode).filter((node): node is SingBoxNode => Boolean(node));
+  const tags = nodes.map((node) => String(node.kind === "outbound" ? node.outbound.tag : node.endpoint.tag));
   if (tags.length === 0) throw new Error("No supported nodes for sing-box output");
 
   const outbounds = [
@@ -2057,21 +2066,34 @@ function renderSingBoxJson(proxies: ProxyNode[]) {
       tolerance: 50,
       interrupt_exist_connections: false,
     },
-    ...nodeOutbounds,
+    ...nodes.flatMap((node) => (node.kind === "outbound" ? [node.outbound] : [])),
     { type: "direct", tag: "DIRECT" },
     { type: "block", tag: "REJECT" },
   ];
+  const endpoints = nodes.flatMap((node) => (node.kind === "endpoint" ? [node.endpoint] : []));
 
   return JSON.stringify(
     {
       log: { level: "info" },
-      inbounds: [{ type: "mixed", tag: "mixed-in", listen: "127.0.0.1", listen_port: 7890, sniff: true }],
+      inbounds: [{ type: "mixed", tag: "mixed-in", listen: "127.0.0.1", listen_port: 7890 }],
+      ...(endpoints.length > 0 ? { endpoints } : {}),
       outbounds,
-      route: { auto_detect_interface: true, final: "PROXY" },
+      route: {
+        auto_detect_interface: true,
+        rules: [{ action: "sniff" }],
+        final: "PROXY",
+      },
     },
     null,
     2,
   );
+}
+
+function toSingBoxNode(proxy: ProxyNode): SingBoxNode | undefined {
+  const outbound = toSingBoxOutbound(proxy);
+  if (outbound) return { kind: "outbound", outbound };
+  const endpoint = toSingBoxEndpoint(proxy);
+  return endpoint ? { kind: "endpoint", endpoint } : undefined;
 }
 
 function toSingBoxOutbound(proxy: ProxyNode): SingBoxOutbound | undefined {
@@ -2203,21 +2225,6 @@ function toSingBoxOutbound(proxy: ProxyNode): SingBoxOutbound | undefined {
     });
   }
 
-  if (proxy.type === "wireguard") {
-    const localAddress = [proxy.ip, proxy.ipv6].map((item) => String(item || "").trim()).filter(Boolean);
-    return stripUndefined({
-      type: "wireguard",
-      tag: proxy.name,
-      server: proxy.server,
-      server_port: proxy.port,
-      local_address: localAddress.length > 0 ? localAddress : undefined,
-      private_key: proxy["private-key"],
-      peer_public_key: proxy["public-key"],
-      pre_shared_key: proxy["pre-shared-key"],
-      reserved: parseWireGuardReserved(proxy.reserved),
-    });
-  }
-
   if (proxy.type === "vmess") {
     return stripUndefined({
       type: "vmess",
@@ -2242,8 +2249,25 @@ function toSingBoxOutbound(proxy: ProxyNode): SingBoxOutbound | undefined {
   return undefined;
 }
 
-function isSingBoxOutbound(input: SingBoxOutbound | undefined): input is SingBoxOutbound {
-  return Boolean(input && typeof input.tag === "string");
+function toSingBoxEndpoint(proxy: ProxyNode): SingBoxEndpoint | undefined {
+  if (proxy.type !== "wireguard") return undefined;
+  const address = [proxy.ip, proxy.ipv6].map(formatWireGuardAddress).filter(Boolean);
+  return stripUndefined({
+    type: "wireguard",
+    tag: proxy.name,
+    address: address.length > 0 ? address : undefined,
+    private_key: proxy["private-key"],
+    peers: [
+      stripUndefined({
+        address: proxy.server,
+        port: proxy.port,
+        public_key: proxy["public-key"],
+        pre_shared_key: proxy["pre-shared-key"],
+        allowed_ips: ["0.0.0.0/0", "::/0"],
+        reserved: parseWireGuardReserved(proxy.reserved),
+      }),
+    ],
+  });
 }
 
 function renderProxyUris(proxies: ProxyNode[]) {
@@ -2419,6 +2443,13 @@ function numberOrUndefined(value: unknown) {
   if (value === undefined || value === null || value === "") return undefined;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function formatWireGuardAddress(value: unknown) {
+  const text = String(value || "").trim();
+  if (!text) return undefined;
+  if (text.includes("/")) return text;
+  return `${text}/${text.includes(":") ? "128" : "32"}`;
 }
 
 function parseWireGuardReserved(value: unknown) {
