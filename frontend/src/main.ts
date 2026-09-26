@@ -12,7 +12,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import 'modern-css-reset/dist/reset.min.css';
 import '@/assets/styles/reduced-motion-fix.scss';
 import { createPinia } from 'pinia';
-import 'virtual:svg-icons-register';
+import 'virtual:svg-sprite-register';
 import { createApp } from 'vue';
 import { syncAdminTokenFromUrl } from '@/utils/adminToken';
 

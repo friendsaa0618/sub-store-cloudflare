@@ -16,6 +16,7 @@ This project follows semantic versioning where practical.
 
 ### Fixed
 
+- Replaced `vite-plugin-svg-icons` with a small first-party sprite plugin (`frontend/plugins/svg-sprite.ts`), which removes the `svg-baker` chain (`postcss@5`, `micromatch@3`, `braces`, `decode-uri-component`) from the build tree; `pnpm audit` now reports no known vulnerabilities in any install root, and the sprite only embeds the icons `<svg-icon>` resolves, trimming the entry bundle from 206 kB to 191 kB (72 kB to 66 kB gzip).
 - Upgraded the Cloudflare tooling to the current releases (`wrangler` 4.141.0, `@cloudflare/vitest-pool-workers` 0.22.0, `@cloudflare/workers-types` 5.20260926.1), which brings a `miniflare` that ships patched `sharp` and `undici`, and pinned `sharp` 0.35.4 for the `miniflare` that still declares 0.35.2 exactly.
 - Patched the dependency advisories that failed `pnpm run check:audit`: `hono` moves to 4.13.9, `js-yaml` to 4.3.2, and pnpm overrides pin the patched `postcss`, `nanoid`, and `brace-expansion` lines that only ship transitively.
 - Bumped build tooling within its existing ranges (`vitest` 4.1.11, `svgo` 2.8.4, `brace-expansion` 2.1.7) to clear the remaining in-range advisories.
