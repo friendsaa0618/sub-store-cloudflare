@@ -77,9 +77,18 @@ watchEffect(() => {
 :lang(zh-HK) {
   h1, h2, h3,
   .nav-title,
-  .app-brand__name {
+  .app-brand__name,
+  .section-header__title,
+  .nav-back-title {
     letter-spacing: 0;
+    text-wrap: balance;
   }
+}
+
+h1, h2, h3,
+.nav-back-title,
+.section-header__title {
+  text-wrap: balance;
 }
 
 .app-shell {

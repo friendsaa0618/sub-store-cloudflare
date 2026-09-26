@@ -1,14 +1,14 @@
 <template>
   <div>
-    <div class="desc" @click="tips">
+    <button type="button" class="desc" :aria-label="desc" @click="tips">
       <span>{{ desc }}</span>
-      <nut-icon name="tips"></nut-icon>
-    </div>
+      <nut-icon name="tips" aria-hidden="true"></nut-icon>
+    </button>
     <ul class="preview-list">
       <li v-for="platform in platformList" :key="platform.name">
         <div class="infos">
           <div>
-            <img :src="platform.icon" class="auto-reverse" />
+            <img :src="platform.icon" class="auto-reverse" :alt="platform.name" width="20" height="20" />
           </div>
           <p>{{ platform.name }}</p>
         </div>
@@ -186,6 +186,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    width: 100%;
     cursor: pointer;
     padding: 8px 12px;
     margin-bottom: 14px;
@@ -193,6 +194,7 @@
     border-radius: 12px;
     border: 1px solid color-mix(in srgb, var(--primary-color) 15%, transparent);
     color: var(--comment-text-color);
+    font: inherit;
     font-size: 12px;
     gap: 6px;
     transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;

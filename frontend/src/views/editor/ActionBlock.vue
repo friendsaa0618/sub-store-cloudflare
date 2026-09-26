@@ -2,20 +2,22 @@
   <div class="form-block-wrapper">
     <div v-if="sourceType !== 'file'" class="sticky-title-wrapper actions-title-wrapper">
       <p>{{ $t(`editorPage.subConfig.actions.label`) }}</p>
-      <font-awesome-icon
-        v-if="isCollapsed"
-        @click.stop="setCollapsed(false)"
-        class="toggle fa-toggle"
-        icon="fa-solid fa-toggle-on "
-      />
-      <font-awesome-icon
-        v-else
-        @click.stop="setCollapsed(true)"
-        class="toggle fa-toggle"
-        icon="fa-solid fa-toggle-off"
-      />
-      <button @click="popActionsHelp">
-        <font-awesome-icon icon="fa-solid fa-circle-question" />
+      <button
+        type="button"
+        class="toggle-btn"
+        :aria-label="isCollapsed
+          ? $t('editorPage.subConfig.actions.expandSection')
+          : $t('editorPage.subConfig.actions.collapseSection')"
+        @click.stop="setCollapsed(!isCollapsed)"
+      >
+        <font-awesome-icon
+          class="toggle fa-toggle"
+          :icon="isCollapsed ? 'fa-solid fa-toggle-on' : 'fa-solid fa-toggle-off'"
+          aria-hidden="true"
+        />
+      </button>
+      <button type="button" @click="popActionsHelp">
+        <font-awesome-icon icon="fa-solid fa-circle-question" aria-hidden="true" />
         {{ $t(`editorPage.subConfig.basic.nodeActionsHelp`) }}
       </button>
     </div>
@@ -49,10 +51,17 @@
         <nut-cell class="list-group-item" aria-hidden="true">
           <div :class="{ 'list-group-item-title': true, 'collapsed': collapsedElements.includes(element.id) }">
             <div class="title-text left">
-              <span class="collapsed" @click="toggleElementCollapsed(element.id)">
-                <nut-icon v-if="!collapsedElements.includes(element.id)" name="rect-down" size="12px"></nut-icon>
-                <nut-icon v-if="collapsedElements.includes(element.id)" name="rect-right" size="12px"></nut-icon>
-              </span>
+              <button
+                type="button"
+                class="collapsed"
+                :aria-label="collapsedElements.includes(element.id)
+                  ? $t('editorPage.subConfig.actions.expandItem')
+                  : $t('editorPage.subConfig.actions.collapseItem')"
+                @click="toggleElementCollapsed(element.id)"
+              >
+                <nut-icon v-if="!collapsedElements.includes(element.id)" name="rect-down" size="12px" aria-hidden="true"></nut-icon>
+                <nut-icon v-if="collapsedElements.includes(element.id)" name="rect-right" size="12px" aria-hidden="true"></nut-icon>
+              </button>
               <div class="input-wrapper">
                 <nut-input
                   :id="`action-input-${element.id}`"
@@ -99,11 +108,17 @@
             <div class="right">
               <div class="list-group-item-icons icon-button__input">
                 <template v-if="!findEditItemById(element).isEditing">
-                  <font-awesome-icon icon="fa-solid fa-pen-to-square" @click.stop="toggleEditName(element)" />
+                  <button type="button" class="icon-action" :aria-label="$t('editorPage.subConfig.actions.editName')" @click.stop="toggleEditName(element)">
+                    <font-awesome-icon icon="fa-solid fa-pen-to-square" aria-hidden="true" />
+                  </button>
                 </template>
                 <template v-else>
-                  <font-awesome-icon icon="fa-solid fa-floppy-disk" @click.stop="saveEditName(element)" />
-                  <font-awesome-icon icon="fa-solid fa-ban" @click.stop="exitEditName(element)" />
+                  <button type="button" class="icon-action" :aria-label="$t('editorPage.subConfig.actions.saveName')" @click.stop="saveEditName(element)">
+                    <font-awesome-icon icon="fa-solid fa-floppy-disk" aria-hidden="true" />
+                  </button>
+                  <button type="button" class="icon-action" :aria-label="$t('editorPage.subConfig.actions.cancelEdit')" @click.stop="exitEditName(element)">
+                    <font-awesome-icon icon="fa-solid fa-ban" aria-hidden="true" />
+                  </button>
                 </template>
               </div>
               <div class="action-switch">
@@ -111,7 +126,7 @@
                   v-model="element.enabled"
                   class="my-switch"
                 ></nut-checkbox>
-                <span @click="toggleActionSwitch(element.id)">{{ $t(`editorPage.subConfig.actions.enable`) }}</span>
+                <button type="button" class="switch-label" @click="toggleActionSwitch(element.id)">{{ $t(`editorPage.subConfig.actions.enable`) }}</button>
               </div>
               <div
                 v-if="isPreviewSwitchDisabled(element)"
@@ -156,19 +171,19 @@
                   v-model="getItem(element.id)[1]"
                   class="my-switch"
                 ></nut-checkbox>
-                <span @click="togglePreviewSwitch(element)">
+                <button type="button" class="switch-label" @click="togglePreviewSwitch(element)">
                   {{ $t(`editorPage.subConfig.basic.previewSwitch`) }}
-                </span>
+                </button>
               </div>
-              <div class="icon-button">
-                <font-awesome-icon icon="fa-solid fa-circle-question" @click.stop="pop(element.type, element.tipsDes)" />
-              </div>
-              <div class="icon-button">
-                <font-awesome-icon icon="fa-solid fa-clone" @click="copyItem(element)"></font-awesome-icon>
-              </div>
-              <div class="delete">
-                <font-awesome-icon icon="fa-solid fa-trash-can" @click="deleteItem(element.id)" />
-              </div>
+              <button type="button" class="icon-button" :aria-label="$t('editorPage.subConfig.actions.help')" @click.stop="pop(element.type, element.tipsDes)">
+                <font-awesome-icon icon="fa-solid fa-circle-question" aria-hidden="true" />
+              </button>
+              <button type="button" class="icon-button" :aria-label="$t('editorPage.subConfig.actions.clone')" @click="copyItem(element)">
+                <font-awesome-icon icon="fa-solid fa-clone" aria-hidden="true"></font-awesome-icon>
+              </button>
+              <button type="button" class="delete" :aria-label="$t('editorPage.subConfig.actions.delete')" @click="deleteItem(element.id)">
+                <font-awesome-icon icon="fa-solid fa-trash-can" aria-hidden="true" />
+              </button>
               <div class="drag-handler">
                 <font-awesome-icon icon="fa-solid fa-grip" class="fa-lg" />
               </div>
@@ -202,7 +217,15 @@
         <span>{{
           $t(`editorPage.subConfig.actions.addAction.title`)
         }}</span>
-        <font-awesome-icon v-if="sourceType !== 'file'"  @click="popActionsHelp" icon="fa-solid fa-circle-question" />
+        <button
+          v-if="sourceType !== 'file'"
+          type="button"
+          class="icon-button"
+          :aria-label="$t('editorPage.subConfig.actions.help')"
+          @click="popActionsHelp"
+        >
+          <font-awesome-icon icon="fa-solid fa-circle-question" aria-hidden="true" />
+        </button>
       </div>
       <div class="horizontal-button-container">
         <button v-for="(item, index) in columns" :key="index" @click="onButtonClick(item)" class="custom-button">
@@ -707,6 +730,16 @@ defineExpose({ exitAllEditName });
         cursor: pointer;
       }
 
+      button.collapsed {
+        display: inline-flex;
+        align-items: center;
+        margin-right: 6px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: inherit;
+      }
+
       span {
         margin-right: 6px;
       }
@@ -728,10 +761,18 @@ defineExpose({ exitAllEditName });
         .toggle {
           color: var(--unimportant-icon-color);
         }
-        span {
+        span,
+        .switch-label {
           font-weight: normal;
           font-size: 12px;
           flex-shrink: 0;
+        }
+        .switch-label {
+          padding: 0;
+          border: 0;
+          background: transparent;
+          color: inherit;
+          cursor: pointer;
         }
         .my-switch {
           width: 18px;
@@ -749,11 +790,19 @@ defineExpose({ exitAllEditName });
         // margin-right: 12px;
         padding-right: 5px;
 
-        span {
+        span,
+        .switch-label {
           // margin-right: 8px;
           flex-shrink: 0;
           font-weight: normal;
           font-size: 12px;
+        }
+        .switch-label {
+          padding: 0;
+          border: 0;
+          background: transparent;
+          color: inherit;
+          cursor: pointer;
         }
 
         .my-switch {
@@ -794,17 +843,26 @@ defineExpose({ exitAllEditName });
         line-height: 1.45;
         white-space: normal;
       }
-      .icon-button {
+      .icon-button,
+      .icon-action,
+      .delete {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         padding: 0 8px;
+        border: 0;
+        background: transparent;
+        color: inherit;
         cursor: pointer;
+        font: inherit;
+      }
+      .icon-button {
         &__input {
           padding-right: 20px;
         }
       }
       .delete {
-        padding: 0 8px;
         color: var(--danger-color);
-        cursor: pointer;
       }
 
       .drag-handler {
@@ -851,10 +909,20 @@ defineExpose({ exitAllEditName });
   justify-content: space-between;
   align-items: center;
 
-  .toggle {
-    cursor: pointer;
+  .toggle-btn {
+    display: inline-flex;
+    align-items: center;
     margin-left: 18px;
     margin-right: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  .toggle {
+    cursor: pointer;
   }
 
   button {

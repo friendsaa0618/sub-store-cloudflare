@@ -497,6 +497,16 @@ export default {
         },
         enable: "Enable",
         disable: "Disable",
+        expandSection: "Expand node actions",
+        collapseSection: "Collapse node actions",
+        expandItem: "Expand this action",
+        collapseItem: "Collapse this action",
+        editName: "Edit name",
+        saveName: "Save name",
+        cancelEdit: "Cancel edit",
+        help: "Help",
+        clone: "Clone action",
+        delete: "Delete action",
         script: {
           freeVerified: "Cloudflare Free verified",
           personal: "Personal build-time script",
@@ -869,6 +879,17 @@ export default {
     copiedLength: "Copied characters: {count}",
     cleared: "Cleared",
     pastedLength: "Pasted characters: {count}",
-    clipboardFailed: "Failed to read clipboard: available on localhost/HTTPS or after granting permission"
+    clipboardFailed: "Failed to read clipboard: available on localhost/HTTPS or after granting permission",
+    toolbar: {
+      highlight: "Syntax highlight",
+      undo: "Undo",
+      redo: "Redo",
+      format: "Format",
+      search: "Search",
+      copy: "Copy",
+      clear: "Clear",
+      paste: "Paste",
+      more: "More",
+    },
   }
 };

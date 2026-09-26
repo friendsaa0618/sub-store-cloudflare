@@ -10,8 +10,14 @@ This project follows semantic versioning where practical.
 
 - Added local Playwright visual snapshots for the admin UI (`pnpm run check:visual`) so layout, overlay, and theme regressions can be compared automatically.
 
+### Changed
+
+- Removed unused bottom TabBar and SideBar chrome now that navigation lives in the top segmented control.
+
 ### Fixed
 
+- Editor save/preview bar no longer covers the common-options and action blocks.
+- Settings profile no longer duplicates the nav language switcher.
 - Workers Builds install now sees `@playwright/test` in the root lockfile and skips Playwright browser download during deploy.
 - Built-in ACL4SSR rule providers now set `format: text` so Mihomo can load `.list` files instead of treating them as YAML.
 - Template rendering now drops dangling proxy-group references and uses the first rendered group for an empty-rule fallback MATCH.

@@ -497,6 +497,16 @@ export default {
         },
         enable: "启用",
         disable: "禁用",
+        expandSection: "展开节点操作",
+        collapseSection: "折叠节点操作",
+        expandItem: "展开此项",
+        collapseItem: "折叠此项",
+        editName: "编辑名称",
+        saveName: "保存名称",
+        cancelEdit: "取消编辑",
+        help: "帮助",
+        clone: "克隆操作",
+        delete: "删除操作",
         script: {
           freeVerified: "已通过 Cloudflare 免费版验证",
           personal: "个人构建时脚本",
@@ -869,6 +879,17 @@ export default {
     copiedLength: "已复制字符串数: {count}",
     cleared: "已清空",
     pastedLength: "已粘贴字数: {count}",
-    clipboardFailed: "获取剪贴板失败: 本地/HTTPS 环境下可用(或手动配置权限)"
+    clipboardFailed: "获取剪贴板失败: 本地/HTTPS 环境下可用(或手动配置权限)",
+    toolbar: {
+      highlight: "语法高亮",
+      undo: "撤销",
+      redo: "重做",
+      format: "格式化",
+      search: "搜索",
+      copy: "复制",
+      clear: "清空",
+      paste: "粘贴",
+      more: "更多",
+    },
   }
 };

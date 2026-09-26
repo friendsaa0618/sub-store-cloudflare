@@ -5,14 +5,14 @@
       :class="{ 'nodark-imgbutton': !isDarkModeEnabled }"
     >
       <div v-if="openPanel">
-        <button @click="hiCode"><img :src="jsimg" /></button>
-        <button @click="undoCode"><img :src="undoimg" /></button>
-        <button @click="redoCode"><img :src="redoimg" /></button>
-        <button v-if="isJS" @click="formatCode"><img :src="format" /></button>
-        <button @click="searchs"><img :src="searchimg" /></button>
-        <button @click="copyText"><img :src="copyimg" /></button>
-        <button @click="delAllCode"><img :src="del" /></button>
-        <button @click="pasteNav"><img :src="paste" /></button>
+        <button type="button" :aria-label="t('codeEditor.toolbar.highlight')" @click="hiCode"><img :src="jsimg" alt="" width="16" height="16" /></button>
+        <button type="button" :aria-label="t('codeEditor.toolbar.undo')" @click="undoCode"><img :src="undoimg" alt="" width="16" height="16" /></button>
+        <button type="button" :aria-label="t('codeEditor.toolbar.redo')" @click="redoCode"><img :src="redoimg" alt="" width="16" height="16" /></button>
+        <button v-if="isJS" type="button" :aria-label="t('codeEditor.toolbar.format')" @click="formatCode"><img :src="format" alt="" width="16" height="16" /></button>
+        <button type="button" :aria-label="t('codeEditor.toolbar.search')" @click="searchs"><img :src="searchimg" alt="" width="16" height="16" /></button>
+        <button type="button" :aria-label="t('codeEditor.toolbar.copy')" @click="copyText"><img :src="copyimg" alt="" width="16" height="16" /></button>
+        <button type="button" :aria-label="t('codeEditor.toolbar.clear')" @click="delAllCode"><img :src="del" alt="" width="16" height="16" /></button>
+        <button type="button" :aria-label="t('codeEditor.toolbar.paste')" @click="pasteNav"><img :src="paste" alt="" width="16" height="16" /></button>
       </div>
       <span
         v-else
@@ -27,7 +27,7 @@
       >
         {{ Length }} &nbsp;
       </span>
-      <button @click="setPanel"><img :src="more" /></button>
+      <button type="button" :aria-label="t('codeEditor.toolbar.more')" @click="setPanel"><img :src="more" alt="" width="16" height="16" /></button>
     </div>
 
     <div ref="viewRef" style="width: 100%; font-size: 13px" />
@@ -86,8 +86,10 @@ import { useCodeStore } from "@/store/codeStore";
 import { storeToRefs } from "pinia";
 import beautify from "js-beautify";
 import { useAppNotifyStore } from "@/store/appNotify";
+import { useI18n } from "vue-i18n";
 const { toClipboard } = useV3Clipboard();
 const { showNotify } = useAppNotifyStore();
+const { t } = useI18n();
 
 const settingsStore = useSettingsStore();
 const { theme } = storeToRefs(settingsStore);

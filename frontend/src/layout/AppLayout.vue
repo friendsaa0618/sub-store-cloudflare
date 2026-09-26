@@ -2,27 +2,11 @@
   <div class="app-layout-wrapper">
     <router-view />
   </div>
-  <TabBar v-if="shouldShowTabBar" />
 </template>
 
 <script lang="ts" setup>
-  import TabBar from '@/components/TabBar.vue';
-  import { computed } from 'vue';
-  import { useWideScreenNarrowMode } from '@/hooks/useWideScreenNarrowMode';
-
-  const { shouldShowTabBar } = useWideScreenNarrowMode();
-
-  const topInset = computed(() => {
-    return 'calc(56px + env(safe-area-inset-top, 0px))';
-  });
-
-  const height = computed(() => {
-    if (shouldShowTabBar.value) {
-      return 'calc(56px + env(safe-area-inset-bottom, 0px))';
-    }
-    // No bottom tab bar: keep a short breathing room + home-indicator inset
-    return 'calc(12px + env(safe-area-inset-bottom, 0px))';
-  });
+  const topInset = "calc(56px + env(safe-area-inset-top, 0px))";
+  const height = "calc(12px + env(safe-area-inset-bottom, 0px))";
 </script>
 
 <style scoped lang="scss">

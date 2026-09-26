@@ -42,7 +42,7 @@
             width="20"
             height="20"
           />
-          <span class="app-brand__name">Sub Store</span>
+          <span class="app-brand__name" translate="no">Sub Store</span>
         </a>
       </div>
 

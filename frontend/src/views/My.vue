@@ -4,7 +4,6 @@
     <section class="profile-block">
       <div class="profile-top">
         <span class="runtime-pill">{{ env.runtime || env.backend || "Cloudflare" }}</span>
-        <LanguageSwitcherButton />
       </div>
       <div class="info">
         <div class="avatar-wrapper">
@@ -273,7 +272,6 @@ import { useMediaQuery } from "@vueuse/core";
 import { useI18n } from "vue-i18n";
 
 import { useCloudflareApi } from "@/api/app";
-import LanguageSwitcherButton from "@/components/LanguageSwitcherButton.vue";
 import DesktopPicker from "@/components/DesktopPicker.vue";
 import { useSettingsApi } from "@/api/settings";
 import { useBackend } from "@/hooks/useBackend";
@@ -685,7 +683,6 @@ onMounted(fetchTemplates);
   .profile-top {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: 8px;
   }
 

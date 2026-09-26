@@ -2,13 +2,13 @@
   <div class="form-block-wrapper">
     <div class="sticky-title-wrapper">
       <div class="common-title-row">
-        <div class="title" @click="toggleFold">
+        <button type="button" class="title" @click="toggleFold">
           <p>
             {{ $t(`editorPage.subConfig.commonOptions.label`) }}
           </p>
-          <nut-icon v-if="!isFold" name="rect-down" size="12px"></nut-icon>
-          <nut-icon v-else name="rect-right" size="12px"></nut-icon>
-        </div>
+          <nut-icon v-if="!isFold" name="rect-down" size="12px" aria-hidden="true"></nut-icon>
+          <nut-icon v-else name="rect-right" size="12px" aria-hidden="true"></nut-icon>
+        </button>
         <!-- Tips dialog available via long-form docs; remove always-on chrome -->
       </div>
     </div>
@@ -260,6 +260,12 @@
         justify-content: flex-start;
         align-items: center;
         min-width: 0;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        text-align: left;
         cursor: pointer;
         p {
           margin-right: 6px;

@@ -1744,7 +1744,7 @@ const handleEditGlobalClick = () => {
 <style lang="scss" scoped>
 .page-wrapper {
   /* Width follows .page-body (home max-width + padding) — no extra max-width */
-  padding: 0 0 calc(v-bind("padding") + 72px) 0;
+  padding: 0 0 calc(v-bind("padding") + 108px) 0;
   width: 100%;
   max-width: none;
   margin: 0;

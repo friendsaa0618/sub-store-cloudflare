@@ -471,6 +471,10 @@ onMounted(() => Promise.all([loadShares(), loadRecycle()]));
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
   &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 2px var(--focus-ring-color);
     outline: none;
