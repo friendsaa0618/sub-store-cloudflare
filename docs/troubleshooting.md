@@ -153,6 +153,16 @@ pnpm run install:doctor
 
 不带 target 时，Worker 会按客户端 User-Agent 自动判断，无法识别时默认 Mihomo。
 
+## sing-box 报 legacy inbound fields 或 decode config 错误
+
+`sing-box` 下载链接生成的是 sing-box 1.11+ 的配置格式：入站不再带 `sniff` 字段，而是使用 route 规则动作 `sniff`；WireGuard 节点放在 `endpoints` 而不是 `outbounds`。
+
+sing-box 1.11.0 弃用了这些旧字段，1.13.0 起直接拒绝加载。请把客户端升级到 sing-box 1.11 或更高版本；1.10 及更早的客户端会报：
+
+```text
+legacy inbound fields are deprecated in sing-box 1.11.0 and removed in sing-box 1.13.0
+```
+
 ## 节点被过滤掉
 
 先移除包含规则较严格的 `include` 过滤器（例如只匹配指定地区的正则表达式）。保守起步建议只使用：
