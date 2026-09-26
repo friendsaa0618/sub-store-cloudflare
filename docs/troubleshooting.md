@@ -155,13 +155,20 @@ pnpm run install:doctor
 
 ## sing-box 报 legacy inbound fields 或 decode config 错误
 
-`sing-box` 下载链接生成的是 sing-box 1.11+ 的配置格式：入站不再带 `sniff` 字段，而是使用 route 规则动作 `sniff`；WireGuard 节点放在 `endpoints` 而不是 `outbounds`。
+`sing-box` 下载链接生成的是 sing-box 1.12+ 的配置格式：入站不再带 `sniff` 字段，而是使用 route 规则动作 `sniff`；WireGuard 节点放在 `endpoints` 而不是 `outbounds`；DNS 服务器使用 1.12 起的新格式（`type` / `server`），并用 `route.default_domain_resolver` 指定解析节点域名的引导 DNS。
 
-sing-box 1.11.0 弃用了这些旧字段，1.13.0 起直接拒绝加载。请把客户端升级到 sing-box 1.11 或更高版本；1.10 及更早的客户端会报：
+sing-box 1.11.0 弃用了这些旧字段，1.13.0 起直接拒绝加载；DNS 服务器的旧格式在 1.14.0 被移除。请把客户端升级到 sing-box 1.12 或更高版本；更旧的客户端会报：
 
 ```text
 legacy inbound fields are deprecated in sing-box 1.11.0 and removed in sing-box 1.13.0
 ```
+
+## sing-box 没有 VPN 图标或没有流量统计
+
+下载到的是一份完整的 VPN 配置：包含 `tun` 入站（`auto_route`）和 DNS 配置，因此 iOS / Android 客户端（SFI、SFA、Karing 等）启用后会接管系统流量，状态栏出现 VPN 图标，Dashboard 也会显示上下行速率。
+
+- 移动端由客户端提供 TUN 实现，但**配置里必须有 `tun` 入站**；只有 `mixed` 本地代理的配置不会接管系统流量。
+- 桌面端命令行直接运行该配置需要 root / 管理员权限（创建 TUN 需要权限）；图形客户端不需要。
 
 ## 节点被过滤掉
 

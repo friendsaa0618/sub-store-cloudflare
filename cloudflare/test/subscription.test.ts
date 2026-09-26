@@ -56,13 +56,34 @@ describe("subscription parsing and limits", () => {
       target: "sing-box",
     });
     const config = JSON.parse(output) as {
+      dns: Record<string, unknown>;
       inbounds: Array<Record<string, unknown>>;
       endpoints?: Array<Record<string, unknown>>;
       outbounds: Array<Record<string, unknown> & { tag?: string; outbounds?: string[] }>;
-      route: { rules: Array<Record<string, unknown>> };
+      route: { rules: Array<Record<string, unknown>>; default_domain_resolver?: Record<string, unknown> };
     };
-    expect(config.inbounds).toEqual([{ type: "mixed", tag: "mixed-in", listen: "127.0.0.1", listen_port: 7890 }]);
-    expect(config.route.rules).toEqual([{ action: "sniff" }]);
+    // A tun inbound is what turns the profile into a system-wide VPN; without
+    // it iOS/Android clients only run a local proxy and never show the VPN
+    // indicator.
+    expect(config.inbounds).toEqual([
+      {
+        type: "tun",
+        tag: "tun-in",
+        address: ["172.19.0.1/30", "fdfe:dcba:9876::1/126"],
+        auto_route: true,
+        strict_route: true,
+      },
+      { type: "mixed", tag: "mixed-in", listen: "127.0.0.1", listen_port: 7890 },
+    ]);
+    expect(config.dns).toEqual({
+      servers: [
+        { tag: "dns-proxy", type: "tls", server: "1.1.1.1", detour: "PROXY" },
+        { tag: "dns-bootstrap", type: "udp", server: "223.5.5.5" },
+      ],
+      final: "dns-proxy",
+    });
+    expect(config.route.rules).toEqual([{ action: "sniff" }, { protocol: "dns", action: "hijack-dns" }]);
+    expect(config.route.default_domain_resolver).toEqual({ server: "dns-bootstrap" });
     expect(config.outbounds.some((outbound) => outbound.type === "wireguard")).toBe(false);
     expect(config.endpoints).toHaveLength(1);
     expect(config.endpoints?.[0]).toMatchObject({
