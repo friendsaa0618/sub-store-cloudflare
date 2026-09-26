@@ -16,6 +16,8 @@ This project follows semantic versioning where practical.
 
 ### Fixed
 
+- Patched the dependency advisories that failed `pnpm run check:audit`: `hono` moves to 4.13.9, `js-yaml` to 4.3.2, and pnpm overrides pin the patched `postcss`, `nanoid`, and `brace-expansion` lines that only ship transitively.
+- Bumped build tooling within its existing ranges (`vitest` 4.1.11, `svgo` 2.8.4, `brace-expansion` 2.1.7) to clear the remaining in-range advisories.
 - sing-box output no longer emits legacy inbound fields or a WireGuard outbound, so profiles decode on sing-box 1.13+ clients that removed them.
 - Repo checks pass again: documentation token snippets use an ESM one-liner instead of CommonJS, and the stale npm `frontend/package-lock.json`, unused `surgeformac_icon.png` asset, and tracked root `.dev.vars.example` are removed.
 - Editor save/preview bar no longer covers the common-options and action blocks.

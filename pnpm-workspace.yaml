@@ -16,3 +16,11 @@ minimumReleaseAgeExclude:
   - '@cloudflare/workers-types@5.20260710.1'
   - miniflare@4.20260708.1
   - wrangler@4.110.0
+# Security floors for transitive dependencies that only ship through other
+# packages (Vue's compiler-sfc pulls postcss, postcss pulls nanoid, minimatch
+# pulls brace-expansion). The selectors keep the patched major lines only, so
+# older lines that other consumers still need are untouched.
+overrides:
+  brace-expansion@5: 5.0.12
+  nanoid@3: 3.3.19
+  '@vue/compiler-sfc>postcss': 8.5.28
