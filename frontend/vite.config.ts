@@ -4,7 +4,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ConfigEnv, defineConfig, loadEnv } from "vite";
 import { createStyleImportPlugin } from "vite-plugin-style-import";
-import { createSvgIconsPlugin } from "vite-plugin-svg-icons";
+import { svgSprite } from "./plugins/svg-sprite";
 
 const projectRoot = dirname(fileURLToPath(import.meta.url));
 const version = JSON.parse(
@@ -48,10 +48,9 @@ const viteConfig = defineConfig((mode: ConfigEnv) => {
           },
         ],
       }),
-      createSvgIconsPlugin({
-        iconDirs: [resolve(projectRoot, "src/assets/icons")],
-        symbolId: "icon-[dir]-[name]",
-        customDomId: "__svg__icons__dom__",
+      svgSprite({
+        iconDir: resolve(projectRoot, "src/assets/icons"),
+        srcDir: resolve(projectRoot, "src"),
       }),
     ],
     root: projectRoot,
