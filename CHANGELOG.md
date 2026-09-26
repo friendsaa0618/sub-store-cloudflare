@@ -16,6 +16,7 @@ This project follows semantic versioning where practical.
 
 ### Fixed
 
+- sing-box output no longer emits legacy inbound fields or a WireGuard outbound, so profiles decode on sing-box 1.13+ clients that removed them.
 - Repo checks pass again: documentation token snippets use an ESM one-liner instead of CommonJS, and the stale npm `frontend/package-lock.json`, unused `surgeformac_icon.png` asset, and tracked root `.dev.vars.example` are removed.
 - Editor save/preview bar no longer covers the common-options and action blocks.
 - Settings profile no longer duplicates the nav language switcher.
