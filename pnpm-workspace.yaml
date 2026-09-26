@@ -16,9 +16,11 @@ minimumReleaseAgeExclude:
   - '@cloudflare/workers-types@5.20260710.1'
   - miniflare@4.20260708.1
   - wrangler@4.110.0
-  - '@cloudflare/workers-types@5.20260926.1'
-  - miniflare@5.20260925.0-alpha
-  - wrangler@4.141.0
+# These entries let `pnpm install` resolve freshly published versions. They do
+# not exempt a committed lockfile from the supply-chain verification pass, so
+# only commit tooling versions that are at least a day old — otherwise
+# `pnpm install --frozen-lockfile` fails with
+# ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION.
 # Security floors for transitive dependencies that only ship through other
 # packages (Vue's compiler-sfc pulls postcss, postcss pulls nanoid, minimatch
 # pulls brace-expansion). The selectors keep the patched major lines only, so
