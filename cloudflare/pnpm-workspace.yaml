@@ -2,3 +2,12 @@ allowBuilds:
   esbuild: true
   sharp: true
   workerd: true
+minimumReleaseAgeExclude:
+  - '@cloudflare/workers-types@5.20260926.1'
+  - miniflare@5.20260925.0-alpha
+  - wrangler@4.141.0
+overrides:
+  # `miniflare@5.20260815.0-alpha` (pinned by @cloudflare/vitest-pool-workers)
+  # depends on sharp 0.35.2 exactly; 0.35.4 is the patch release the newer
+  # miniflare ships.
+  sharp@0.35: 0.35.4
