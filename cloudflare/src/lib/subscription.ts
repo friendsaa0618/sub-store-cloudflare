@@ -1526,8 +1526,46 @@ function formatInvalidLocalContentError(raw: string) {
     .join("\n");
 }
 
-function renderMihomoYaml(proxies: ProxyNode[], requestUrl: URL, template?: RoutingTemplateConfig) {
-  const config = template || {};
+// Built-in templates point at the MetaCubeX rule-sets on jsDelivr; a deployment
+// can serve the same paths from another mirror through the `rulesetCdn` setting.
+const RULESET_CDN_ORIGINS = new Set(["https://cdn.jsdelivr.net"]);
+
+function rulesetCdnOrigin(value: unknown) {
+  const text = stringSetting(value);
+  if (!text) return "";
+  try {
+    const url = new URL(text);
+    return url.protocol === "https:" ? url.origin : "";
+  } catch {
+    return "";
+  }
+}
+
+function withRulesetCdn(config: RoutingTemplateConfig | undefined, cdn: unknown): RoutingTemplateConfig | undefined {
+  const origin = rulesetCdnOrigin(cdn);
+  if (!config || !origin) return config;
+  const key = config.ruleProviders ? "ruleProviders" : config["rule-providers"] ? "rule-providers" : "";
+  const providers = key ? (config[key] as Record<string, unknown> | undefined) : undefined;
+  if (!providers) return config;
+  const rewritten = Object.fromEntries(
+    Object.entries(providers).map(([name, value]) => {
+      const entry = value as Record<string, unknown> | null;
+      const url = entry && typeof entry === "object" ? stringSetting(entry.url) : "";
+      if (!url) return [name, value];
+      try {
+        const parsed = new URL(url);
+        if (!RULESET_CDN_ORIGINS.has(parsed.origin)) return [name, value];
+        return [name, { ...entry, url: `${origin}${parsed.pathname}${parsed.search}` }];
+      } catch {
+        return [name, value];
+      }
+    }),
+  );
+  return { ...config, [key]: rewritten };
+}
+
+function renderMihomoYaml(proxies: ProxyNode[], requestUrl: URL, template?: RoutingTemplateConfig, rulesetCdn?: unknown) {
+  const config = withRulesetCdn(template, rulesetCdn) || {};
   const mixedPort = config.mixedPort ?? config["mixed-port"] ?? 7890;
   const allowLan = config.allowLan ?? config["allow-lan"] ?? false;
   const logLevel = config.logLevel || config["log-level"] || "info";
@@ -1728,7 +1766,8 @@ function renderTarget(proxies: ProxyNode[], target: SubscriptionTarget, template
 }
 
 function renderBuildTarget(proxies: ProxyNode[], options: BuildOptions) {
-  if (options.target === "mihomo" || options.target === "stash") return renderMihomoYaml(proxies, options.requestUrl, options.template?.config);
+  const rulesetCdn = options.settings?.rulesetCdn;
+  if (options.target === "mihomo" || options.target === "stash") return renderMihomoYaml(proxies, options.requestUrl, options.template?.config, rulesetCdn);
   if (options.target === "surge") return renderSurgeProxies(proxies);
   if (options.target === "surge-mac") return renderSurgeMacProxies(proxies);
   if (options.target === "surfboard") return renderSurfboardProxies(proxies);
@@ -1740,7 +1779,7 @@ function renderBuildTarget(proxies: ProxyNode[], options: BuildOptions) {
   if (options.target === "v2ray") return base64Utf8(renderProxyUris(proxies));
   if (options.target === "uri") return renderProxyUris(proxies);
   if (options.target === "json") return JSON.stringify({ proxies }, null, 2);
-  return renderMihomoYaml(proxies, options.requestUrl, options.template?.config);
+  return renderMihomoYaml(proxies, options.requestUrl, options.template?.config, rulesetCdn);
 }
 
 function selectResponseMetadata(options: InternalBuildOptions) {

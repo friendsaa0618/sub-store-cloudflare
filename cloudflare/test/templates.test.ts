@@ -7,31 +7,23 @@ const SAMPLE = "trojan://password@example.com:443?sni=example.com#HK%20Node";
 const BUILTIN_POLICIES = new Set(["DIRECT", "REJECT", "REJECT-DROP", "PASS"]);
 
 describe("built-in rule templates", () => {
-  it("marks ACL4SSR lists as text and YAML payloads as yaml", () => {
+  it("serves the ACL4SSR and AI templates from compiled MetaCubeX rule-sets", () => {
     const acl4ssr = BUILTIN_TEMPLATES.find((template) => template.id === "acl4ssr-mihomo");
-    const loyalsoldier = BUILTIN_TEMPLATES.find((template) => template.id === "loyalsoldier-whitelist");
     const streaming = BUILTIN_TEMPLATES.find((template) => template.id === "ai-streaming-mihomo");
-    expect(acl4ssr && providerFormats(acl4ssr.config.ruleProviders)).toEqual({
-      LocalAreaNetwork: "text",
-      UnBan: "text",
-      BanAD: "text",
-      BanProgramAD: "text",
-      GoogleCN: "text",
-      SteamCN: "text",
-      Microsoft: "text",
-      Apple: "text",
-      Telegram: "text",
-      OpenAI: "yaml",
-      YouTube: "text",
-      Netflix: "text",
-      DisneyPlus: "text",
-      ProxyGFWlist: "text",
-      ChinaDomain: "text",
-      ChinaCompanyIp: "text",
-      Download: "text",
-    });
+    const loyalsoldier = BUILTIN_TEMPLATES.find((template) => template.id === "loyalsoldier-whitelist");
+    for (const template of [acl4ssr, streaming]) {
+      const providers = (template?.config.ruleProviders || {}) as Record<string, { format?: string; url?: string; behavior?: string }>;
+      expect(Object.keys(providers).length, `${template?.id} providers`).toBeGreaterThan(0);
+      for (const [name, entry] of Object.entries(providers)) {
+        expect(entry.format, `${template?.id}/${name} format`).toBe("mrs");
+        expect(entry.url, `${template?.id}/${name} url`)
+          .toMatch(/^https:\/\/cdn\.jsdelivr\.net\/gh\/MetaCubeX\/meta-rules-dat@meta\/geo\/(geosite|geoip)\/.+\.mrs$/);
+        expect(["domain", "ipcidr"], `${template?.id}/${name} behavior`).toContain(entry.behavior);
+      }
+    }
+    // The Loyalsoldier presets keep their own lists: reject/direct/tld-not-cn have
+    // no MetaCubeX twin.
     expect(loyalsoldier && new Set(Object.values(providerFormats(loyalsoldier.config.ruleProviders)))).toEqual(new Set(["yaml"]));
-    expect(streaming && new Set(Object.values(providerFormats(streaming.config.ruleProviders)))).toEqual(new Set(["yaml"]));
   });
 
   it("keeps rule-set names and policies consistent with providers and groups", () => {

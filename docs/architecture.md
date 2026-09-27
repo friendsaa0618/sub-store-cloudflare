@@ -144,7 +144,19 @@ Cloudflare Worker
 - `rule-providers`
 - `rules`
 
-`proxyGroups[].proxies` 或 `proxy-groups[].proxies` 里可以使用 `$all`，生成时会展开为当前组合订阅里的全部节点。空的或只引用已删除组的 `proxy-groups` 不会写进最终 YAML。内置 ACL4SSR `.list` 规则集会带上 `format: text`；Loyalsoldier / blackmatrix 规则集使用 YAML payload，因此是 `format: yaml`。Surge、Surfboard、Loon、Egern、Shadowrocket、Quantumult X、v2ray、URI 和 JSON 输出使用同一套节点解析与过滤结果，但不读取 Mihomo 规则模板；`sing-box` 输出会读取同一份模板的分组与可转换规则，见下一节。
+`proxyGroups[].proxies` 或 `proxy-groups[].proxies` 里可以使用 `$all`，生成时会展开为当前组合订阅里的全部节点。空的或只引用已删除组的 `proxy-groups` 不会写进最终 YAML。
+
+内置模板的规则数据来自 [MetaCubeX/meta-rules-dat](https://github.com/MetaCubeX/meta-rules-dat)：`acl4ssr-mihomo`、`acl4ssr-mihomo-no-emoji` 和 `ai-streaming-mihomo` 使用 `meta` 分支编译好的 `.mrs` 规则集（`format: mrs`，`behavior` 为 `domain` / `ipcidr`），默认从 `cdn.jsdelivr.net` 取；`loyalsoldier-whitelist` 和 `loyalsoldier-blacklist` 仍使用 Loyalsoldier 的 YAML 规则集，因为 `reject`、`direct`、`tld-not-cn` 这类列表在 MetaCubeX 没有等价物。
+
+CDN 主机可以通过设置项 `rulesetCdn` 换成自建镜像或 jsDelivr 的其它节点（只接受 `https` 源，其余值会被忽略）：
+
+```bash
+curl -X PATCH https://<admin-domain>/api/settings \
+  -H 'authorization: Bearer <admin-token>' -H 'content-type: application/json' \
+  -d '{"rulesetCdn":"https://fastly.jsdelivr.net"}'
+```
+
+Surge、Surfboard、Loon、Egern、Shadowrocket、Quantumult X、v2ray、URI 和 JSON 输出使用同一套节点解析与过滤结果，但不读取 Mihomo 规则模板；`sing-box` 输出会读取同一份模板的分组与可转换规则，见下一节。
 
 ## sing-box 与 Mihomo 模板的对应关系
 

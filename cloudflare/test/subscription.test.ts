@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { parse as parseYaml } from "yaml";
 import { BUILTIN_TEMPLATES } from "../src/lib/defaults";
 import {
   MAX_REMOTE_SOURCE_RESPONSE_BYTES,
@@ -436,5 +437,66 @@ describe("subscription parsing and limits", () => {
       type: "ws",
       path: "/trojan-ws",
     });
+
+  });
+
+  it("rewrites the MetaCubeX rule-set host from the rulesetCdn setting", async () => {
+    const acl4ssr = BUILTIN_TEMPLATES.find((template) => template.id === "acl4ssr-mihomo");
+    const output = await buildSubscription({
+      source: {
+        id: "ruleset-cdn",
+        name: "Ruleset CDN",
+        type: "local",
+        url: "",
+        content: "trojan://password@example.com:443?sni=example.com#Trojan%20Node",
+      },
+      sources: [],
+      requestUrl: new URL("https://example.com/download/collection/ruleset-cdn/mihomo"),
+      target: "mihomo",
+      template: { id: acl4ssr?.id, name: acl4ssr?.name, target: "mihomo", config: acl4ssr?.config || {} },
+      settings: { rulesetCdn: "https://mirror.example.com" },
+    });
+    const document = parseYaml(output) as { "rule-providers"?: Record<string, { url?: string }> };
+    const urls = Object.values(document["rule-providers"] || {}).map((entry) => entry.url || "");
+    expect(urls.length).toBeGreaterThan(0);
+    expect(urls.every((url) => url.startsWith("https://mirror.example.com/gh/MetaCubeX/meta-rules-dat@meta/geo/"))).toBe(true);
+  });
+
+  it("ignores an unsafe rulesetCdn value", async () => {
+    const output = await buildSubscription({
+      source: {
+        id: "ruleset-cdn-unsafe",
+        name: "Ruleset CDN Unsafe",
+        type: "local",
+        url: "",
+        content: "trojan://password@example.com:443?sni=example.com#Trojan%20Node",
+      },
+      sources: [],
+      requestUrl: new URL("https://example.com/download/collection/ruleset-cdn-unsafe/mihomo"),
+      target: "mihomo",
+      template: {
+        id: "custom",
+        name: "Custom",
+        target: "mihomo",
+        config: {
+          proxyGroups: [{ name: "Proxy", type: "select", proxies: ["$all"] }],
+          ruleProviders: {
+            Ads: {
+              type: "http",
+              behavior: "domain",
+              format: "mrs",
+              url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/category-ads-all.mrs",
+              path: "./ruleset/category-ads-all.mrs",
+              interval: 86400,
+            },
+          },
+          rules: ["RULE-SET,Ads,REJECT", "MATCH,Proxy"],
+        },
+      },
+      settings: { rulesetCdn: "http://insecure.example.com" },
+    });
+    const document = parseYaml(output) as { "rule-providers"?: Record<string, { url?: string }> };
+    expect(document["rule-providers"]?.Ads.url).toContain("https://cdn.jsdelivr.net/");
+
   });
 });

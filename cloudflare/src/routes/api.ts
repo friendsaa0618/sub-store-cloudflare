@@ -3,7 +3,7 @@ import type { Context } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import { parse as parseYaml } from "yaml";
 import { failed, requireAdmin, success } from "../lib/http";
-import { BUILTIN_TEMPLATE_IDS } from "../lib/defaults";
+import { BUILTIN_TEMPLATE_IDS, DEFAULT_RULESET_CDN } from "../lib/defaults";
 import { MAX_API_BODY_BYTES, MAX_FLOW_RESPONSE_BYTES } from "../lib/limits";
 import { readResponseText } from "../lib/read";
 import { convertRules, type RuleTarget } from "../lib/rules";
@@ -451,6 +451,7 @@ function defaultSettings(env: SubStoreEnv) {
     backendRequestConcurrencyWaitTime: "100",
     remoteCacheTtl: "300",
     remoteCacheStaleOnError: true,
+    rulesetCdn: DEFAULT_RULESET_CDN,
     nodeInfoApiUrl: "https://ipwho.is/{ip}",
     theme: { auto: true, name: "light", dark: "dark", light: "light" },
     appearanceSetting: {
