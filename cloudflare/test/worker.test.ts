@@ -1,5 +1,5 @@
 import { env, exports as workerExports } from "cloudflare:workers";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 const ADMIN_TOKEN = "test-admin-token";
 const DOWNLOAD_TOKEN = "test-download-token";
@@ -389,6 +389,39 @@ describe("Worker and D1 integration", () => {
     const entryId = String(getPath(entry, "id"));
     expect((await workerRequest(`/api/recycle-bin/${entryId}/restore`, { method: "POST" })).status).toBe(200);
     expect((await workerRequest("/api/sources/recycled-source")).status).toBe(200);
+  });
+
+  it("serves converted Clash rule providers to sing-box", async () => {
+    const created = await workerRequest("/api/collections", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ id: "ruleset-test", name: "Ruleset Test", templateId: "loyalsoldier-whitelist", sourceIds: [] }),
+    });
+    expect(created.status).toBeLessThan(300);
+
+    // The response has to be created inside the request handler: workers reject
+    // reading a stream that was created in another request's context.
+    const providerFetch = vi.spyOn(globalThis, "fetch").mockImplementation(async () => new Response(
+      ["payload:", "  - '+.example.com'", "  - '10.0.0.0/8'", "  - DOMAIN-KEYWORD,ads", ""].join("\n"),
+      { status: 200 },
+    ));
+    const converted = await workerRequest("/download/collection/ruleset-test/ruleset/reject?token=test-download-token", {}, false);
+    expect(converted.status).toBe(200);
+    expect(converted.headers.get("content-type")).toContain("application/json");
+    expect(await converted.json()).toEqual({
+      version: 1,
+      rules: [
+        { domain_suffix: ["example.com"] },
+        { ip_cidr: ["10.0.0.0/8"] },
+        { domain_keyword: ["ads"] },
+      ],
+    });
+    providerFetch.mockRestore();
+
+    const unknownProvider = await workerRequest("/download/collection/ruleset-test/ruleset/missing?token=test-download-token", {}, false);
+    expect(unknownProvider.status).toBe(404);
+    const invalidToken = await workerRequest("/download/collection/ruleset-test/ruleset/reject", {}, false);
+    expect(invalidToken.status).toBe(403);
   });
 });
 

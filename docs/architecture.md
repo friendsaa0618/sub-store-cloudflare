@@ -27,6 +27,7 @@ Cloudflare Worker
   |-- /api/recycle-bin               有上限的配置回收站
   |-- /download/source/:id[/:target]   单订阅源输出
   |-- /download/collection/:id[/:target] 组合订阅输出
+  |-- /download/collection/:id/ruleset/:provider Clash 规则集转成 sing-box rule set
   |
   |-- D1                             配置 / download_grants / recycle_bin
   |-- Cache API                      可选远程订阅短期缓存
@@ -144,7 +145,19 @@ Cloudflare Worker
 - `rule-providers`
 - `rules`
 
-`proxyGroups[].proxies` 或 `proxy-groups[].proxies` 里可以使用 `$all`，生成时会展开为当前组合订阅里的全部节点。空的或只引用已删除组的 `proxy-groups` 不会写进最终 YAML。内置 ACL4SSR `.list` 规则集会带上 `format: text`；Loyalsoldier / blackmatrix 规则集使用 YAML payload，因此是 `format: yaml`。Surge、Surfboard、Loon、Egern、Shadowrocket、Quantumult X、v2ray、URI 和 JSON 输出使用同一套节点解析与过滤结果，但不读取 Mihomo 规则模板；`sing-box` 输出会读取同一份模板的分组与可转换规则，见下一节。
+`proxyGroups[].proxies` 或 `proxy-groups[].proxies` 里可以使用 `$all`，生成时会展开为当前组合订阅里的全部节点。空的或只引用已删除组的 `proxy-groups` 不会写进最终 YAML。
+
+内置模板的规则数据来自 [MetaCubeX/meta-rules-dat](https://github.com/MetaCubeX/meta-rules-dat)：`acl4ssr-mihomo`、`acl4ssr-mihomo-no-emoji` 和 `ai-streaming-mihomo` 使用 `meta` 分支编译好的 `.mrs` 规则集（`format: mrs`，`behavior` 为 `domain` / `ipcidr`），默认从 `cdn.jsdelivr.net` 取；`loyalsoldier-whitelist` 和 `loyalsoldier-blacklist` 仍使用 Loyalsoldier 的 YAML 规则集，因为 `reject`、`direct`、`tld-not-cn` 这类列表在 MetaCubeX 没有等价物。
+
+CDN 主机可以通过设置项 `rulesetCdn` 换成自建镜像或 jsDelivr 的其它节点（只接受 `https` 源，其余值会被忽略）：
+
+```bash
+curl -X PATCH https://<admin-domain>/api/settings \
+  -H 'authorization: Bearer <admin-token>' -H 'content-type: application/json' \
+  -d '{"rulesetCdn":"https://fastly.jsdelivr.net"}'
+```
+
+Surge、Surfboard、Loon、Egern、Shadowrocket、Quantumult X、v2ray、URI 和 JSON 输出使用同一套节点解析与过滤结果，但不读取 Mihomo 规则模板；`sing-box` 输出会读取同一份模板的分组与可转换规则，见下一节。
 
 ## sing-box 与 Mihomo 模板的对应关系
 
@@ -159,10 +172,30 @@ Cloudflare Worker
 | `DIRECT` / `REJECT` / `REJECT-DROP` | `DIRECT` / `REJECT` | `PASS` 和悬空引用会被丢弃，否则 sing-box 启动时报 `dependency[...] not found` |
 | `mixed-port` / `allow-lan` | `mixed` 入站的 `listen_port` / `listen` | |
 | `MATCH,<策略>` | `route.final` | 没有 MATCH 时使用第一个分组 |
+| `RULE-SET,<MetaCubeX 规则集>,<策略>` | `route.rule_set`（`sing` 分支的 `.srs`） | 见下 |
+| `GEOIP,<两位国家码>,<策略>` | `geoip/<国家码>.srs` | 例如 `GEOIP,CN` → `geoip/cn.srs` |
 
 规则按类型转换：`DOMAIN`、`DOMAIN-SUFFIX`、`DOMAIN-KEYWORD`、`DOMAIN-REGEX`、`IP-CIDR`、`IP-CIDR6`、`SRC-IP-CIDR`、`DST-PORT`、`SRC-PORT`、`PROCESS-NAME`、`PROCESS-PATH` 会写成 sing-box 的 route 规则。
 
-`RULE-SET`、`GEOSITE`、`GEOIP`、`IP-ASN`、`SCRIPT` 等规则会被跳过：sing-box 1.12 起移除了内置 `geoip` / `geosite` 规则，而 Clash 规则集（`.list` / `.txt` / `.yaml`）不能直接当作 sing-box 的 rule-set（sing-box 只接受 `.srs` 二进制或 sing-box source JSON）。命中这些规则的流量会落到 `route.final` 指向的分组。
+`RULE-SET` 规则引用的是 MetaCubeX/meta-rules-dat 规则集时（内置模板都是），会生成对应的远程 rule set：
+
+```json
+{ "type": "remote", "tag": "GFW", "format": "binary",
+  "url": "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/gfw.srs",
+  "update_interval": "1d", "download_detour": "DIRECT" }
+```
+
+同一份规则集只生成一次（例如 `ChinaIP` 和 `GEOIP,CN` 共用 `geoip/cn.srs`），策略是 `REJECT` 时写成 `action: "reject"`，其余写成 `outbound`。`download_detour: "DIRECT"` 是必需的：sing-box 1.12/1.13 没有 `http_clients`，不指定时规则集会走默认出站（也就是代理），代理不可用时整份配置直接启动失败。1.14 起该字段会给出弃用告警，等 1.16 真正移除后再按客户端版本切换到 `http_clients`。
+
+不是 MetaCubeX 的规则集（例如 Loyalsoldier 预设的 `.txt`、自定义 URL）会由 Worker 转换后提供：`/download/collection/<collection-id>/ruleset/<provider>?token=<download-token>` 拉取模板里那个 provider，按 `payload` YAML 或 Surge 风格文本解析，输出 sing-box source 格式（`+.domain` → `domain_suffix`、裸域名 → `domain_suffix`、CIDR → `ip_cidr`、`DOMAIN-KEYWORD,` → `domain_keyword`、`PROCESS-NAME,` → `process_name`），结果按 provider 的 `interval` 缓存在 Cache API。profile 里对应写成：
+
+```json
+{ "type": "remote", "tag": "reject", "format": "source",
+  "url": "https://<your-domain>/download/collection/<id>/ruleset/reject?token=<download-token>",
+  "update_interval": "1d", "download_detour": "DIRECT" }
+```
+
+这条路径只在集合下载（URL 里带 download token）时生效；用 `convertSubscriptionContent` 这类没有集合上下文的方式渲染时会跳过这些规则。`GEOSITE`、`IP-ASN`、`SCRIPT` 等规则在任何情况下都会被跳过，命中它们的流量会落到 `route.final` 指向的分组。
 
 没有可用模板时（例如集合未绑定模板），`sing-box` 输出回落到内置的 `PROXY` / `AUTO` 两个分组。
 

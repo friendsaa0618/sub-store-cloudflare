@@ -2,13 +2,35 @@ import { Hono } from "hono";
 import type { Context } from "hono";
 import { failed, isTokenValid } from "../lib/http";
 import { authorizeScopedDownload } from "../lib/compatibility-resources";
+import { loadConvertedRuleSet } from "../lib/ruleset";
 import { buildSubscriptionResult, getTargetContentType, normalizeTarget, normalizeTargetAlias } from "../lib/subscription";
 import { getRoutingTemplate, getSettings, getSource, getSubscriptionCollection, getSubscriptionSources } from "../lib/store";
-import type { SubscriptionCollection, SubscriptionSource, SubscriptionTarget } from "../types";
+import type { RoutingTemplateConfig, SubscriptionCollection, SubscriptionSource, SubscriptionTarget } from "../types";
 
 export const downloadRoutes = new Hono<{ Bindings: SubStoreEnv }>();
 
 type DownloadContext = Context<{ Bindings: SubStoreEnv }>;
+
+// Clash rule providers are not valid sing-box rule sets, so the sing-box output
+// points at this route and gets the provider converted to the sing-box source
+// format. Must be registered before the collection route: it has one more path
+// segment, so `/download/collection/<id>/ruleset/<provider>` never reaches it.
+downloadRoutes.get("/download/collection/:name/ruleset/:provider/:token?", async (c) => {
+  const collection = await getSubscriptionCollection(c.env, c.req.param("name"));
+  if (!collection) return failed(c, "Collection not found", 404);
+  const invalidToken = await rejectInvalidDownloadToken(c, "collection", c.req.param("name"), "sing-box");
+  if (invalidToken) return invalidToken;
+
+  const template = await getRoutingTemplate(c.env, collection.templateId);
+  const provider = findRuleProvider(template?.config, c.req.param("provider"));
+  if (!provider) return failed(c, "Rule provider not found", 404);
+
+  try {
+    return await loadConvertedRuleSet(provider.url, provider.ttl);
+  } catch (error) {
+    return failed(c, error instanceof Error ? error.message : String(error), 502);
+  }
+});
 
 downloadRoutes.get("/download/collection/:name/:target?/:token?", async (c) => {
   const target = getDownloadTarget(c);
@@ -100,6 +122,18 @@ async function renderDownload(
 
 function setResponseHeader(headers: Headers, name: string, value: string | undefined) {
   if (value && !/[\r\n]/.test(value)) headers.set(name, value);
+}
+
+function findRuleProvider(config: RoutingTemplateConfig | undefined, name: string) {
+  const providers = (config?.ruleProviders || config?.["rule-providers"] || {}) as Record<string, { url?: unknown; interval?: unknown } | undefined>;
+  const provider = providers[name];
+  const url = typeof provider?.url === "string" ? provider.url.trim() : "";
+  if (!url) return undefined;
+  const interval = Math.trunc(Number(provider?.interval));
+  return {
+    url,
+    ttl: Number.isFinite(interval) && interval > 0 ? Math.min(Math.max(interval, 60), 604800) : 86400,
+  };
 }
 
 type TemporarySourceOverride = {

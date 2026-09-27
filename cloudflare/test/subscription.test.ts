@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { parse as parseYaml } from "yaml";
 import { BUILTIN_TEMPLATES } from "../src/lib/defaults";
 import {
   MAX_REMOTE_SOURCE_RESPONSE_BYTES,
@@ -145,7 +146,7 @@ describe("subscription parsing and limits", () => {
       dns: { servers: Array<Record<string, unknown>> };
       inbounds: Array<Record<string, unknown>>;
       outbounds: Array<Record<string, unknown> & { type: string; tag?: string }>;
-      route: { rules: Array<Record<string, unknown>>; final?: string };
+      route: { rules: Array<Record<string, unknown>>; rule_set?: Array<Record<string, unknown>>; final?: string };
     };
     // The collection template now drives the sing-box profile, so the client
     // shows the same groups as the Mihomo link instead of PROXY/AUTO.
@@ -181,12 +182,25 @@ describe("subscription parsing and limits", () => {
       { protocol: "dns", action: "hijack-dns" },
       { domain_suffix: ["openai.com"], outbound: "🚀 节点选择" },
       { ip_cidr: ["10.0.0.0/8"], outbound: "DIRECT" },
+      // `GEOIP,CN` has a MetaCubeX twin even when the template has no provider
+      // for it; the provider-less `RULE-SET` above is skipped.
+      { rule_set: ["geoip-cn"], outbound: "DIRECT" },
+    ]);
+    expect(config.route.rule_set).toEqual([
+      {
+        tag: "geoip-cn",
+        type: "remote",
+        format: "binary",
+        url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/cn.srs",
+        update_interval: "1d",
+        download_detour: "DIRECT",
+      },
     ]);
     expect(config.route.final).toBe("🚀 节点选择");
     expect(config.dns.servers[0]).toEqual({ tag: "dns-proxy", type: "tls", server: "1.1.1.1", detour: "🚀 节点选择" });
   });
 
-  it("keeps sing-box group names aligned with the built-in Mihomo template", async () => {
+  it("maps the built-in MetaCubeX providers onto sing-box rule sets", async () => {
     const template = BUILTIN_TEMPLATES.find((entry) => entry.id === "acl4ssr-mihomo");
     expect(template).toBeDefined();
     const output = await buildSubscription({
@@ -204,15 +218,154 @@ describe("subscription parsing and limits", () => {
     });
     const config = JSON.parse(output) as {
       outbounds: Array<Record<string, unknown> & { type: string; tag?: string }>;
-      route: { final?: string; rules: Array<Record<string, unknown>> };
+      route: {
+        final?: string;
+        rules: Array<Record<string, unknown>>;
+        rule_set?: Array<{ tag: string; url: string; format?: string; download_detour?: string }>;
+      };
     };
     const groupNames = (template?.config.proxyGroups || []).map((group) => group.name);
     expect(config.outbounds.filter((outbound) => ["selector", "urltest"].includes(outbound.type)).map((outbound) => outbound.tag))
       .toEqual(groupNames);
-    // RULE-SET and GEOIP rules need `.srs` rule-sets, so they are skipped and
-    // the profile falls back to the template's MATCH policy.
-    expect(config.route.rules).toEqual([{ action: "sniff" }, { protocol: "dns", action: "hijack-dns" }]);
+
+    // Every MetaCubeX provider becomes a remote `.srs` rule set on the `sing`
+    // branch, and `GEOIP,CN` maps to the matching country rule set.
+    const ruleSets = config.route.rule_set || [];
+    const urls = new Map(ruleSets.map((entry) => [entry.tag, entry.url]));
+    // 17 providers, but `ChinaIP` and `GEOIP,CN` share `geoip/cn.srs`, so the
+    // rule set is emitted once.
+    expect(ruleSets.length).toBe(16);
+    expect(ruleSets.every((entry) => entry.format === "binary" && entry.download_detour === "DIRECT")).toBe(true);
+    expect(urls.get("Ads")).toBe("https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/category-ads-all.srs");
+    expect(urls.get("GFW")).toBe("https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/gfw.srs");
+    expect(urls.get("SteamCN")).toBe("https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/steam@cn.srs");
+    expect(urls.get("ChinaIP")).toBe("https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/cn.srs");
+
+    expect(config.route.rules).toContainEqual({ rule_set: ["Ads"], outbound: "🛑 全球拦截" });
+    expect(config.route.rules).toContainEqual({ rule_set: ["Microsoft"], outbound: "Ⓜ️ 微软服务" });
+    expect(config.route.rules).toContainEqual({ rule_set: ["ChinaDomain"], outbound: "DIRECT" });
+    expect(config.route.rules).toContainEqual({ rule_set: ["ChinaIP"], outbound: "🎯 全球直连" });
     expect(config.route.final).toBe("🐟 漏网之鱼");
+  });
+
+  it("turns a REJECT policy on a MetaCubeX provider into a reject action", async () => {
+    const output = await buildSubscription({
+      source: {
+        id: "sing-box-reject",
+        name: "Sing Box Reject",
+        type: "local",
+        url: "",
+        content: "trojan://password@example.com:443?sni=example.com#Trojan%20Node",
+      },
+      sources: [],
+      requestUrl: new URL("https://example.com/download/collection/sing-box-reject/sing-box"),
+      target: "sing-box",
+      template: {
+        id: "reject",
+        name: "Reject",
+        target: "mihomo",
+        config: {
+          proxyGroups: [{ name: "🚀 节点选择", type: "select", proxies: ["$all"] }],
+          ruleProviders: {
+            Ads: {
+              type: "http",
+              behavior: "domain",
+              format: "mrs",
+              url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/category-ads-all.mrs",
+              path: "./ruleset/geosite-category-ads-all.mrs",
+              interval: 86400,
+            },
+          },
+          rules: ["RULE-SET,Ads,REJECT", "MATCH,🚀 节点选择"],
+        },
+      },
+    });
+    const config = JSON.parse(output) as { route: { rules: Array<Record<string, unknown>> } };
+    expect(config.route.rules).toContainEqual({ rule_set: ["Ads"], action: "reject" });
+  });
+
+  it("converts non-MetaCubeX providers through the Worker rule-set route", async () => {
+    const template = BUILTIN_TEMPLATES.find((entry) => entry.id === "loyalsoldier-whitelist");
+    expect(template).toBeDefined();
+    const source = {
+      id: "sing-box-loyalsoldier",
+      name: "Sing Box Loyalsoldier",
+      type: "local" as const,
+      url: "",
+      content: "trojan://password@example.com:443?sni=example.com#Trojan%20Node",
+    };
+    const output = await buildSubscription({
+      source,
+      collection: { id: "daily", name: "Daily", sourceIds: [], templateId: "loyalsoldier-whitelist" },
+      sources: [source],
+      requestUrl: new URL("https://sub.example.com/download/collection/daily/sing-box/test-download-token"),
+      target: "sing-box",
+      template: { id: template?.id, name: template?.name, target: "mihomo", config: template?.config || {} },
+    });
+    const config = JSON.parse(output) as {
+      route: {
+        rules: Array<Record<string, unknown>>;
+        rule_set?: Array<Record<string, unknown>>;
+        final?: string;
+      };
+    };
+    // Every Loyalsoldier provider is served by the Worker in the sing-box source
+    // format, because sing-box cannot read Clash payload lists; `GEOIP,CN` adds
+    // the MetaCubeX country rule set on top.
+    const ruleSets = config.route.rule_set || [];
+    expect(ruleSets.length).toBe(15);
+    expect(ruleSets.find((entry) => entry.tag === "geoip-cn")).toEqual({
+      tag: "geoip-cn",
+      type: "remote",
+      format: "binary",
+      url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/cn.srs",
+      update_interval: "1d",
+      download_detour: "DIRECT",
+    });
+    expect(ruleSets.find((entry) => entry.tag === "reject")).toEqual({
+      tag: "reject",
+      type: "remote",
+      format: "source",
+      url: "https://sub.example.com/download/collection/daily/ruleset/reject?token=test-download-token",
+      update_interval: "1d",
+      download_detour: "DIRECT",
+    });
+    expect(config.route.rules).toContainEqual({ rule_set: ["reject"], outbound: "🛑 全球拦截" });
+    expect(config.route.rules).toContainEqual({ rule_set: ["cncidr"], outbound: "DIRECT" });
+    expect(config.route.final).toBe("🚀 节点选择");
+  });
+
+  it("skips Clash providers when the profile has no collection or token", async () => {
+    const output = await buildSubscription({
+      source: {
+        id: "sing-box-no-token",
+        name: "Sing Box No Token",
+        type: "local",
+        url: "",
+        content: "trojan://password@example.com:443?sni=example.com#Trojan%20Node",
+      },
+      sources: [],
+      requestUrl: new URL("https://example.com/download/collection/sing-box-no-token/sing-box"),
+      target: "sing-box",
+      template: {
+        id: "custom",
+        name: "Custom",
+        target: "mihomo",
+        config: {
+          proxyGroups: [{ name: "🚀 节点选择", type: "select", proxies: ["$all"] }],
+          ruleProviders: {
+            gfw: { type: "http", behavior: "domain", format: "yaml", url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/gfw.txt", path: "./ruleset/gfw.txt", interval: 86400 },
+          },
+          rules: ["RULE-SET,gfw,🚀 节点选择", "MATCH,🚀 节点选择"],
+        },
+      },
+    });
+    const config = JSON.parse(output) as {
+      route: { rules: Array<Record<string, unknown>>; rule_set?: Array<Record<string, unknown>>; final?: string };
+    };
+    expect(config.route.rule_set).toBeUndefined();
+    expect(config.route.rules).toEqual([{ action: "sniff" }, { protocol: "dns", action: "hijack-dns" }]);
+    expect(config.route.final).toBe("🚀 节点选择");
   });
 
   it("parses JSON5 and converts Surge Mac-only node types", async () => {
@@ -436,5 +589,66 @@ describe("subscription parsing and limits", () => {
       type: "ws",
       path: "/trojan-ws",
     });
+
+  });
+
+  it("rewrites the MetaCubeX rule-set host from the rulesetCdn setting", async () => {
+    const acl4ssr = BUILTIN_TEMPLATES.find((template) => template.id === "acl4ssr-mihomo");
+    const output = await buildSubscription({
+      source: {
+        id: "ruleset-cdn",
+        name: "Ruleset CDN",
+        type: "local",
+        url: "",
+        content: "trojan://password@example.com:443?sni=example.com#Trojan%20Node",
+      },
+      sources: [],
+      requestUrl: new URL("https://example.com/download/collection/ruleset-cdn/mihomo"),
+      target: "mihomo",
+      template: { id: acl4ssr?.id, name: acl4ssr?.name, target: "mihomo", config: acl4ssr?.config || {} },
+      settings: { rulesetCdn: "https://mirror.example.com" },
+    });
+    const document = parseYaml(output) as { "rule-providers"?: Record<string, { url?: string }> };
+    const urls = Object.values(document["rule-providers"] || {}).map((entry) => entry.url || "");
+    expect(urls.length).toBeGreaterThan(0);
+    expect(urls.every((url) => url.startsWith("https://mirror.example.com/gh/MetaCubeX/meta-rules-dat@meta/geo/"))).toBe(true);
+  });
+
+  it("ignores an unsafe rulesetCdn value", async () => {
+    const output = await buildSubscription({
+      source: {
+        id: "ruleset-cdn-unsafe",
+        name: "Ruleset CDN Unsafe",
+        type: "local",
+        url: "",
+        content: "trojan://password@example.com:443?sni=example.com#Trojan%20Node",
+      },
+      sources: [],
+      requestUrl: new URL("https://example.com/download/collection/ruleset-cdn-unsafe/mihomo"),
+      target: "mihomo",
+      template: {
+        id: "custom",
+        name: "Custom",
+        target: "mihomo",
+        config: {
+          proxyGroups: [{ name: "Proxy", type: "select", proxies: ["$all"] }],
+          ruleProviders: {
+            Ads: {
+              type: "http",
+              behavior: "domain",
+              format: "mrs",
+              url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/category-ads-all.mrs",
+              path: "./ruleset/category-ads-all.mrs",
+              interval: 86400,
+            },
+          },
+          rules: ["RULE-SET,Ads,REJECT", "MATCH,Proxy"],
+        },
+      },
+      settings: { rulesetCdn: "http://insecure.example.com" },
+    });
+    const document = parseYaml(output) as { "rule-providers"?: Record<string, { url?: string }> };
+    expect(document["rule-providers"]?.Ads.url).toContain("https://cdn.jsdelivr.net/");
+
   });
 });

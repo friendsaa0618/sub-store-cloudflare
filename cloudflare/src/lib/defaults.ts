@@ -24,31 +24,41 @@ const defaultDns = {
   nameserver: ["https://doh.pub/dns-query", "https://dns.alidns.com/dns-query"],
 };
 
-function provider(url: string, behavior: "domain" | "ipcidr" | "classical" = "classical") {
+function provider(url: string, behavior: "domain" | "ipcidr" | "classical" = "classical", path?: string) {
   const filename = url.split("/").pop() || "ruleset";
   // Mihomo defaults rule-provider format to yaml. ACL4SSR .list files are
-  // Surge-style text; Loyalsoldier .txt and blackmatrix .yaml ship YAML payloads.
-  const format = filename.endsWith(".list") ? "text" : "yaml";
+  // Surge-style text, Loyalsoldier .txt and blackmatrix .yaml ship YAML
+  // payloads, and the MetaCubeX rule-sets are compiled `.mrs` binaries.
+  const format = filename.endsWith(".list") ? "text" : filename.endsWith(".mrs") ? "mrs" : "yaml";
   return {
     type: "http",
     behavior,
     format,
     url,
-    path: `./ruleset/${filename}`,
+    // Two providers can share a file name (`geosite/telegram.mrs` and
+    // `geoip/telegram.mrs`), so the cache path is explicit where it matters.
+    path: path || `./ruleset/${filename}`,
     interval: 86400,
   };
 }
 
-function acl4ssrRaw(name: string) {
-  return `https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/${name}.list`;
+// Rule data comes from MetaCubeX/meta-rules-dat, which is maintained for both
+// Mihomo (`meta` branch, compiled `.mrs`) and sing-box (`sing` branch, `.srs`).
+// The CDN host is a deployment setting: `settings.rulesetCdn` rewrites it at
+// render time, see `withRulesetCdn` in lib/subscription.ts.
+export const DEFAULT_RULESET_CDN = "https://cdn.jsdelivr.net";
+
+function metaRuleset(kind: "geosite" | "geoip", name: string, behavior: "domain" | "ipcidr") {
+  const slug = name.replace(/[^A-Za-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return provider(
+    `${DEFAULT_RULESET_CDN}/gh/MetaCubeX/meta-rules-dat@meta/geo/${kind}/${name}.mrs`,
+    behavior,
+    `./ruleset/${kind}-${slug}.mrs`,
+  );
 }
 
 function loyalSoldier(name: string) {
   return `https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/${name}.txt`;
-}
-
-function blackmatrix(name: string) {
-  return `https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/${name}/${name}.yaml`;
 }
 
 const mihomoBase: Omit<RoutingTemplateConfig, "ruleProviders" | "rules"> = {
@@ -78,43 +88,43 @@ export const MIHOMO_BASIC_TEMPLATE: RoutingTemplateConfig = {
 
 export const ACL4SSR_TEMPLATE: RoutingTemplateConfig = {
   ...mihomoBase,
+  // Provider names stay close to the original ACL4SSR lists; the payloads come
+  // from MetaCubeX/meta-rules-dat (see metaRuleset).
   ruleProviders: {
-    LocalAreaNetwork: provider(acl4ssrRaw("LocalAreaNetwork")),
-    UnBan: provider(acl4ssrRaw("UnBan")),
-    BanAD: provider(acl4ssrRaw("BanAD")),
-    BanProgramAD: provider(acl4ssrRaw("BanProgramAD")),
-    GoogleCN: provider(acl4ssrRaw("GoogleCN")),
-    SteamCN: provider(acl4ssrRaw("SteamCN")),
-    Microsoft: provider(acl4ssrRaw("Microsoft")),
-    Apple: provider(acl4ssrRaw("Apple")),
-    Telegram: provider(acl4ssrRaw("Telegram")),
-    OpenAI: provider(blackmatrix("OpenAI")),
-    YouTube: provider(acl4ssrRaw("Ruleset/YouTube")),
-    Netflix: provider(acl4ssrRaw("Ruleset/Netflix")),
-    DisneyPlus: provider(acl4ssrRaw("Ruleset/DisneyPlus")),
-    ProxyGFWlist: provider(acl4ssrRaw("ProxyGFWlist")),
-    ChinaDomain: provider(acl4ssrRaw("ChinaDomain")),
-    ChinaCompanyIp: provider(acl4ssrRaw("ChinaCompanyIp")),
-    Download: provider(acl4ssrRaw("Download")),
+    LocalAreaNetwork: metaRuleset("geosite", "private", "domain"),
+    LocalAreaNetworkIP: metaRuleset("geoip", "private", "ipcidr"),
+    Ads: metaRuleset("geosite", "category-ads-all", "domain"),
+    GoogleCN: metaRuleset("geosite", "google-cn", "domain"),
+    SteamCN: metaRuleset("geosite", "steam@cn", "domain"),
+    Microsoft: metaRuleset("geosite", "microsoft", "domain"),
+    Apple: metaRuleset("geosite", "apple", "domain"),
+    Telegram: metaRuleset("geosite", "telegram", "domain"),
+    TelegramIP: metaRuleset("geoip", "telegram", "ipcidr"),
+    AI: metaRuleset("geosite", "category-ai-!cn", "domain"),
+    YouTube: metaRuleset("geosite", "youtube", "domain"),
+    Netflix: metaRuleset("geosite", "netflix", "domain"),
+    DisneyPlus: metaRuleset("geosite", "disney", "domain"),
+    GFW: metaRuleset("geosite", "gfw", "domain"),
+    ChinaDomain: metaRuleset("geosite", "geolocation-cn", "domain"),
+    ChinaIP: metaRuleset("geoip", "cn", "ipcidr"),
   },
   rules: [
     "RULE-SET,LocalAreaNetwork,DIRECT",
-    "RULE-SET,UnBan,DIRECT",
-    "RULE-SET,BanAD,🛑 全球拦截",
-    "RULE-SET,BanProgramAD,🛑 全球拦截",
+    "RULE-SET,LocalAreaNetworkIP,DIRECT",
+    "RULE-SET,Ads,🛑 全球拦截",
     "RULE-SET,GoogleCN,DIRECT",
     "RULE-SET,SteamCN,DIRECT",
     "RULE-SET,Microsoft,Ⓜ️ 微软服务",
     "RULE-SET,Apple,🍎 苹果服务",
     "RULE-SET,Telegram,🚀 节点选择",
-    "RULE-SET,OpenAI,💬 AI 服务",
+    "RULE-SET,TelegramIP,🚀 节点选择",
+    "RULE-SET,AI,💬 AI 服务",
     "RULE-SET,YouTube,🌏 国外媒体",
     "RULE-SET,Netflix,🌏 国外媒体",
     "RULE-SET,DisneyPlus,🌏 国外媒体",
-    "RULE-SET,ProxyGFWlist,🚀 节点选择",
+    "RULE-SET,GFW,🚀 节点选择",
     "RULE-SET,ChinaDomain,DIRECT",
-    "RULE-SET,ChinaCompanyIp,DIRECT",
-    "RULE-SET,Download,DIRECT",
+    "RULE-SET,ChinaIP,DIRECT",
     "GEOIP,CN,🎯 全球直连",
     "MATCH,🐟 漏网之鱼",
   ],
@@ -185,28 +195,28 @@ export const LOYALSOLDIER_BLACKLIST_TEMPLATE: RoutingTemplateConfig = {
 export const AI_STREAMING_TEMPLATE: RoutingTemplateConfig = {
   ...mihomoBase,
   ruleProviders: {
-    OpenAI: provider(blackmatrix("OpenAI")),
-    Claude: provider(blackmatrix("Claude")),
-    Gemini: provider(blackmatrix("Gemini")),
-    YouTube: provider(blackmatrix("YouTube")),
-    Netflix: provider(blackmatrix("Netflix")),
-    Disney: provider(blackmatrix("Disney")),
-    Spotify: provider(blackmatrix("Spotify")),
-    Telegram: provider(blackmatrix("Telegram")),
-    GitHub: provider(blackmatrix("GitHub")),
-    China: provider(blackmatrix("China")),
+    AI: metaRuleset("geosite", "category-ai-!cn", "domain"),
+    YouTube: metaRuleset("geosite", "youtube", "domain"),
+    Netflix: metaRuleset("geosite", "netflix", "domain"),
+    Disney: metaRuleset("geosite", "disney", "domain"),
+    Spotify: metaRuleset("geosite", "spotify", "domain"),
+    Telegram: metaRuleset("geosite", "telegram", "domain"),
+    TelegramIP: metaRuleset("geoip", "telegram", "ipcidr"),
+    GitHub: metaRuleset("geosite", "github", "domain"),
+    ChinaDomain: metaRuleset("geosite", "geolocation-cn", "domain"),
+    ChinaIP: metaRuleset("geoip", "cn", "ipcidr"),
   },
   rules: [
-    "RULE-SET,OpenAI,💬 AI 服务",
-    "RULE-SET,Claude,💬 AI 服务",
-    "RULE-SET,Gemini,💬 AI 服务",
+    "RULE-SET,AI,💬 AI 服务",
     "RULE-SET,YouTube,🌏 国外媒体",
     "RULE-SET,Netflix,🌏 国外媒体",
     "RULE-SET,Disney,🌏 国外媒体",
     "RULE-SET,Spotify,🌏 国外媒体",
     "RULE-SET,Telegram,🚀 节点选择",
+    "RULE-SET,TelegramIP,🚀 节点选择",
     "RULE-SET,GitHub,🚀 节点选择",
-    "RULE-SET,China,DIRECT",
+    "RULE-SET,ChinaDomain,DIRECT",
+    "RULE-SET,ChinaIP,DIRECT",
     "GEOIP,CN,🎯 全球直连",
     "MATCH,🐟 漏网之鱼",
   ],

@@ -179,11 +179,15 @@ legacy inbound fields are deprecated in sing-box 1.11.0 and removed in sing-box 
 - `PASS` 和指向已删除分组的成员会被丢弃，否则 sing-box 启动会报 `dependency[...] not found`。
 - 模板里的 `mixed-port` / `allow-lan` 会写进 `mixed` 入站。
 
-规则只有一部分能转换：`DOMAIN`、`DOMAIN-SUFFIX`、`DOMAIN-KEYWORD`、`DOMAIN-REGEX`、`IP-CIDR`、`IP-CIDR6`、`SRC-IP-CIDR`、`DST-PORT`、`SRC-PORT`、`PROCESS-NAME`、`PROCESS-PATH` 会写成 sing-box 的 route 规则，`MATCH` 变成 `route.final`。
+分流规则现在也会跟过去：模板里引用 MetaCubeX/meta-rules-dat 规则集的 `RULE-SET` 规则会生成远程 `.srs` rule set（`download_detour: "DIRECT"`，从 `cdn.jsdelivr.net` 取，可用 `rulesetCdn` 换源），`GEOIP,<两位国家码>` 会映射到 `geoip/<国家码>.srs`，`MATCH` 变成 `route.final`。其余能直接表达的规则（`DOMAIN`、`DOMAIN-SUFFIX`、`DOMAIN-KEYWORD`、`DOMAIN-REGEX`、`IP-CIDR`、`IP-CIDR6`、`SRC-IP-CIDR`、`DST-PORT`、`SRC-PORT`、`PROCESS-NAME`、`PROCESS-PATH`）会写成 sing-box 的 route 规则。
 
-`RULE-SET`、`GEOSITE`、`GEOIP` 这类规则会被跳过，因为 sing-box 1.12 起移除了内置 `geoip` / `geosite`，而 Clash 规则集（`.list` / `.txt` / `.yaml`）不能当作 sing-box 的 rule-set（只接受 `.srs` 或 sing-box source JSON）。这些流量会走 `route.final` 指向的分组，也就是 Mihomo 里 `MATCH` 对应的那个分组。
+**Loyalsoldier 这类 Clash 规则集**（`.txt` payload 列表）sing-box 读不了，所以由 Worker 转换后提供：下载链接里的集合 id 和 download token 会拼进 rule set 地址（`/download/collection/<id>/ruleset/<provider>?token=…`），客户端拉取时 Worker 才去上游取列表、转成 sing-box source 格式并缓存（按 provider 的 `interval`）。所以 Mihomo 用 Loyalsoldier 的列表，sing-box 用的是同一份列表转出来的规则集，两边分流一致。
+
+会被跳过的：`GEOSITE`、`IP-ASN`、`SCRIPT` 这类规则，以及没有集合/下载 token 上下文时（例如 `convertSubscriptionContent`）的所有 Clash 规则集。这些流量会走 `route.final` 指向的分组，也就是 Mihomo 里 `MATCH` 对应的那个分组。
 
 如果集合没有绑定模板，`sing-box` 输出回落到内置的 `PROXY` / `AUTO` 分组。
+
+sing-box 1.14 会对 `download_detour` 打出弃用告警（`legacy download_detour remote rule-set option is deprecated ... will be removed in sing-box 1.16.0`），目前可以忽略：1.12/1.13 还不认识替代它的 `http_clients`。
 
 ## 节点被过滤掉
 
