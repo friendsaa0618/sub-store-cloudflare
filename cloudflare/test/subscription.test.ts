@@ -277,4 +277,51 @@ describe("subscription parsing and limits", () => {
     const response = new Response("small", { headers: { "content-length": "999" } });
     await expect(readResponseText(response, 10, "Test response")).rejects.toThrow("10 byte limit");
   });
+
+  it("keeps VLESS and trojan transport options from share links", () => {
+    const [vless] = validateSubscriptionContent(
+      "vless://00000000-0000-4000-8000-000000000002@example.com:443?security=tls&type=ws&path=%2Fmy-path&host=cdn.example.com#WS%20VLESS",
+    ) as Array<Record<string, unknown>>;
+    expect(vless.network).toBe("ws");
+    expect(vless["ws-opts"]).toEqual({ path: "/my-path", headers: { Host: "cdn.example.com" } });
+    const [grpc] = validateSubscriptionContent(
+      "vless://00000000-0000-4000-8000-000000000002@example.com:443?security=tls&type=grpc&serviceName=my-service#GRPC%20VLESS",
+    ) as Array<Record<string, unknown>>;
+    expect(grpc["grpc-opts"]).toEqual({ "grpc-service-name": "my-service" });
+    const [h2] = validateSubscriptionContent(
+      "vless://00000000-0000-4000-8000-000000000002@example.com:443?security=tls&type=h2&path=%2Fh2&host=h2.example.com#H2%20VLESS",
+    ) as Array<Record<string, unknown>>;
+    expect(h2["h2-opts"]).toEqual({ host: ["h2.example.com"], path: "/h2" });
+    const [trojan] = validateSubscriptionContent("trojan://password@example.com:443?type=ws&path=%2Ftrojan-ws#WS%20Trojan") as Array<Record<string, unknown>>;
+    expect(trojan.network).toBe("ws");
+    expect(trojan["ws-opts"]).toEqual({ path: "/trojan-ws" });
+  });
+
+  it("writes node transports into sing-box transport instead of network", async () => {
+    const output = await buildSubscription({
+      source: {
+        id: "sing-box-transport",
+        name: "Sing Box Transport",
+        type: "local",
+        url: "",
+        content: [
+          "vless://00000000-0000-4000-8000-000000000002@example.com:443?security=tls&type=ws&path=%2Fmy-path&host=cdn.example.com#WS%20VLESS",
+          "trojan://password@example.com:443?sni=example.com&type=ws&path=%2Ftrojan-ws#WS%20Trojan",
+        ].join("\n"),
+      },
+      sources: [],
+      requestUrl: new URL("https://example.com/download/source/sing-box-transport/sing-box"),
+      target: "sing-box",
+    });
+    const config = JSON.parse(output) as { outbounds: Array<Record<string, unknown> & { tag?: string }> };
+    // `network` only accepts tcp/udp in sing-box; the Clash transport value
+    // there makes the whole profile fail to decode.
+    const vless = config.outbounds.find((outbound) => outbound.tag === "WS VLESS");
+    expect(vless?.network).toBeUndefined();
+    expect(vless?.transport).toEqual({ type: "ws", path: "/my-path", headers: { Host: "cdn.example.com" } });
+    expect(config.outbounds.find((outbound) => outbound.tag === "WS Trojan")?.transport).toEqual({
+      type: "ws",
+      path: "/trojan-ws",
+    });
+  });
 });
