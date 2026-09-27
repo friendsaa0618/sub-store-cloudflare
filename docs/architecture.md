@@ -185,9 +185,18 @@ Surge、Surfboard、Loon、Egern、Shadowrocket、Quantumult X、v2ray、URI 和
   "update_interval": "1d", "download_detour": "DIRECT" }
 ```
 
-同一份规则集只生成一次（例如 `ChinaIP` 和 `GEOIP,CN` 共用 `geoip/cn.srs`），策略是 `REJECT` 时写成 `action: "reject"`，其余写成 `outbound`。`download_detour: "DIRECT"` 是必需的：sing-box 1.12/1.13 没有 `http_clients`，不指定时规则集会走默认出站（也就是代理），代理不可用时整份配置直接启动失败。1.14 起该字段会给出弃用告警，等 1.16 真正移除后再按客户端版本切换到 `http_clients`。
+同一份规则集只生成一次（例如 `ChinaIP` 和 `GEOIP,CN` 共用 `geoip/cn.srs`），策略是 `REJECT` 时写成 `action: "reject"`，其余写成 `outbound`。
 
-不是 MetaCubeX 的规则集（例如 Loyalsoldier 预设的 `.txt`、自定义 URL）会由 Worker 转换后提供：`/download/collection/<collection-id>/ruleset/<provider>?token=<download-token>` 拉取模板里那个 provider，按 `payload` YAML 或 Surge 风格文本解析，输出 sing-box source 格式（`+.domain` → `domain_suffix`、裸域名 → `domain_suffix`、CIDR → `ip_cidr`、`DOMAIN-KEYWORD,` → `domain_keyword`、`PROCESS-NAME,` → `process_name`、`DST-PORT,` / `SRC-PORT,` → 数字 `port` / `source_port`，区间写法 `1000-2000` → `port_range` 的 `"1000:2000"`），结果按 provider 的 `interval` 缓存在 Cache API。profile 里对应写成：
+规则集的下载通道要按客户端内核版本切换，因为两种写法互不兼容。sing-box 1.12/1.13 只认每条规则集上的 `download_detour: "DIRECT"`：没有它，规则集会走默认出站（也就是代理），代理不可用时整份配置直接启动失败。1.14 弃用了该字段，改用 route 级的共享 HTTP 客户端：
+
+```json
+{ "http_clients": [{ "tag": "rule-set-download", "detour": "DIRECT" }],
+  "route": { "default_http_client": "rule-set-download" } }
+```
+
+版本来自下载请求的 User-Agent：Apple / Android 客户端会带上内核版本（`SFI (sing-box 1.14.2; language zh_CN)`、`SFA (…)`），解析出 1.14 及以上就输出 `http_clients` 版本（此时 `DIRECT` 出站会补上 `domain_resolver`，否则 sing-box 报 `detour to an empty direct outbound makes no sense`），解析不出或版本更低则保持 `download_detour`。客户端改写了 UA 时可以用下载链接上的 `?singboxHttpClients=1|0` 强制指定。1.16 移除 `download_detour` 后，旧分支只剩 1.13 及更早的内核还会走到。
+
+不是 MetaCubeX 的规则集（例如 Loyalsoldier 预设的 `.txt`、自定义 URL）会由 Worker 转换后提供：`/download/collection/<collection-id>/ruleset/<provider>?token=<download-token>` 拉取模板里那个 provider，按 `payload` YAML 或 Surge 风格文本解析，输出 sing-box source 格式（`+.domain` → `domain_suffix`、裸域名 → `domain_suffix`、CIDR → `ip_cidr`、`DOMAIN-KEYWORD,` → `domain_keyword`、`PROCESS-NAME,` → `process_name`、`DST-PORT,` / `SRC-PORT,` → 数字 `port` / `source_port`，区间写法 `1000-2000` → `port_range` 的 `"1000:2000"`），结果按 provider 的 `interval` 缓存在 Cache API。profile 里对应写成（`download_detour` 只出现在 1.13 及更早的 profile 里）：
 
 ```json
 { "type": "remote", "tag": "reject", "format": "source",
