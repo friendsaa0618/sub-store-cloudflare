@@ -1760,7 +1760,7 @@ function renderTarget(proxies: ProxyNode[], target: SubscriptionTarget, template
   if (target === "loon") return renderLoonProxies(proxies);
   if (target === "egern") return renderEgernYaml(proxies);
   if (target === "qx") return renderQxProxies(proxies);
-  if (target === "sing-box") return renderSingBoxJson(proxies, template);
+  if (target === "sing-box") return renderSingBoxJson(proxies, template, {});
   if (target === "v2ray") return base64Utf8(renderProxyUris(proxies));
   if (target === "uri" || target === "shadowrocket") return renderProxyUris(proxies);
   return JSON.stringify({ proxies }, null, 2);
@@ -1776,7 +1776,13 @@ function renderBuildTarget(proxies: ProxyNode[], options: BuildOptions) {
   if (options.target === "egern") return renderEgernYaml(proxies);
   if (options.target === "shadowrocket") return renderProxyUris(proxies);
   if (options.target === "qx") return renderQxProxies(proxies);
-  if (options.target === "sing-box") return renderSingBoxJson(proxies, options.template?.config, rulesetCdn, convertedRuleSetSource(options));
+  if (options.target === "sing-box") {
+    return renderSingBoxJson(proxies, options.template?.config, {
+      rulesetCdn,
+      converted: convertedRuleSetSource(options),
+      httpClients: singBoxUsesHttpClients(options),
+    });
+  }
   if (options.target === "v2ray") return base64Utf8(renderProxyUris(proxies));
   if (options.target === "uri") return renderProxyUris(proxies);
   if (options.target === "json") return JSON.stringify({ proxies }, null, 2);
@@ -2154,7 +2160,38 @@ function convertedRuleSetSource(options: BuildOptions): ConvertedRuleSetSource |
   };
 }
 
-function renderSingBoxJson(proxies: ProxyNode[], template?: RoutingTemplateConfig, rulesetCdn?: unknown, converted?: ConvertedRuleSetSource) {
+// sing-box 1.14 deprecated the per-rule-set `download_detour` field and the
+// implicit HTTP client; the replacement (`http_clients` +
+// `route.default_http_client`) is rejected by 1.12/1.13 as unknown fields, so
+// the profile has to follow the client's version. The Apple and Android
+// clients send `<app> (sing-box <core version>; language <locale>)`, and
+// `?singboxHttpClients=1|0` overrides the detection.
+const SING_BOX_VERSION_PATTERN = /sing-box[/ ]v?(\d+)\.(\d+)/i;
+const SING_BOX_HTTP_CLIENTS_MINOR = 14;
+const RULE_SET_HTTP_CLIENT_TAG = "rule-set-download";
+
+export function singBoxSupportsHttpClients(userAgent: string | undefined) {
+  const match = SING_BOX_VERSION_PATTERN.exec(String(userAgent || ""));
+  if (!match) return false;
+  const major = Number(match[1]);
+  const minor = Number(match[2]);
+  return major > 1 || (major === 1 && minor >= SING_BOX_HTTP_CLIENTS_MINOR);
+}
+
+function singBoxUsesHttpClients(options: BuildOptions) {
+  const override = options.requestUrl?.searchParams.get("singboxHttpClients");
+  if (override === "1" || override === "true") return true;
+  if (override === "0" || override === "false") return false;
+  return singBoxSupportsHttpClients(options.requestUserAgent);
+}
+
+type SingBoxRenderOptions = {
+  rulesetCdn?: unknown;
+  converted?: ConvertedRuleSetSource;
+  httpClients?: boolean;
+};
+
+function renderSingBoxJson(proxies: ProxyNode[], template?: RoutingTemplateConfig, options: SingBoxRenderOptions = {}) {
   const config = template || {};
   const nodes = proxies.map(toSingBoxNode).filter((node): node is SingBoxNode => Boolean(node));
   const tags = nodes.map((node) => String(node.kind === "outbound" ? node.outbound.tag : node.endpoint.tag));
@@ -2162,15 +2199,18 @@ function renderSingBoxJson(proxies: ProxyNode[], template?: RoutingTemplateConfi
 
   const groups = renderSingBoxGroups(tags, config);
   const policies = new Set([...Object.values(SING_BOX_POLICIES), ...groups.map((group) => String(group.tag))]);
-  const cdn = rulesetCdnOrigin(rulesetCdn) || DEFAULT_RULESET_CDN;
-  const { rules, ruleSets, final } = renderSingBoxRules(config, policies, groups, cdn, converted);
+  const cdn = rulesetCdnOrigin(options.rulesetCdn) || DEFAULT_RULESET_CDN;
+  const httpClients = Boolean(options.httpClients);
+  const { rules, ruleSets, final } = renderSingBoxRules(config, policies, groups, cdn, options.converted, httpClients);
   const mixedPort = numberSetting(config.mixedPort ?? config["mixed-port"], 7890, 1, 65535);
   const allowLan = Boolean(config.allowLan ?? config["allow-lan"]);
 
   const outbounds = [
     ...groups,
     ...nodes.flatMap((node) => (node.kind === "outbound" ? [node.outbound] : [])),
-    { type: "direct", tag: "DIRECT" },
+    // An empty direct outbound cannot be a detour target ("detour to an empty
+    // direct outbound makes no sense"), and the HTTP client below detours to it.
+    httpClients ? { type: "direct", tag: "DIRECT", domain_resolver: "dns-bootstrap" } : { type: "direct", tag: "DIRECT" },
     { type: "block", tag: "REJECT" },
   ];
   const endpoints = nodes.flatMap((node) => (node.kind === "endpoint" ? [node.endpoint] : []));
@@ -2185,6 +2225,7 @@ function renderSingBoxJson(proxies: ProxyNode[], template?: RoutingTemplateConfi
         ],
         final: "dns-proxy",
       },
+      ...(httpClients ? { http_clients: [{ tag: RULE_SET_HTTP_CLIENT_TAG, detour: "DIRECT" }] } : {}),
       inbounds: [
         {
           type: "tun",
@@ -2200,6 +2241,7 @@ function renderSingBoxJson(proxies: ProxyNode[], template?: RoutingTemplateConfi
       route: {
         auto_detect_interface: true,
         default_domain_resolver: { server: "dns-bootstrap" },
+        ...(httpClients ? { default_http_client: RULE_SET_HTTP_CLIENT_TAG } : {}),
         ...(ruleSets.length > 0 ? { rule_set: ruleSets } : {}),
         rules,
         final,
@@ -2294,7 +2336,7 @@ type SingBoxRuleSet = {
   format: "binary" | "source";
   url: string;
   update_interval: string;
-  download_detour: string;
+  download_detour?: string;
 };
 
 // Clash providers that are not MetaCubeX lists (Loyalsoldier, custom URLs) are
@@ -2316,6 +2358,7 @@ function renderSingBoxRules(
   groups: Array<Record<string, unknown>>,
   cdn: string,
   converted?: ConvertedRuleSetSource,
+  httpClients = false,
 ) {
   const rules: Array<Record<string, unknown>> = [{ action: "sniff" }, { protocol: "dns", action: "hijack-dns" }];
   const ruleSets = new Map<string, SingBoxRuleSet>();
@@ -2331,8 +2374,10 @@ function renderSingBoxRules(
         update_interval: "1d",
         // sing-box 1.12/1.13 have no `http_clients`, and the implicit client
         // downloads through the default outbound: the profile would fail to
-        // start whenever the proxy is down.
-        download_detour: "DIRECT",
+        // start whenever the proxy is down. 1.14+ takes the shared HTTP client
+        // configured on the route instead, which also silences the deprecation
+        // warning for this field.
+        ...(httpClients ? {} : { download_detour: "DIRECT" }),
       };
       ruleSets.set(key, entry);
     }

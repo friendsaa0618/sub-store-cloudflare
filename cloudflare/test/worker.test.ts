@@ -423,6 +423,55 @@ describe("Worker and D1 integration", () => {
     const invalidToken = await workerRequest("/download/collection/ruleset-test/ruleset/reject", {}, false);
     expect(invalidToken.status).toBe(403);
   });
+
+  it("follows the client core version for the sing-box rule-set download channel", async () => {
+    const created = await workerRequest("/api/collections", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ id: "sing-box-ua", name: "Sing Box UA", templateId: "loyalsoldier-whitelist", sourceIds: [] }),
+    });
+    expect(created.status).toBeLessThan(300);
+
+    type Profile = {
+      http_clients?: Array<Record<string, unknown>>;
+      route: { default_http_client?: string; rule_set?: Array<Record<string, unknown>> };
+    };
+    const profile = async (userAgent?: string) => {
+      const response = await workerRequest(
+        `/download/collection/sing-box-ua/sing-box/${DOWNLOAD_TOKEN}`,
+        userAgent ? { headers: { "user-agent": userAgent } } : {},
+        false,
+      );
+      expect(response.status).toBe(200);
+      return JSON.parse(await response.text()) as Profile;
+    };
+
+    // The Apple and Android clients report the core version, so 1.14+ gets the
+    // shared HTTP client and no `download_detour` (the 1.14 migration warning).
+    const modern = await profile("SFI (sing-box 1.14.2; language zh_CN)");
+    expect(modern.http_clients).toEqual([{ tag: "rule-set-download", detour: "DIRECT" }]);
+    expect(modern.route.default_http_client).toBe("rule-set-download");
+    expect(modern.route.rule_set?.length).toBeGreaterThan(0);
+    expect(modern.route.rule_set?.every((entry) => entry.download_detour === undefined)).toBe(true);
+
+    // Older cores reject `http_clients` as an unknown field, and clients that
+    // hide their version keep the legacy form as well.
+    for (const userAgent of ["SFA (sing-box 1.13.0; language zh_CN)", undefined]) {
+      const legacy = await profile(userAgent);
+      expect(legacy.http_clients, `http_clients for ${userAgent}`).toBeUndefined();
+      expect(legacy.route.default_http_client).toBeUndefined();
+      expect(legacy.route.rule_set?.every((entry) => entry.download_detour === "DIRECT")).toBe(true);
+    }
+
+    // `?singboxHttpClients=` overrides the User-Agent detection.
+    const forced = await workerRequest(
+      `/download/collection/sing-box-ua/sing-box/${DOWNLOAD_TOKEN}?singboxHttpClients=1`,
+      {},
+      false,
+    );
+    expect(forced.status).toBe(200);
+    expect((JSON.parse(await forced.text()) as Profile).http_clients).toBeTruthy();
+  });
 });
 
 async function workerRequest(path: string, init: RequestInit = {}, includeAdmin = true) {

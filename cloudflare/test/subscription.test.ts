@@ -6,7 +6,7 @@ import {
   MAX_REMOTE_SOURCE_URLS,
 } from "../src/lib/limits";
 import { readResponseText } from "../src/lib/read";
-import { buildSubscription, buildSubscriptionResult, convertSubscriptionContent, normalizeTargetAlias, validateSubscriptionContent } from "../src/lib/subscription";
+import { buildSubscription, buildSubscriptionResult, convertSubscriptionContent, normalizeTargetAlias, singBoxSupportsHttpClients, validateSubscriptionContent } from "../src/lib/subscription";
 
 describe("subscription parsing and limits", () => {
   afterEach(() => vi.restoreAllMocks());
@@ -333,6 +333,78 @@ describe("subscription parsing and limits", () => {
     expect(config.route.rules).toContainEqual({ rule_set: ["reject"], outbound: "🛑 全球拦截" });
     expect(config.route.rules).toContainEqual({ rule_set: ["cncidr"], outbound: "DIRECT" });
     expect(config.route.final).toBe("🚀 节点选择");
+  });
+
+  it("switches to the shared HTTP client on sing-box 1.14+ cores", async () => {
+    const template = BUILTIN_TEMPLATES.find((entry) => entry.id === "loyalsoldier-whitelist");
+    expect(template).toBeDefined();
+    const source = {
+      id: "sing-box-http-clients",
+      name: "Sing Box HTTP Clients",
+      type: "local" as const,
+      url: "",
+      content: "trojan://password@example.com:443?sni=example.com#Trojan%20Node",
+    };
+    const build = (userAgent: string | undefined, query = "") => buildSubscription({
+      source,
+      collection: { id: "daily", name: "Daily", sourceIds: [], templateId: "loyalsoldier-whitelist" },
+      sources: [source],
+      requestUrl: new URL(`https://sub.example.com/download/collection/daily/sing-box/test-download-token${query}`),
+      target: "sing-box",
+      template: { id: template?.id, name: template?.name, target: "mihomo", config: template?.config || {} },
+      requestUserAgent: userAgent,
+    });
+    type Profile = {
+      http_clients?: Array<Record<string, unknown>>;
+      outbounds: Array<Record<string, unknown> & { type: string; tag?: string }>;
+      route: {
+        default_http_client?: string;
+        rule_set?: Array<Record<string, unknown>>;
+      };
+    };
+
+    // 1.14 deprecated `download_detour` and the implicit HTTP client; the
+    // profile has to move to `http_clients` + `route.default_http_client`, or
+    // the client shows a migration warning on every start.
+    const modern = JSON.parse(await build("SFI (sing-box 1.14.2; language zh_CN)")) as Profile;
+    expect(modern.http_clients).toEqual([{ tag: "rule-set-download", detour: "DIRECT" }]);
+    expect(modern.route.default_http_client).toBe("rule-set-download");
+    // The detour target must not be an empty direct outbound, so it carries a
+    // resolver for the rule-set host names.
+    expect(modern.outbounds.find((outbound) => outbound.tag === "DIRECT"))
+      .toEqual({ type: "direct", tag: "DIRECT", domain_resolver: "dns-bootstrap" });
+    expect(modern.route.rule_set?.length).toBe(15);
+    expect(modern.route.rule_set?.every((entry) => entry.download_detour === undefined)).toBe(true);
+
+    // 1.12/1.13 reject `http_clients` as an unknown field, so the older form
+    // stays in place for them and for clients that hide their version.
+    for (const userAgent of ["SFA (sing-box 1.13.0; language zh_CN)", undefined, "Clash.Meta/v1.19.31"]) {
+      const legacy = JSON.parse(await build(userAgent)) as Profile;
+      expect(legacy.http_clients, `http_clients for ${userAgent}`).toBeUndefined();
+      expect(legacy.route.default_http_client).toBeUndefined();
+      expect(legacy.outbounds.find((outbound) => outbound.tag === "DIRECT"))
+        .toEqual({ type: "direct", tag: "DIRECT" });
+      expect(legacy.route.rule_set?.every((entry) => entry.download_detour === "DIRECT")).toBe(true);
+    }
+
+    // `?singboxHttpClients=` covers clients that report a version the
+    // detection cannot read (for example a rewritten User-Agent).
+    const forcedOff = JSON.parse(await build("SFI (sing-box 1.15.0; language zh_CN)", "?singboxHttpClients=0")) as Profile;
+    expect(forcedOff.http_clients).toBeUndefined();
+    expect(forcedOff.route.rule_set?.every((entry) => entry.download_detour === "DIRECT")).toBe(true);
+    const forcedOn = JSON.parse(await build("SFI (sing-box 1.13.0; language zh_CN)", "?singboxHttpClients=1")) as Profile;
+    expect(forcedOn.http_clients).toEqual([{ tag: "rule-set-download", detour: "DIRECT" }]);
+    expect(forcedOn.route.rule_set?.every((entry) => entry.download_detour === undefined)).toBe(true);
+  });
+
+  it("detects the sing-box core version from the client User-Agent", () => {
+    expect(singBoxSupportsHttpClients("SFI (sing-box 1.14.2; language zh_CN)")).toBe(true);
+    expect(singBoxSupportsHttpClients("SFA (sing-box 1.13.0; language zh_CN)")).toBe(false);
+    expect(singBoxSupportsHttpClients("sing-box/1.15.0-beta.1")).toBe(true);
+    expect(singBoxSupportsHttpClients("sing-box 2.0.0")).toBe(true);
+    expect(singBoxSupportsHttpClients("sing-box 1.9.0")).toBe(false);
+    expect(singBoxSupportsHttpClients("Clash.Meta/v1.19.31")).toBe(false);
+    expect(singBoxSupportsHttpClients(undefined)).toBe(false);
   });
 
   it("skips Clash providers when the profile has no collection or token", async () => {
