@@ -1,6 +1,7 @@
 import JSON5 from "json5";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 export { normalizeTarget, normalizeTargetAlias } from "./targets";
+import { DEFAULT_RULESET_CDN } from "./defaults";
 import {
   MAX_DOH_RESPONSE_BYTES,
   MAX_REMOTE_SOURCE_RESPONSE_BYTES,
@@ -1775,7 +1776,7 @@ function renderBuildTarget(proxies: ProxyNode[], options: BuildOptions) {
   if (options.target === "egern") return renderEgernYaml(proxies);
   if (options.target === "shadowrocket") return renderProxyUris(proxies);
   if (options.target === "qx") return renderQxProxies(proxies);
-  if (options.target === "sing-box") return renderSingBoxJson(proxies, options.template?.config);
+  if (options.target === "sing-box") return renderSingBoxJson(proxies, options.template?.config, rulesetCdn);
   if (options.target === "v2ray") return base64Utf8(renderProxyUris(proxies));
   if (options.target === "uri") return renderProxyUris(proxies);
   if (options.target === "json") return JSON.stringify({ proxies }, null, 2);
@@ -2136,7 +2137,7 @@ const SING_BOX_POLICIES: Record<string, string> = {
 
 type SingBoxGroup = RenderedProxyGroup & { members: string[] };
 
-function renderSingBoxJson(proxies: ProxyNode[], template?: RoutingTemplateConfig) {
+function renderSingBoxJson(proxies: ProxyNode[], template?: RoutingTemplateConfig, rulesetCdn?: unknown) {
   const config = template || {};
   const nodes = proxies.map(toSingBoxNode).filter((node): node is SingBoxNode => Boolean(node));
   const tags = nodes.map((node) => String(node.kind === "outbound" ? node.outbound.tag : node.endpoint.tag));
@@ -2144,7 +2145,8 @@ function renderSingBoxJson(proxies: ProxyNode[], template?: RoutingTemplateConfi
 
   const groups = renderSingBoxGroups(tags, config);
   const policies = new Set([...Object.values(SING_BOX_POLICIES), ...groups.map((group) => String(group.tag))]);
-  const { rules, final } = renderSingBoxRules(config, policies, groups);
+  const cdn = rulesetCdnOrigin(rulesetCdn) || DEFAULT_RULESET_CDN;
+  const { rules, ruleSets, final } = renderSingBoxRules(config, policies, groups, cdn);
   const mixedPort = numberSetting(config.mixedPort ?? config["mixed-port"], 7890, 1, 65535);
   const allowLan = Boolean(config.allowLan ?? config["allow-lan"]);
 
@@ -2181,6 +2183,7 @@ function renderSingBoxJson(proxies: ProxyNode[], template?: RoutingTemplateConfi
       route: {
         auto_detect_interface: true,
         default_domain_resolver: { server: "dns-bootstrap" },
+        ...(ruleSets.length > 0 ? { rule_set: ruleSets } : {}),
         rules,
         final,
       },
@@ -2263,12 +2266,58 @@ function singBoxInterval(value: unknown) {
   return `${numberSetting(value, 300, 1, 86400)}s`;
 }
 
+// Rule providers that come from MetaCubeX/meta-rules-dat have a sing-box twin
+// on the `sing` branch, so `RULE-SET` rules can become real rule sets instead
+// of being dropped.
+const META_PROVIDER_URL = /^https:\/\/[^/]+\/gh\/MetaCubeX\/meta-rules-dat@meta\/geo\/(geosite|geoip)\/(.+)\.mrs$/;
+
+type SingBoxRuleSet = {
+  tag: string;
+  type: "remote";
+  format: "binary";
+  url: string;
+  update_interval: string;
+  download_detour: string;
+};
+
+function metaRulesetTarget(url: unknown) {
+  const match = META_PROVIDER_URL.exec(stringSetting(url));
+  return match ? { kind: match[1], name: match[2] } : undefined;
+}
+
+function singBoxRuleOutcome(tags: string[], policy: string) {
+  return policy === "REJECT" ? { rule_set: tags, action: "reject" } : { rule_set: tags, outbound: policy };
+}
+
 function renderSingBoxRules(
   config: RoutingTemplateConfig,
   policies: Set<string>,
   groups: Array<Record<string, unknown>>,
+  cdn: string,
 ) {
   const rules: Array<Record<string, unknown>> = [{ action: "sniff" }, { protocol: "dns", action: "hijack-dns" }];
+  const ruleSets = new Map<string, SingBoxRuleSet>();
+  const providers = (config.ruleProviders || config["rule-providers"] || {}) as Record<string, { url?: unknown }>;
+  const ruleSetFor = (kind: string, name: string, tag: string) => {
+    const key = `${kind}/${name}`;
+    let entry = ruleSets.get(key);
+    if (!entry) {
+      entry = {
+        tag,
+        type: "remote",
+        format: "binary",
+        url: `${cdn}/gh/MetaCubeX/meta-rules-dat@sing/geo/${kind}/${name}.srs`,
+        update_interval: "1d",
+        // sing-box 1.12/1.13 have no `http_clients`, and the implicit client
+        // downloads through the default outbound: the profile would fail to
+        // start whenever the proxy is down.
+        download_detour: "DIRECT",
+      };
+      ruleSets.set(key, entry);
+    }
+    return entry;
+  };
+
   let final = "";
   for (const rule of config.rules || []) {
     const parts = String(rule).split(",").map((part) => part.trim());
@@ -2277,14 +2326,32 @@ function renderSingBoxRules(
       if (policies.has(parts[1])) final = parts[1];
       break;
     }
+    if (type === "RULE-SET") {
+      const target = metaRulesetTarget(providers[parts[1]]?.url);
+      if (!target || !policies.has(parts[2])) continue;
+      rules.push(singBoxRuleOutcome([ruleSetFor(target.kind, target.name, parts[1]).tag], parts[2]));
+      continue;
+    }
+    if (type === "GEOIP") {
+      // Only ISO country codes: MetaCubeX publishes one rule set per country,
+      // and a missing file makes sing-box refuse to start.
+      const country = (parts[1] || "").toLowerCase();
+      if (!/^[a-z]{2}$/.test(country) || !policies.has(parts[2])) continue;
+      rules.push(singBoxRuleOutcome([ruleSetFor("geoip", country, `geoip-${country}`).tag], parts[2]));
+      continue;
+    }
     const field = SING_BOX_RULE_FIELDS[type];
     if (!field || !parts[1] || !policies.has(parts[2])) continue;
     rules.push({ [field]: [parts[1]], outbound: parts[2] });
   }
-  // Clash rule types that sing-box only accepts through `.srs` rule-sets
-  // (RULE-SET, GEOSITE, GEOIP, IP-ASN, SCRIPT, ...) are skipped instead of
+  // Rule providers without a MetaCubeX twin (Loyalsoldier lists, custom URLs)
+  // and rule types such as GEOSITE/SCRIPT/IP-ASN are skipped instead of
   // emitting rules the client cannot load.
-  return { rules, final: final || String(groups[0]?.tag || "PROXY") };
+  return {
+    rules,
+    ruleSets: [...ruleSets.values()],
+    final: final || String(groups[0]?.tag || "PROXY"),
+  };
 }
 
 function toSingBoxNode(proxy: ProxyNode): SingBoxNode | undefined {

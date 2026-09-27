@@ -171,10 +171,22 @@ Surge、Surfboard、Loon、Egern、Shadowrocket、Quantumult X、v2ray、URI 和
 | `DIRECT` / `REJECT` / `REJECT-DROP` | `DIRECT` / `REJECT` | `PASS` 和悬空引用会被丢弃，否则 sing-box 启动时报 `dependency[...] not found` |
 | `mixed-port` / `allow-lan` | `mixed` 入站的 `listen_port` / `listen` | |
 | `MATCH,<策略>` | `route.final` | 没有 MATCH 时使用第一个分组 |
+| `RULE-SET,<MetaCubeX 规则集>,<策略>` | `route.rule_set`（`sing` 分支的 `.srs`） | 见下 |
+| `GEOIP,<两位国家码>,<策略>` | `geoip/<国家码>.srs` | 例如 `GEOIP,CN` → `geoip/cn.srs` |
 
 规则按类型转换：`DOMAIN`、`DOMAIN-SUFFIX`、`DOMAIN-KEYWORD`、`DOMAIN-REGEX`、`IP-CIDR`、`IP-CIDR6`、`SRC-IP-CIDR`、`DST-PORT`、`SRC-PORT`、`PROCESS-NAME`、`PROCESS-PATH` 会写成 sing-box 的 route 规则。
 
-`RULE-SET`、`GEOSITE`、`GEOIP`、`IP-ASN`、`SCRIPT` 等规则会被跳过：sing-box 1.12 起移除了内置 `geoip` / `geosite` 规则，而 Clash 规则集（`.list` / `.txt` / `.yaml`）不能直接当作 sing-box 的 rule-set（sing-box 只接受 `.srs` 二进制或 sing-box source JSON）。命中这些规则的流量会落到 `route.final` 指向的分组。
+`RULE-SET` 规则引用的是 MetaCubeX/meta-rules-dat 规则集时（内置模板都是），会生成对应的远程 rule set：
+
+```json
+{ "type": "remote", "tag": "GFW", "format": "binary",
+  "url": "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/gfw.srs",
+  "update_interval": "1d", "download_detour": "DIRECT" }
+```
+
+同一份规则集只生成一次（例如 `ChinaIP` 和 `GEOIP,CN` 共用 `geoip/cn.srs`），策略是 `REJECT` 时写成 `action: "reject"`，其余写成 `outbound`。`download_detour: "DIRECT"` 是必需的：sing-box 1.12/1.13 没有 `http_clients`，不指定时规则集会走默认出站（也就是代理），代理不可用时整份配置直接启动失败。1.14 起该字段会给出弃用告警，等 1.16 真正移除后再按客户端版本切换到 `http_clients`。
+
+不是 MetaCubeX 的规则集（例如 Loyalsoldier 预设的 `.txt`）以及 `GEOSITE`、`IP-ASN`、`SCRIPT` 等规则会被跳过：sing-box 1.12 起移除了内置 `geoip` / `geosite`，Clash 规则集（`.list` / `.txt` / `.yaml`）也不是合法的 sing-box rule-set（只接受 `.srs` 二进制或 sing-box source JSON）。命中这些规则的流量会落到 `route.final` 指向的分组。
 
 没有可用模板时（例如集合未绑定模板），`sing-box` 输出回落到内置的 `PROXY` / `AUTO` 两个分组。
 

@@ -13,6 +13,7 @@ This project follows semantic versioning where practical.
 ### Changed
 
 - Built-in Mihomo templates now take their rule data from [MetaCubeX/meta-rules-dat](https://github.com/MetaCubeX/meta-rules-dat) instead of the ACL4SSR `.list`, Loyalsoldier `.txt`, and blackmatrix `.yaml` files: `acl4ssr-mihomo`, `acl4ssr-mihomo-no-emoji`, and `ai-streaming-mihomo` use compiled `.mrs` rule sets (`format: mrs`) served from `cdn.jsdelivr.net`, which also fixes the `SteamCN` provider that pointed at a 404 URL. `settings.rulesetCdn` switches the CDN host. The `loyalsoldier-*` templates keep their own lists because `reject`, `direct`, and `tld-not-cn` have no MetaCubeX equivalent.
+- The `sing-box` output consumes those same rule sets: `RULE-SET` rules that reference a MetaCubeX provider become remote `.srs` rule sets (`format: binary`, `download_detour: "DIRECT"`) and `GEOIP,<country>` maps to the matching country rule set, so sing-box now follows the template's routing instead of only its groups. Rule sets are emitted once per file, a `REJECT` policy becomes `action: "reject"`, and `settings.rulesetCdn` applies here as well.
 - Removed unused bottom TabBar and SideBar chrome now that navigation lives in the top segmented control.
 
 ### Fixed
