@@ -27,6 +27,7 @@ Cloudflare Worker
   |-- /api/recycle-bin               有上限的配置回收站
   |-- /download/source/:id[/:target]   单订阅源输出
   |-- /download/collection/:id[/:target] 组合订阅输出
+  |-- /download/collection/:id/ruleset/:provider Clash 规则集转成 sing-box rule set
   |
   |-- D1                             配置 / download_grants / recycle_bin
   |-- Cache API                      可选远程订阅短期缓存
@@ -186,7 +187,15 @@ Surge、Surfboard、Loon、Egern、Shadowrocket、Quantumult X、v2ray、URI 和
 
 同一份规则集只生成一次（例如 `ChinaIP` 和 `GEOIP,CN` 共用 `geoip/cn.srs`），策略是 `REJECT` 时写成 `action: "reject"`，其余写成 `outbound`。`download_detour: "DIRECT"` 是必需的：sing-box 1.12/1.13 没有 `http_clients`，不指定时规则集会走默认出站（也就是代理），代理不可用时整份配置直接启动失败。1.14 起该字段会给出弃用告警，等 1.16 真正移除后再按客户端版本切换到 `http_clients`。
 
-不是 MetaCubeX 的规则集（例如 Loyalsoldier 预设的 `.txt`）以及 `GEOSITE`、`IP-ASN`、`SCRIPT` 等规则会被跳过：sing-box 1.12 起移除了内置 `geoip` / `geosite`，Clash 规则集（`.list` / `.txt` / `.yaml`）也不是合法的 sing-box rule-set（只接受 `.srs` 二进制或 sing-box source JSON）。命中这些规则的流量会落到 `route.final` 指向的分组。
+不是 MetaCubeX 的规则集（例如 Loyalsoldier 预设的 `.txt`、自定义 URL）会由 Worker 转换后提供：`/download/collection/<collection-id>/ruleset/<provider>?token=<download-token>` 拉取模板里那个 provider，按 `payload` YAML 或 Surge 风格文本解析，输出 sing-box source 格式（`+.domain` → `domain_suffix`、裸域名 → `domain_suffix`、CIDR → `ip_cidr`、`DOMAIN-KEYWORD,` → `domain_keyword`、`PROCESS-NAME,` → `process_name`），结果按 provider 的 `interval` 缓存在 Cache API。profile 里对应写成：
+
+```json
+{ "type": "remote", "tag": "reject", "format": "source",
+  "url": "https://<your-domain>/download/collection/<id>/ruleset/reject?token=<download-token>",
+  "update_interval": "1d", "download_detour": "DIRECT" }
+```
+
+这条路径只在集合下载（URL 里带 download token）时生效；用 `convertSubscriptionContent` 这类没有集合上下文的方式渲染时会跳过这些规则。`GEOSITE`、`IP-ASN`、`SCRIPT` 等规则在任何情况下都会被跳过，命中它们的流量会落到 `route.final` 指向的分组。
 
 没有可用模板时（例如集合未绑定模板），`sing-box` 输出回落到内置的 `PROXY` / `AUTO` 两个分组。
 

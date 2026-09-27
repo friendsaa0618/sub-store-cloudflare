@@ -284,21 +284,72 @@ describe("subscription parsing and limits", () => {
     expect(config.route.rules).toContainEqual({ rule_set: ["Ads"], action: "reject" });
   });
 
-  it("keeps non-MetaCubeX providers out of the sing-box rule sets", async () => {
+  it("converts non-MetaCubeX providers through the Worker rule-set route", async () => {
+    const template = BUILTIN_TEMPLATES.find((entry) => entry.id === "loyalsoldier-whitelist");
+    expect(template).toBeDefined();
+    const source = {
+      id: "sing-box-loyalsoldier",
+      name: "Sing Box Loyalsoldier",
+      type: "local" as const,
+      url: "",
+      content: "trojan://password@example.com:443?sni=example.com#Trojan%20Node",
+    };
+    const output = await buildSubscription({
+      source,
+      collection: { id: "daily", name: "Daily", sourceIds: [], templateId: "loyalsoldier-whitelist" },
+      sources: [source],
+      requestUrl: new URL("https://sub.example.com/download/collection/daily/sing-box/test-download-token"),
+      target: "sing-box",
+      template: { id: template?.id, name: template?.name, target: "mihomo", config: template?.config || {} },
+    });
+    const config = JSON.parse(output) as {
+      route: {
+        rules: Array<Record<string, unknown>>;
+        rule_set?: Array<Record<string, unknown>>;
+        final?: string;
+      };
+    };
+    // Every Loyalsoldier provider is served by the Worker in the sing-box source
+    // format, because sing-box cannot read Clash payload lists; `GEOIP,CN` adds
+    // the MetaCubeX country rule set on top.
+    const ruleSets = config.route.rule_set || [];
+    expect(ruleSets.length).toBe(15);
+    expect(ruleSets.find((entry) => entry.tag === "geoip-cn")).toEqual({
+      tag: "geoip-cn",
+      type: "remote",
+      format: "binary",
+      url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/cn.srs",
+      update_interval: "1d",
+      download_detour: "DIRECT",
+    });
+    expect(ruleSets.find((entry) => entry.tag === "reject")).toEqual({
+      tag: "reject",
+      type: "remote",
+      format: "source",
+      url: "https://sub.example.com/download/collection/daily/ruleset/reject?token=test-download-token",
+      update_interval: "1d",
+      download_detour: "DIRECT",
+    });
+    expect(config.route.rules).toContainEqual({ rule_set: ["reject"], outbound: "🛑 全球拦截" });
+    expect(config.route.rules).toContainEqual({ rule_set: ["cncidr"], outbound: "DIRECT" });
+    expect(config.route.final).toBe("🚀 节点选择");
+  });
+
+  it("skips Clash providers when the profile has no collection or token", async () => {
     const output = await buildSubscription({
       source: {
-        id: "sing-box-loyalsoldier",
-        name: "Sing Box Loyalsoldier",
+        id: "sing-box-no-token",
+        name: "Sing Box No Token",
         type: "local",
         url: "",
         content: "trojan://password@example.com:443?sni=example.com#Trojan%20Node",
       },
       sources: [],
-      requestUrl: new URL("https://example.com/download/collection/sing-box-loyalsoldier/sing-box"),
+      requestUrl: new URL("https://example.com/download/collection/sing-box-no-token/sing-box"),
       target: "sing-box",
       template: {
-        id: "loyalsoldier",
-        name: "Loyalsoldier",
+        id: "custom",
+        name: "Custom",
         target: "mihomo",
         config: {
           proxyGroups: [{ name: "🚀 节点选择", type: "select", proxies: ["$all"] }],
