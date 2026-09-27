@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { classifyRuleProviderEntry, toSingBoxRuleSet } from "../src/lib/ruleset";
+import { classifyRuleProviderEntry, loadConvertedRuleSet, toSingBoxRuleSet } from "../src/lib/ruleset";
 
 describe("Clash rule provider conversion", () => {
   it("converts Loyalsoldier-style YAML payloads", () => {
@@ -80,5 +80,19 @@ describe("Clash rule provider conversion", () => {
   it("handles empty and comment-only payloads", () => {
     expect(toSingBoxRuleSet("")).toEqual({ version: 1, rules: [] });
     expect(toSingBoxRuleSet("# nothing here\n")).toEqual({ version: 1, rules: [] });
+  });
+
+  it("caches converted documents under a converter version", async () => {
+    const requested: string[] = [];
+    const fetcher = (async (input: RequestInfo | URL) => {
+      requested.push(String(input));
+      return new Response("payload:\n  - 'cached.example'\n", { status: 200 });
+    }) as typeof fetch;
+    const first = await loadConvertedRuleSet("https://upstream.example/list.txt", 86400, fetcher);
+    const second = await loadConvertedRuleSet("https://upstream.example/list.txt", 86400, fetcher);
+    // The second call is served from the Cache API instead of upstream.
+    expect(requested).toHaveLength(1);
+    expect(await second.clone().text()).toBe(await first.clone().text());
+    expect(await second.json()).toEqual({ version: 1, rules: [{ domain_suffix: ["cached.example"] }] });
   });
 });

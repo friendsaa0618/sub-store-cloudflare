@@ -91,6 +91,10 @@ export function toSingBoxRuleSet(text: string): SingBoxRuleSetDocument {
   return { version: 1, rules };
 }
 
+// Bumped whenever the converter output changes, so a deploy does not keep
+// serving documents that were cached with the previous rules.
+const RULESET_CONVERTER_VERSION = 2;
+
 // Clash rule providers cannot be referenced from sing-box directly: it only
 // reads `source` (JSON) or `binary` (.srs) rule sets. Converted documents are
 // cached so repeated client refreshes do not re-download and re-parse the
@@ -100,7 +104,7 @@ export async function loadConvertedRuleSet(
   ttlSeconds: number,
   fetcher: typeof fetch = fetch,
 ) {
-  const key = await ruleSetCacheKey(url);
+  const key = await ruleSetCacheKey(`${RULESET_CONVERTER_VERSION}\n${url}`);
   const cached = await safeCacheMatch(key);
   if (cached) return cached;
   const response = await fetcher(url, { headers: { accept: "text/plain, application/yaml, text/yaml, */*" } });
