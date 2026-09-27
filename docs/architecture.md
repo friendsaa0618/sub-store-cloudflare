@@ -144,7 +144,27 @@ Cloudflare Worker
 - `rule-providers`
 - `rules`
 
-`proxyGroups[].proxies` 或 `proxy-groups[].proxies` 里可以使用 `$all`，生成时会展开为当前组合订阅里的全部节点。空的或只引用已删除组的 `proxy-groups` 不会写进最终 YAML。内置 ACL4SSR `.list` 规则集会带上 `format: text`；Loyalsoldier / blackmatrix 规则集使用 YAML payload，因此是 `format: yaml`。Surge、Surfboard、Loon、Egern、Shadowrocket、Quantumult X、sing-box、v2ray、URI 和 JSON 输出使用同一套节点解析与过滤结果，但不读取 Mihomo 规则模板。
+`proxyGroups[].proxies` 或 `proxy-groups[].proxies` 里可以使用 `$all`，生成时会展开为当前组合订阅里的全部节点。空的或只引用已删除组的 `proxy-groups` 不会写进最终 YAML。内置 ACL4SSR `.list` 规则集会带上 `format: text`；Loyalsoldier / blackmatrix 规则集使用 YAML payload，因此是 `format: yaml`。Surge、Surfboard、Loon、Egern、Shadowrocket、Quantumult X、v2ray、URI 和 JSON 输出使用同一套节点解析与过滤结果，但不读取 Mihomo 规则模板；`sing-box` 输出会读取同一份模板的分组与可转换规则，见下一节。
+
+## sing-box 与 Mihomo 模板的对应关系
+
+集合绑定的模板同时驱动 Mihomo 和 sing-box 输出，`sing-box` 输出会尽量贴近 Mihomo 链接的分组：
+
+| Mihomo | sing-box | 说明 |
+| --- | --- | --- |
+| `select` | `selector` | 保留成员顺序，默认选中第一个成员 |
+| `url-test` | `urltest` | `interval`（秒）转成 sing-box 的时长字符串；`tolerance` 单位都是毫秒 |
+| `fallback` / `load-balance` | `selector` | sing-box 1.13 起移除了这两种出站类型，降级为手动选择 |
+| `$all` / `filter` | 相同 | 只展开当前组合里实际存在、且 sing-box 支持的节点 |
+| `DIRECT` / `REJECT` / `REJECT-DROP` | `DIRECT` / `REJECT` | `PASS` 和悬空引用会被丢弃，否则 sing-box 启动时报 `dependency[...] not found` |
+| `mixed-port` / `allow-lan` | `mixed` 入站的 `listen_port` / `listen` | |
+| `MATCH,<策略>` | `route.final` | 没有 MATCH 时使用第一个分组 |
+
+规则按类型转换：`DOMAIN`、`DOMAIN-SUFFIX`、`DOMAIN-KEYWORD`、`DOMAIN-REGEX`、`IP-CIDR`、`IP-CIDR6`、`SRC-IP-CIDR`、`DST-PORT`、`SRC-PORT`、`PROCESS-NAME`、`PROCESS-PATH` 会写成 sing-box 的 route 规则。
+
+`RULE-SET`、`GEOSITE`、`GEOIP`、`IP-ASN`、`SCRIPT` 等规则会被跳过：sing-box 1.12 起移除了内置 `geoip` / `geosite` 规则，而 Clash 规则集（`.list` / `.txt` / `.yaml`）不能直接当作 sing-box 的 rule-set（sing-box 只接受 `.srs` 二进制或 sing-box source JSON）。命中这些规则的流量会落到 `route.final` 指向的分组。
+
+没有可用模板时（例如集合未绑定模板），`sing-box` 输出回落到内置的 `PROXY` / `AUTO` 两个分组。
 
 ## 为什么只用 D1
 
