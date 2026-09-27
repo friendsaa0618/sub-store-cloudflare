@@ -874,12 +874,31 @@ function parseVless(line: string, index: number): ProxyNode {
     udp: true,
     flow: params.get("flow") || undefined,
     network: params.get("type") || "tcp",
+    ...uriTransportOptions(params),
     tls: security !== "none",
     servername: params.get("sni") || undefined,
     encryption: params.get("encryption") || "none",
     "client-fingerprint": params.get("fp") || "chrome",
     "reality-opts": publicKey ? stripUndefined({ "public-key": publicKey, "short-id": shortId, "spider-x": params.get("spx") || "/" }) : undefined,
   });
+}
+
+// VLESS and trojan share links carry the transport in the same `type` /
+// `path` / `host` / `serviceName` parameters, so keep the Clash-shaped
+// options in one place instead of dropping them.
+function uriTransportOptions(params: URLSearchParams) {
+  const network = params.get("type") || "tcp";
+  const host = params.get("host");
+  if (network === "ws") {
+    return { "ws-opts": stripUndefined({ path: params.get("path") || "/", headers: host ? { Host: host } : undefined }) };
+  }
+  if (network === "grpc") {
+    return { "grpc-opts": stripUndefined({ "grpc-service-name": params.get("serviceName") || params.get("path") || undefined }) };
+  }
+  if (network === "h2" || network === "http") {
+    return { "h2-opts": stripUndefined({ host: host ? [host] : undefined, path: params.get("path") || undefined }) };
+  }
+  return {};
 }
 
 function parseAnytls(line: string, index: number): ProxyNode {
@@ -935,15 +954,19 @@ function parseHysteria(line: string, index: number): ProxyNode {
 
 function parseTrojan(line: string, index: number): ProxyNode {
   const url = new URL(line);
+  const params = url.searchParams;
+  const network = params.get("type");
   return stripUndefined({
     name: decodeURIComponent(url.hash.slice(1) || `trojan-${index + 1}`),
     type: "trojan",
     server: url.hostname,
     port: Number(url.port || 443),
     password: decodeURIComponent(url.username),
-    sni: url.searchParams.get("sni") || url.searchParams.get("peer") || undefined,
-    "skip-cert-verify": boolParam(url.searchParams.get("allowInsecure")),
+    sni: params.get("sni") || params.get("peer") || undefined,
+    "skip-cert-verify": boolParam(params.get("allowInsecure")),
     udp: true,
+    ...(network ? { network } : {}),
+    ...uriTransportOptions(params),
   });
 }
 
@@ -2123,7 +2146,8 @@ function toSingBoxOutbound(proxy: ProxyNode): SingBoxOutbound | undefined {
       server_port: proxy.port,
       uuid: proxy.uuid,
       flow: proxy.flow,
-      network: proxy.network || "tcp",
+      network: singBoxNetwork(proxy),
+      transport: singBoxTransport(proxy),
       packet_encoding: "xudp",
       tls: proxy.tls
         ? stripUndefined({
@@ -2203,6 +2227,7 @@ function toSingBoxOutbound(proxy: ProxyNode): SingBoxOutbound | undefined {
       server_port: proxy.port,
       password: proxy.password,
       tls: { enabled: true, server_name: proxy.sni, insecure: Boolean(proxy["skip-cert-verify"]) },
+      transport: singBoxTransport(proxy),
     });
   }
 
@@ -2252,18 +2277,45 @@ function toSingBoxOutbound(proxy: ProxyNode): SingBoxOutbound | undefined {
       security: proxy.cipher || "auto",
       alter_id: proxy.alterId,
       tls: proxy.tls ? { enabled: true, server_name: proxy.servername } : undefined,
-      transport:
-        proxy.network === "ws"
-          ? {
-              type: "ws",
-              path: (proxy["ws-opts"] as { path?: unknown } | undefined)?.path || "/",
-              headers: (proxy["ws-opts"] as { headers?: unknown } | undefined)?.headers,
-            }
-          : undefined,
+      transport: singBoxTransport(proxy),
     });
   }
 
   return undefined;
+}
+
+// sing-box keeps the transport in `transport`, while Clash stores it in
+// `network`; `network` only accepts tcp/udp, so writing the Clash value there
+// makes the whole profile fail to decode.
+function singBoxTransport(proxy: ProxyNode) {
+  const network = stringSetting(proxy.network);
+  if (network === "ws" || network === "httpupgrade") {
+    const wsOpts = proxy["ws-opts"] as { path?: unknown; headers?: unknown } | undefined;
+    return stripUndefined({
+      type: network,
+      path: stringSetting(wsOpts?.path) || "/",
+      headers: wsOpts?.headers,
+    });
+  }
+  if (network === "grpc") {
+    const grpcOpts = proxy["grpc-opts"] as { "grpc-service-name"?: unknown } | undefined;
+    return stripUndefined({ type: "grpc", service_name: stringSetting(grpcOpts?.["grpc-service-name"]) });
+  }
+  if (network === "h2" || network === "http") {
+    const h2Opts = proxy["h2-opts"] as { host?: unknown; path?: unknown } | undefined;
+    const host = Array.isArray(h2Opts?.host)
+      ? h2Opts.host.map(String)
+      : stringSetting(h2Opts?.host)
+        ? [stringSetting(h2Opts?.host)]
+        : undefined;
+    return stripUndefined({ type: "http", host, path: stringSetting(h2Opts?.path) });
+  }
+  return undefined;
+}
+
+function singBoxNetwork(proxy: ProxyNode) {
+  const network = stringSetting(proxy.network);
+  return network === "tcp" || network === "udp" ? network : undefined;
 }
 
 function toSingBoxEndpoint(proxy: ProxyNode): SingBoxEndpoint | undefined {

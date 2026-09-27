@@ -28,6 +28,7 @@ This project follows semantic versioning where practical.
 - Workers Builds install now sees `@playwright/test` in the root lockfile and skips Playwright browser download during deploy.
 - Built-in ACL4SSR rule providers now set `format: text` so Mihomo can load `.list` files instead of treating them as YAML.
 - Template rendering now drops dangling proxy-group references and uses the first rendered group for an empty-rule fallback MATCH.
+- VLESS and trojan share links keep their transport parameters (`type`, `path`, `host`, `serviceName`), so WebSocket, gRPC and HTTP/2 nodes render with their real path and host instead of an empty default. The sing-box output writes them into `transport`, because sing-box only accepts `tcp` / `udp` in `network` and otherwise rejects the whole profile with `decode config: outbounds[n].network: unknown network: ws`.
 
 ## [1.1.0] - 2026-07-11
 
