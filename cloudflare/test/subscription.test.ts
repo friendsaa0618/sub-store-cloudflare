@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { BUILTIN_TEMPLATES } from "../src/lib/defaults";
 import {
   MAX_REMOTE_SOURCE_RESPONSE_BYTES,
   MAX_REMOTE_SOURCE_URLS,
@@ -100,6 +101,118 @@ describe("subscription parsing and limits", () => {
     });
     expect(config.outbounds.find((outbound) => outbound.tag === "PROXY")?.outbounds).toEqual(["AUTO", "Trojan Node", "WireGuard Node"]);
     expect(config.outbounds.find((outbound) => outbound.tag === "AUTO")?.outbounds).toEqual(["Trojan Node", "WireGuard Node"]);
+  });
+
+  it("mirrors the routing template groups and rules in the sing-box profile", async () => {
+    const output = await buildSubscription({
+      source: {
+        id: "sing-box-template",
+        name: "Sing Box Template",
+        type: "local",
+        url: "",
+        content: [
+          "trojan://password@example.com:443?sni=example.com#Trojan%20Node",
+          "wireguard://YNXtAzepDqRv9H52osJVDQnznT5AM11eCK3ESpwSt04%3D@wg.example.com:51820?ip=10.0.0.2&ipv6=fd00%3A%3A2&public-key=Z1XXLsKYkYxuiYjJIkRvtIKFepCYHTgON%2BGwPq7SOV4%3D&reserved=1%2C2%2C3#WireGuard%20Node",
+        ].join("\n"),
+      },
+      sources: [],
+      requestUrl: new URL("https://example.com/download/collection/sing-box-template/sing-box"),
+      target: "sing-box",
+      template: {
+        id: "template-sync",
+        name: "Template Sync",
+        target: "mihomo",
+        config: {
+          mixedPort: 7897,
+          allowLan: true,
+          proxyGroups: [
+            { name: "🚀 节点选择", type: "select", proxies: ["♻️ 自动选择", "DIRECT"] },
+            { name: "♻️ 自动选择", type: "url-test", filter: "Trojan|WireGuard", interval: 600, tolerance: 80 },
+            { name: "🧪 备用", type: "fallback", proxies: ["♻️ 自动选择", "PASS", "Missing Group"] },
+            { name: "🗑️ 空组", type: "select", proxies: ["PASS"] },
+          ],
+          rules: [
+            "DOMAIN-SUFFIX,openai.com,🚀 节点选择",
+            "IP-CIDR,10.0.0.0/8,DIRECT,no-resolve",
+            "RULE-SET,ProxyGFWlist,🚀 节点选择",
+            "GEOIP,CN,DIRECT",
+            "MATCH,🚀 节点选择",
+          ],
+        },
+      },
+    });
+    const config = JSON.parse(output) as {
+      dns: { servers: Array<Record<string, unknown>> };
+      inbounds: Array<Record<string, unknown>>;
+      outbounds: Array<Record<string, unknown> & { type: string; tag?: string }>;
+      route: { rules: Array<Record<string, unknown>>; final?: string };
+    };
+    // The collection template now drives the sing-box profile, so the client
+    // shows the same groups as the Mihomo link instead of PROXY/AUTO.
+    expect(config.outbounds.filter((outbound) => ["selector", "urltest"].includes(outbound.type))).toEqual([
+      {
+        type: "selector",
+        tag: "🚀 节点选择",
+        outbounds: ["♻️ 自动选择", "DIRECT"],
+        default: "♻️ 自动选择",
+        interrupt_exist_connections: false,
+      },
+      {
+        type: "urltest",
+        tag: "♻️ 自动选择",
+        outbounds: ["Trojan Node", "WireGuard Node"],
+        url: "https://www.gstatic.com/generate_204",
+        interval: "600s",
+        tolerance: 80,
+        interrupt_exist_connections: false,
+      },
+      {
+        type: "selector",
+        tag: "🧪 备用",
+        outbounds: ["♻️ 自动选择"],
+        default: "♻️ 自动选择",
+        interrupt_exist_connections: false,
+      },
+    ]);
+    expect(config.outbounds.some((outbound) => outbound.tag === "PROXY" || outbound.tag === "AUTO")).toBe(false);
+    expect(config.inbounds[1]).toEqual({ type: "mixed", tag: "mixed-in", listen: "0.0.0.0", listen_port: 7897 });
+    expect(config.route.rules).toEqual([
+      { action: "sniff" },
+      { protocol: "dns", action: "hijack-dns" },
+      { domain_suffix: ["openai.com"], outbound: "🚀 节点选择" },
+      { ip_cidr: ["10.0.0.0/8"], outbound: "DIRECT" },
+    ]);
+    expect(config.route.final).toBe("🚀 节点选择");
+    expect(config.dns.servers[0]).toEqual({ tag: "dns-proxy", type: "tls", server: "1.1.1.1", detour: "🚀 节点选择" });
+  });
+
+  it("keeps sing-box group names aligned with the built-in Mihomo template", async () => {
+    const template = BUILTIN_TEMPLATES.find((entry) => entry.id === "acl4ssr-mihomo");
+    expect(template).toBeDefined();
+    const output = await buildSubscription({
+      source: {
+        id: "sing-box-parity",
+        name: "Sing Box Parity",
+        type: "local",
+        url: "",
+        content: "trojan://password@example.com:443?sni=example.com#Trojan%20Node",
+      },
+      sources: [],
+      requestUrl: new URL("https://example.com/download/collection/sing-box-parity/sing-box"),
+      target: "sing-box",
+      template: { id: template?.id, name: template?.name, target: "mihomo", config: template?.config || {} },
+    });
+    const config = JSON.parse(output) as {
+      outbounds: Array<Record<string, unknown> & { type: string; tag?: string }>;
+      route: { final?: string; rules: Array<Record<string, unknown>> };
+    };
+    const groupNames = (template?.config.proxyGroups || []).map((group) => group.name);
+    expect(config.outbounds.filter((outbound) => ["selector", "urltest"].includes(outbound.type)).map((outbound) => outbound.tag))
+      .toEqual(groupNames);
+    // RULE-SET and GEOIP rules need `.srs` rule-sets, so they are skipped and
+    // the profile falls back to the template's MATCH policy.
+    expect(config.route.rules).toEqual([{ action: "sniff" }, { protocol: "dns", action: "hijack-dns" }]);
+    expect(config.route.final).toBe("🐟 漏网之鱼");
   });
 
   it("parses JSON5 and converts Surge Mac-only node types", async () => {

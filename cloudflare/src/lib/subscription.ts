@@ -1533,7 +1533,7 @@ function renderMihomoYaml(proxies: ProxyNode[], requestUrl: URL, template?: Rout
   const logLevel = config.logLevel || config["log-level"] || "info";
   const proxyGroups = config.proxyGroups || config["proxy-groups"] || defaultProxyGroups();
   const ruleProviders = config.ruleProviders || config["rule-providers"];
-  const renderedGroups = renderTemplateProxyGroups(proxies, proxyGroups);
+  const renderedGroups = renderTemplateProxyGroups(proxies.map((proxy) => proxy.name), proxyGroups);
   const fallbackPolicy = renderedGroups[0]?.name || "DIRECT";
   const hasRuleProviders = Boolean(ruleProviders && Object.keys(ruleProviders).length > 0);
   const document = {
@@ -1562,8 +1562,7 @@ function defaultProxyGroups(): TemplateProxyGroup[] {
 
 type RenderedProxyGroup = Omit<TemplateProxyGroup, "filter" | "proxies"> & { proxies: string[] };
 
-function renderTemplateProxyGroups(proxies: ProxyNode[], groupTemplates: TemplateProxyGroup[]): RenderedProxyGroup[] {
-  const nodeNames = proxies.map((proxy) => proxy.name);
+function renderTemplateProxyGroups(nodeNames: string[], groupTemplates: TemplateProxyGroup[]): RenderedProxyGroup[] {
   const nodeNameSet = new Set(nodeNames);
   const allowedLiterals = new Set(["DIRECT", "REJECT", "REJECT-DROP", "PASS"]);
   const expanded = groupTemplates.map((group) => ({
@@ -1722,7 +1721,7 @@ function renderTarget(proxies: ProxyNode[], target: SubscriptionTarget, template
   if (target === "loon") return renderLoonProxies(proxies);
   if (target === "egern") return renderEgernYaml(proxies);
   if (target === "qx") return renderQxProxies(proxies);
-  if (target === "sing-box") return renderSingBoxJson(proxies);
+  if (target === "sing-box") return renderSingBoxJson(proxies, template);
   if (target === "v2ray") return base64Utf8(renderProxyUris(proxies));
   if (target === "uri" || target === "shadowrocket") return renderProxyUris(proxies);
   return JSON.stringify({ proxies }, null, 2);
@@ -1737,7 +1736,7 @@ function renderBuildTarget(proxies: ProxyNode[], options: BuildOptions) {
   if (options.target === "egern") return renderEgernYaml(proxies);
   if (options.target === "shadowrocket") return renderProxyUris(proxies);
   if (options.target === "qx") return renderQxProxies(proxies);
-  if (options.target === "sing-box") return renderSingBoxJson(proxies);
+  if (options.target === "sing-box") return renderSingBoxJson(proxies, options.template?.config);
   if (options.target === "v2ray") return base64Utf8(renderProxyUris(proxies));
   if (options.target === "uri") return renderProxyUris(proxies);
   if (options.target === "json") return JSON.stringify({ proxies }, null, 2);
@@ -2067,28 +2066,51 @@ function formatAlpn(value: unknown) {
   return stringSetting(value);
 }
 
-function renderSingBoxJson(proxies: ProxyNode[]) {
+const SING_BOX_GROUP_TYPES: Record<string, "selector" | "urltest"> = {
+  select: "selector",
+  "url-test": "urltest",
+  // Clash `fallback` and `load-balance` groups were removed from sing-box 1.13,
+  // so they degrade to a selector that keeps the same member order.
+  fallback: "selector",
+  "load-balance": "selector",
+};
+
+const SING_BOX_RULE_FIELDS: Record<string, string> = {
+  DOMAIN: "domain",
+  "DOMAIN-SUFFIX": "domain_suffix",
+  "DOMAIN-KEYWORD": "domain_keyword",
+  "DOMAIN-REGEX": "domain_regex",
+  "IP-CIDR": "ip_cidr",
+  "IP-CIDR6": "ip_cidr",
+  "SRC-IP-CIDR": "source_ip_cidr",
+  "DST-PORT": "port",
+  "SRC-PORT": "source_port",
+  "PROCESS-NAME": "process_name",
+  "PROCESS-PATH": "process_path",
+};
+
+const SING_BOX_POLICIES: Record<string, string> = {
+  DIRECT: "DIRECT",
+  REJECT: "REJECT",
+  "REJECT-DROP": "REJECT",
+};
+
+type SingBoxGroup = RenderedProxyGroup & { members: string[] };
+
+function renderSingBoxJson(proxies: ProxyNode[], template?: RoutingTemplateConfig) {
+  const config = template || {};
   const nodes = proxies.map(toSingBoxNode).filter((node): node is SingBoxNode => Boolean(node));
   const tags = nodes.map((node) => String(node.kind === "outbound" ? node.outbound.tag : node.endpoint.tag));
   if (tags.length === 0) throw new Error("No supported nodes for sing-box output");
 
+  const groups = renderSingBoxGroups(tags, config);
+  const policies = new Set([...Object.values(SING_BOX_POLICIES), ...groups.map((group) => String(group.tag))]);
+  const { rules, final } = renderSingBoxRules(config, policies, groups);
+  const mixedPort = numberSetting(config.mixedPort ?? config["mixed-port"], 7890, 1, 65535);
+  const allowLan = Boolean(config.allowLan ?? config["allow-lan"]);
+
   const outbounds = [
-    {
-      type: "selector",
-      tag: "PROXY",
-      outbounds: ["AUTO", ...tags],
-      default: "AUTO",
-      interrupt_exist_connections: false,
-    },
-    {
-      type: "urltest",
-      tag: "AUTO",
-      outbounds: tags,
-      url: TEST_URL,
-      interval: "5m",
-      tolerance: 50,
-      interrupt_exist_connections: false,
-    },
+    ...groups,
     ...nodes.flatMap((node) => (node.kind === "outbound" ? [node.outbound] : [])),
     { type: "direct", tag: "DIRECT" },
     { type: "block", tag: "REJECT" },
@@ -2100,7 +2122,7 @@ function renderSingBoxJson(proxies: ProxyNode[]) {
       log: { level: "info" },
       dns: {
         servers: [
-          { tag: "dns-proxy", type: "tls", server: "1.1.1.1", detour: "PROXY" },
+          { tag: "dns-proxy", type: "tls", server: "1.1.1.1", detour: final === "REJECT" ? "DIRECT" : final },
           { tag: "dns-bootstrap", type: "udp", server: "223.5.5.5" },
         ],
         final: "dns-proxy",
@@ -2113,20 +2135,117 @@ function renderSingBoxJson(proxies: ProxyNode[]) {
           auto_route: true,
           strict_route: true,
         },
-        { type: "mixed", tag: "mixed-in", listen: "127.0.0.1", listen_port: 7890 },
+        { type: "mixed", tag: "mixed-in", listen: allowLan ? "0.0.0.0" : "127.0.0.1", listen_port: mixedPort },
       ],
       ...(endpoints.length > 0 ? { endpoints } : {}),
       outbounds,
       route: {
         auto_detect_interface: true,
         default_domain_resolver: { server: "dns-bootstrap" },
-        rules: [{ action: "sniff" }, { protocol: "dns", action: "hijack-dns" }],
-        final: "PROXY",
+        rules,
+        final,
       },
     },
     null,
     2,
   );
+}
+
+function renderSingBoxGroups(nodeTags: string[], config: RoutingTemplateConfig): Array<Record<string, unknown>> {
+  const groupTemplates = config.proxyGroups || config["proxy-groups"];
+  if (!groupTemplates || groupTemplates.length === 0) return defaultSingBoxGroups(nodeTags);
+
+  let groups = singBoxGroupCandidates(nodeTags, groupTemplates, new Set(nodeTags));
+  // Dropping a group also invalidates members that reference it, so repeat
+  // until the surviving groups stop shrinking.
+  for (let pass = 0; pass < groupTemplates.length + 1; pass += 1) {
+    const available = new Set([...nodeTags, ...groups.map((group) => String(group.name))]);
+    const next = singBoxGroupCandidates(nodeTags, groupTemplates, available);
+    if (JSON.stringify(next) === JSON.stringify(groups)) break;
+    groups = next;
+  }
+  if (groups.length === 0) return defaultSingBoxGroups(nodeTags);
+
+  return groups.map((group) => {
+    const type = SING_BOX_GROUP_TYPES[String(group.type)] || "selector";
+    return stripUndefined({
+      type,
+      tag: group.name,
+      outbounds: group.members,
+      default: type === "selector" ? group.members[0] : undefined,
+      url: type === "urltest" ? stringSetting(group.url) || TEST_URL : undefined,
+      interval: type === "urltest" ? singBoxInterval(group.interval) : undefined,
+      tolerance: type === "urltest" ? numberSetting(group.tolerance, 50, 1, 60000) : undefined,
+      interrupt_exist_connections: false,
+    });
+  });
+}
+
+function singBoxGroupCandidates(nodeTags: string[], groupTemplates: TemplateProxyGroup[], availableTags: Set<string>): SingBoxGroup[] {
+  return renderTemplateProxyGroups(nodeTags, groupTemplates)
+    .map((group) => ({ ...group, members: singBoxGroupMembers(group.proxies, availableTags) }))
+    .filter((group) => group.members.length > 0);
+}
+
+function singBoxGroupMembers(members: string[], availableTags: Set<string>) {
+  return uniqueStrings(
+    members.flatMap((member) => {
+      if (SING_BOX_POLICIES[member]) return [SING_BOX_POLICIES[member]];
+      // `PASS` and dangling references have no sing-box outbound.
+      return availableTags.has(member) ? [member] : [];
+    }),
+  );
+}
+
+function defaultSingBoxGroups(nodeTags: string[]): Array<Record<string, unknown>> {
+  return [
+    {
+      type: "selector",
+      tag: "PROXY",
+      outbounds: ["AUTO", ...nodeTags],
+      default: "AUTO",
+      interrupt_exist_connections: false,
+    },
+    {
+      type: "urltest",
+      tag: "AUTO",
+      outbounds: nodeTags,
+      url: TEST_URL,
+      interval: "5m",
+      tolerance: 50,
+      interrupt_exist_connections: false,
+    },
+  ];
+}
+
+function singBoxInterval(value: unknown) {
+  const text = stringSetting(value);
+  if (text) return /^\d+$/.test(text) ? `${text}s` : text;
+  return `${numberSetting(value, 300, 1, 86400)}s`;
+}
+
+function renderSingBoxRules(
+  config: RoutingTemplateConfig,
+  policies: Set<string>,
+  groups: Array<Record<string, unknown>>,
+) {
+  const rules: Array<Record<string, unknown>> = [{ action: "sniff" }, { protocol: "dns", action: "hijack-dns" }];
+  let final = "";
+  for (const rule of config.rules || []) {
+    const parts = String(rule).split(",").map((part) => part.trim());
+    const type = (parts[0] || "").toUpperCase();
+    if (type === "MATCH") {
+      if (policies.has(parts[1])) final = parts[1];
+      break;
+    }
+    const field = SING_BOX_RULE_FIELDS[type];
+    if (!field || !parts[1] || !policies.has(parts[2])) continue;
+    rules.push({ [field]: [parts[1]], outbound: parts[2] });
+  }
+  // Clash rule types that sing-box only accepts through `.srs` rule-sets
+  // (RULE-SET, GEOSITE, GEOIP, IP-ASN, SCRIPT, ...) are skipped instead of
+  // emitting rules the client cannot load.
+  return { rules, final: final || String(groups[0]?.tag || "PROXY") };
 }
 
 function toSingBoxNode(proxy: ProxyNode): SingBoxNode | undefined {
