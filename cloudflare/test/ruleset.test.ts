@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { classifyRuleProviderEntry, toSingBoxRuleSet } from "../src/lib/ruleset";
+import { classifyRuleProviderEntry, loadConvertedRuleSet, toSingBoxRuleSet } from "../src/lib/ruleset";
 
 describe("Clash rule provider conversion", () => {
   it("converts Loyalsoldier-style YAML payloads", () => {
@@ -45,6 +45,28 @@ describe("Clash rule provider conversion", () => {
     });
   });
 
+  it("emits numbers for port rules and port_range for ranges", () => {
+    const text = [
+      "DST-PORT,8080",
+      "DST-PORT,8443",
+      "DST-PORT,1000-2000",
+      "SRC-PORT,53",
+      "DST-PORT,not-a-port",
+      "SRC-PORT,70000-80000",
+      "",
+    ].join("\n");
+    const document = toSingBoxRuleSet(text);
+    expect(document).toEqual({
+      version: 1,
+      rules: [
+        { port: [8080, 8443] },
+        { port_range: ["1000:2000"] },
+        { source_port: [53] },
+        { source_port_range: ["70000:80000"] },
+      ],
+    });
+  });
+
   it("keeps a bare CIDR as an IP rule and everything else as a domain suffix", () => {
     expect(classifyRuleProviderEntry("+.example.com")).toEqual({ field: "domain_suffix", value: "example.com" });
     expect(classifyRuleProviderEntry("*.example.com")).toEqual({ field: "domain_suffix", value: "example.com" });
@@ -58,5 +80,19 @@ describe("Clash rule provider conversion", () => {
   it("handles empty and comment-only payloads", () => {
     expect(toSingBoxRuleSet("")).toEqual({ version: 1, rules: [] });
     expect(toSingBoxRuleSet("# nothing here\n")).toEqual({ version: 1, rules: [] });
+  });
+
+  it("caches converted documents under a converter version", async () => {
+    const requested: string[] = [];
+    const fetcher = (async (input: RequestInfo | URL) => {
+      requested.push(String(input));
+      return new Response("payload:\n  - 'cached.example'\n", { status: 200 });
+    }) as typeof fetch;
+    const first = await loadConvertedRuleSet("https://upstream.example/list.txt", 86400, fetcher);
+    const second = await loadConvertedRuleSet("https://upstream.example/list.txt", 86400, fetcher);
+    // The second call is served from the Cache API instead of upstream.
+    expect(requested).toHaveLength(1);
+    expect(await second.clone().text()).toBe(await first.clone().text());
+    expect(await second.json()).toEqual({ version: 1, rules: [{ domain_suffix: ["cached.example"] }] });
   });
 });
