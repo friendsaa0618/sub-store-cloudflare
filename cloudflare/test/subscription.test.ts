@@ -6,7 +6,7 @@ import {
   MAX_REMOTE_SOURCE_URLS,
 } from "../src/lib/limits";
 import { readResponseText } from "../src/lib/read";
-import { buildSubscription, buildSubscriptionResult, convertSubscriptionContent, normalizeTargetAlias, singBoxSupportsHttpClients, validateSubscriptionContent } from "../src/lib/subscription";
+import { buildSubscription, buildSubscriptionResult, convertSubscriptionContent, normalizeTargetAlias, singBoxSupportsDnsSplit, singBoxSupportsHttpClients, validateSubscriptionContent } from "../src/lib/subscription";
 
 describe("subscription parsing and limits", () => {
   afterEach(() => vi.restoreAllMocks());
@@ -549,6 +549,71 @@ describe("subscription parsing and limits", () => {
     }
   });
 
+  it("splits Chinese answers out of fake-ip on sing-box 1.14+", async () => {
+    const source = {
+      id: "sing-box-split",
+      name: "Sing Box Split",
+      type: "local" as const,
+      url: "",
+      content: "trojan://password@example.com:443?sni=example.com#Trojan%20Node",
+    };
+    const template = {
+      proxyGroups: [{ name: "🚀 节点选择", type: "select", proxies: ["$all"] }],
+      ruleProviders: {
+        ChinaIP: { type: "http", behavior: "ipcidr", format: "mrs", url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/cn.mrs", path: "./ruleset/geoip-cn.mrs", interval: 86400 },
+      },
+      rules: ["RULE-SET,ChinaIP,DIRECT", "MATCH,🚀 节点选择"],
+    };
+    const profile = async (userAgent: string | undefined, config: Record<string, unknown> = template, query = "") => {
+      const output = await buildSubscription({
+        source,
+        sources: [],
+        requestUrl: new URL(`https://example.com/download/collection/sing-box-split/sing-box${query}`),
+        target: "sing-box",
+        template: { id: "split", name: "Split", target: "mihomo", config },
+        requestUserAgent: userAgent,
+      });
+      return JSON.parse(output) as {
+        dns: { servers: Array<Record<string, unknown>>; rules?: Array<Record<string, unknown>> };
+        route: { rules: Array<Record<string, unknown>>; rule_set?: Array<{ tag: string; url: string; format: string }> };
+      };
+    };
+
+    // 1.14+ resolves first and answers with the real address when it is
+    // Chinese, so those connections never enter fake-ip and the IP rules match
+    // without the route-level resolve action.
+    const split = await profile("SFI (sing-box 1.14.2; language zh_CN)");
+    expect(split.dns.rules).toEqual([
+      { query_type: ["A", "AAAA"], action: "evaluate", server: "dns-bootstrap" },
+      // The template's own MetaCubeX `geoip/cn` rule set is reused, so the list
+      // is not downloaded twice.
+      { query_type: ["A", "AAAA"], match_response: true, rule_set: ["ChinaIP"], action: "respond" },
+      { query_type: ["A", "AAAA"], action: "route", server: "dns-fakeip" },
+    ]);
+    expect(split.route.rules.some((rule) => rule.action === "resolve")).toBe(false);
+    expect(split.route.rule_set?.filter((entry) => entry.tag === "geoip-cn")).toHaveLength(0);
+
+    // A template without any CN IP rule set gets one, so the split still works.
+    const bare = await profile("SFI (sing-box 1.14.2; language zh_CN)", { proxyGroups: template.proxyGroups, rules: ["MATCH,🚀 节点选择"] });
+    expect(bare.dns.rules?.[1]).toEqual({ query_type: ["A", "AAAA"], match_response: true, rule_set: ["geoip-cn"], action: "respond" });
+    expect(bare.route.rule_set?.filter((entry) => entry.tag === "geoip-cn")).toHaveLength(1);
+    expect(bare.route.rule_set?.find((entry) => entry.tag === "geoip-cn")?.url)
+      .toBe("https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/cn.srs");
+
+    // 1.12/1.13 reject the `evaluate` / `respond` actions, so they keep the
+    // route-level resolve action instead.
+    const older = await profile("SFA (sing-box 1.13.0; language zh_CN)");
+    expect(older.dns.rules).toEqual([{ query_type: ["A", "AAAA"], server: "dns-fakeip" }]);
+    expect(older.route.rules.filter((rule) => rule.action === "resolve")).toEqual([{ action: "resolve", server: "dns-bootstrap" }]);
+
+    // The resolver knob applies to the split as well, and `off` drops both.
+    const viaProxy = await profile("SFI (sing-box 1.14.2; language zh_CN)", { ...template, dns: { "fake-ip-resolve": "proxy" } });
+    expect(viaProxy.dns.rules?.[0]).toEqual({ query_type: ["A", "AAAA"], action: "evaluate", server: "dns-proxy" });
+    const disabled = await profile("SFI (sing-box 1.14.2; language zh_CN)", { ...template, dns: { "fake-ip-resolve": "off" } });
+    expect(disabled.dns.rules).toEqual([{ query_type: ["A", "AAAA"], server: "dns-fakeip" }]);
+    expect(disabled.route.rules.some((rule) => rule.action === "resolve")).toBe(false);
+  });
+
   it("detects the sing-box core version from the client User-Agent", () => {
     expect(singBoxSupportsHttpClients("SFI (sing-box 1.14.2; language zh_CN)")).toBe(true);
     expect(singBoxSupportsHttpClients("SFA (sing-box 1.13.0; language zh_CN)")).toBe(false);
@@ -557,6 +622,12 @@ describe("subscription parsing and limits", () => {
     expect(singBoxSupportsHttpClients("sing-box 1.9.0")).toBe(false);
     expect(singBoxSupportsHttpClients("Clash.Meta/v1.19.31")).toBe(false);
     expect(singBoxSupportsHttpClients(undefined)).toBe(false);
+    // The CN split rides on the same 1.14 core (`evaluate` / `respond`).
+    expect(singBoxSupportsDnsSplit("SFI (sing-box 1.14.2; language zh_CN)")).toBe(true);
+    expect(singBoxSupportsDnsSplit("SFA (sing-box 1.13.0; language zh_CN)")).toBe(false);
+    expect(singBoxSupportsDnsSplit("sing-box 1.13.9")).toBe(false);
+    expect(singBoxSupportsDnsSplit("sing-box 1.15.0-beta.1")).toBe(true);
+    expect(singBoxSupportsDnsSplit("Karing/1.2.3")).toBe(false);
   });
 
   it("skips Clash providers when the profile has no collection or token", async () => {

@@ -1784,6 +1784,9 @@ function renderBuildTarget(proxies: ProxyNode[], options: BuildOptions) {
       converted: convertedRuleSetSource(options),
       httpClients: singBoxUsesHttpClients(options),
       fakeIp: singBoxUsesFakeIp(options.template?.config || {}, options.requestUrl?.searchParams.get("singboxFakeIp")),
+      // The CN split needs the 1.14 `evaluate` / `respond` DNS actions; older
+      // cores keep the route-level resolve action instead.
+      dnsSplit: singBoxSupportsDnsSplit(options.requestUserAgent),
     });
   }
   if (options.target === "v2ray") return base64Utf8(renderProxyUris(proxies));
@@ -2173,19 +2176,30 @@ function convertedRuleSetSource(options: BuildOptions): ConvertedRuleSetSource |
 // sing-box 1.14 deprecated the per-rule-set `download_detour` field and the
 // implicit HTTP client; the replacement (`http_clients` +
 // `route.default_http_client`) is rejected by 1.12/1.13 as unknown fields, so
-// the profile has to follow the client's version. The Apple and Android
-// clients send `<app> (sing-box <core version>; language <locale>)`, and
-// `?singboxHttpClients=1|0` overrides the detection.
+// the profile has to follow the client's version. The same 1.14 core also
+// gained `evaluate` / `respond` DNS rule actions, which the fake-ip CN split
+// below uses. The Apple and Android clients send `<app> (sing-box <core
+// version>; language <locale>)`, and `?singboxHttpClients=1|0` overrides the
+// detection.
 const SING_BOX_VERSION_PATTERN = /sing-box[/ ]v?(\d+)\.(\d+)/i;
 const SING_BOX_HTTP_CLIENTS_MINOR = 14;
+const SING_BOX_DNS_SPLIT_MINOR = 14;
 const RULE_SET_HTTP_CLIENT_TAG = "rule-set-download";
+const CN_RULE_SET_TAG = "geoip-cn";
 
-export function singBoxSupportsHttpClients(userAgent: string | undefined) {
+function singBoxAtLeast(userAgent: string | undefined, minor: number) {
   const match = SING_BOX_VERSION_PATTERN.exec(String(userAgent || ""));
   if (!match) return false;
   const major = Number(match[1]);
-  const minor = Number(match[2]);
-  return major > 1 || (major === 1 && minor >= SING_BOX_HTTP_CLIENTS_MINOR);
+  return major > 1 || (major === 1 && Number(match[2]) >= minor);
+}
+
+export function singBoxSupportsHttpClients(userAgent: string | undefined) {
+  return singBoxAtLeast(userAgent, SING_BOX_HTTP_CLIENTS_MINOR);
+}
+
+export function singBoxSupportsDnsSplit(userAgent: string | undefined) {
+  return singBoxAtLeast(userAgent, SING_BOX_DNS_SPLIT_MINOR);
 }
 
 function singBoxUsesHttpClients(options: BuildOptions) {
@@ -2200,6 +2214,7 @@ type SingBoxRenderOptions = {
   converted?: ConvertedRuleSetSource;
   httpClients?: boolean;
   fakeIp?: boolean;
+  dnsSplit?: boolean;
 };
 
 // The Mihomo side of the same template resolves through `fake-ip`, so the
@@ -2239,6 +2254,20 @@ function singBoxFakeIpResolveServer(config: RoutingTemplateConfig) {
   return mode === "proxy" ? "dns-proxy" : "dns-bootstrap";
 }
 
+// 1.14+ resolves the query first and answers with the real address when it is
+// Chinese, so those connections never enter fake-ip: the client dials a real
+// address, the template's IP rules match it natively, and no route-level
+// resolve action (with its fatal lookups and IP dialing) is needed. Everything
+// else still gets a fake address and is routed by domain. A failed lookup just
+// falls through to the fakeip rule, so it can never break a connection.
+function singBoxDnsSplitRules(resolveServer: string, cnRuleSetTag: string) {
+  return [
+    { query_type: ["A", "AAAA"], action: "evaluate", server: resolveServer },
+    { query_type: ["A", "AAAA"], match_response: true, rule_set: [cnRuleSetTag], action: "respond" },
+    { query_type: ["A", "AAAA"], action: "route", server: "dns-fakeip" },
+  ];
+}
+
 function renderSingBoxJson(proxies: ProxyNode[], template?: RoutingTemplateConfig, options: SingBoxRenderOptions = {}) {
   const config = template || {};
   const nodes = proxies.map(toSingBoxNode).filter((node): node is SingBoxNode => Boolean(node));
@@ -2251,7 +2280,20 @@ function renderSingBoxJson(proxies: ProxyNode[], template?: RoutingTemplateConfi
   const httpClients = Boolean(options.httpClients);
   const fakeIpRanges = options.fakeIp ? singBoxFakeIpRanges(config) : undefined;
   const resolveServer = fakeIpRanges ? singBoxFakeIpResolveServer(config) : undefined;
-  const { rules, ruleSets, final } = renderSingBoxRules(config, policies, groups, cdn, options.converted, httpClients, resolveServer);
+  // 1.14+ can decide the CN split in the DNS layer (see below), which removes
+  // the need for the route-level resolve action and its side effects.
+  const splitServer = options.dnsSplit ? resolveServer : undefined;
+  const { rules, ruleSets, final, cnRuleSetTag } = renderSingBoxRules(config, policies, groups, cdn, {
+    converted: options.converted,
+    httpClients,
+    resolveServer: splitServer ? undefined : resolveServer,
+    cnRuleSetTag: splitServer ? CN_RULE_SET_TAG : undefined,
+  });
+  const dnsRules = fakeIpRanges
+    ? splitServer && cnRuleSetTag
+      ? singBoxDnsSplitRules(splitServer, cnRuleSetTag)
+      : [{ query_type: ["A", "AAAA"], server: "dns-fakeip" }]
+    : undefined;
   const mixedPort = numberSetting(config.mixedPort ?? config["mixed-port"], 7890, 1, 65535);
   const allowLan = Boolean(config.allowLan ?? config["allow-lan"]);
 
@@ -2279,7 +2321,7 @@ function renderSingBoxJson(proxies: ProxyNode[], template?: RoutingTemplateConfi
         // Only A/AAAA are faked: sing-box rejects every other query type on a
         // fakeip server, and those answers (HTTPS, PTR) are real anyway. The
         // fakeip server can never be the default one, so `final` stays put.
-        ...(fakeIpRanges ? { rules: [{ query_type: ["A", "AAAA"], server: "dns-fakeip" }] } : {}),
+        ...(fakeIpRanges ? { rules: dnsRules } : {}),
         final: "dns-proxy",
       },
       ...(httpClients ? { http_clients: [{ tag: RULE_SET_HTTP_CLIENT_TAG, detour: "DIRECT" }] } : {}),
@@ -2415,14 +2457,19 @@ function singBoxRuleOutcome(tags: string[], policy: string) {
   return policy === "REJECT" ? { rule_set: tags, action: "reject" } : { rule_set: tags, outbound: policy };
 }
 
+type SingBoxRulesOptions = {
+  converted?: ConvertedRuleSetSource;
+  httpClients?: boolean;
+  resolveServer?: string;
+  cnRuleSetTag?: string;
+};
+
 function renderSingBoxRules(
   config: RoutingTemplateConfig,
   policies: Set<string>,
   groups: Array<Record<string, unknown>>,
   cdn: string,
-  converted?: ConvertedRuleSetSource,
-  httpClients = false,
-  resolveServer?: string,
+  options: SingBoxRulesOptions = {},
 ) {
   const rules: Array<Record<string, unknown>> = [{ action: "sniff" }, { protocol: "dns", action: "hijack-dns" }];
   const ruleSets = new Map<string, SingBoxRuleSet>();
@@ -2441,7 +2488,7 @@ function renderSingBoxRules(
         // start whenever the proxy is down. 1.14+ takes the shared HTTP client
         // configured on the route instead, which also silences the deprecation
         // warning for this field.
-        ...(httpClients ? {} : { download_detour: "DIRECT" }),
+        ...(options.httpClients ? {} : { download_detour: "DIRECT" }),
       };
       ruleSets.set(key, entry);
     }
@@ -2450,21 +2497,24 @@ function renderSingBoxRules(
   const ruleSetFor = (kind: string, name: string, tag: string) =>
     remoteRuleSet(`${kind}/${name}`, tag, "binary", `${cdn}/gh/MetaCubeX/meta-rules-dat@sing/geo/${kind}/${name}.srs`);
   const convertedRuleSetFor = (provider: { url?: unknown } | undefined, tag: string) => {
-    if (!converted || !stringSetting(provider?.url)) return undefined;
+    if (!options.converted || !stringSetting(provider?.url)) return undefined;
     return remoteRuleSet(`converted/${tag}`, tag, "source",
-      `${converted.base}/${encodeURIComponent(tag)}?token=${encodeURIComponent(converted.token)}`);
+      `${options.converted.base}/${encodeURIComponent(tag)}?token=${encodeURIComponent(options.converted.token)}`);
   };
 
   let final = "";
+  // The DNS split needs a CN IP rule set; reuse the one the template already
+  // points at (`GEOIP,CN` or a MetaCubeX `geoip/cn` provider) when it exists.
+  let cnRuleSetTag = "";
   // Fake-ip destinations are restored to their domain before rule matching, so
   // IP rules would only ever match literal addresses. A `resolve` action in
   // front of the first IP-based rule restores them: the rule then matches the
   // resolved addresses and sing-box dials them (the answer is cached).
-  let ipRulesResolved = !resolveServer;
+  let ipRulesResolved = !options.resolveServer;
   const ensureIpResolve = (parts: string[], ipBased: boolean) => {
     if (ipRulesResolved || !ipBased || ruleHasNoResolve(parts)) return;
     ipRulesResolved = true;
-    rules.push({ action: "resolve", server: resolveServer });
+    rules.push({ action: "resolve", server: options.resolveServer });
   };
   for (const rule of config.rules || []) {
     const parts = String(rule).split(",").map((part) => part.trim());
@@ -2479,6 +2529,7 @@ function renderSingBoxRules(
       const target = metaRulesetTarget(provider?.url);
       const set = target ? ruleSetFor(target.kind, target.name, parts[1]) : convertedRuleSetFor(provider, parts[1]);
       if (set) {
+        if (target?.kind === "geoip" && target.name === "cn") cnRuleSetTag = cnRuleSetTag || set.tag;
         ensureIpResolve(parts, target?.kind === "geoip" || stringSetting(provider?.behavior) === "ipcidr");
         rules.push(singBoxRuleOutcome([set.tag], parts[2]));
       }
@@ -2500,10 +2551,16 @@ function renderSingBoxRules(
   }
   // Rule types such as GEOSITE/SCRIPT/IP-ASN are skipped instead of emitting
   // rules the client cannot load.
+  if (options.cnRuleSetTag && !cnRuleSetTag) {
+    // The DNS split matches the evaluated answer against a CN IP rule set, so
+    // make sure one exists even when the template never referenced `GEOIP,CN`.
+    cnRuleSetTag = ruleSetFor("geoip", "cn", options.cnRuleSetTag).tag;
+  }
   return {
     rules,
     ruleSets: [...ruleSets.values()],
     final: final || String(groups[0]?.tag || "PROXY"),
+    cnRuleSetTag: options.cnRuleSetTag ? cnRuleSetTag : undefined,
   };
 }
 

@@ -486,14 +486,26 @@ describe("Worker and D1 integration", () => {
       inet4_range: "198.18.0.0/15",
       inet6_range: "fc00::/18",
     });
-    expect(modern.dns.rules).toEqual([{ query_type: ["A", "AAAA"], server: "dns-fakeip" }]);
+    expect(modern.dns.rules).toEqual([
+      // The 1.14 core splits Chinese answers out of fake-ip in the DNS layer, so
+      // no route-level resolve action is needed.
+      { query_type: ["A", "AAAA"], action: "evaluate", server: "dns-bootstrap" },
+      { query_type: ["A", "AAAA"], match_response: true, rule_set: ["geoip-cn"], action: "respond" },
+      { query_type: ["A", "AAAA"], action: "route", server: "dns-fakeip" },
+    ]);
     expect(modern.experimental).toEqual({ cache_file: { enabled: true, path: "cache.db", store_fakeip: true } });
-    // The Loyalsoldier template's ipcidr providers need a resolved address, so
-    // the download carries the resolve action in front of the first of them.
-    expect(modern.route.rules.filter((rule) => rule.action === "resolve"))
+    expect(modern.route.rules.some((rule) => rule.action === "resolve")).toBe(false);
+    // The Loyalsoldier template's `GEOIP,CN` already provides the CN rule set
+    // the split matches against.
+    expect(modern.route.rule_set?.filter((entry) => entry.tag === "geoip-cn")).toHaveLength(1);
+
+    // Older cores keep the route-level resolve action instead of the split.
+    const olderProfile = await profile("SFA (sing-box 1.13.0; language zh_CN)");
+    expect(olderProfile.dns.rules).toEqual([{ query_type: ["A", "AAAA"], server: "dns-fakeip" }]);
+    expect(olderProfile.route.rules.filter((rule) => rule.action === "resolve"))
       .toEqual([{ action: "resolve", server: "dns-bootstrap" }]);
-    expect(modern.route.rules.findIndex((rule) => rule.action === "resolve"))
-      .toBeLessThan(modern.route.rules.findIndex((rule) => Array.isArray(rule.rule_set) && (rule.rule_set as string[]).includes("cncidr")));
+    expect(olderProfile.route.rules.findIndex((rule) => rule.action === "resolve"))
+      .toBeLessThan(olderProfile.route.rules.findIndex((rule) => Array.isArray(rule.rule_set) && (rule.rule_set as string[]).includes("cncidr")));
 
     const noFakeIp = await workerRequest(
       `/download/collection/sing-box-ua/sing-box/${DOWNLOAD_TOKEN}?singboxFakeIp=0`,

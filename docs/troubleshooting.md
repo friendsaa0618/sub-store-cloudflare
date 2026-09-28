@@ -216,8 +216,11 @@ legacy `download_detour` remote rule-set option is deprecated in sing-box 1.14.0
 - 地址池可以用模板里的 `dns.fake-ip-range` / `dns.fake-ip-range6` 换掉。
 - 不想要 fake-ip：把模板的 `dns.enhanced-mode` 改成 `redir-host`，或者用 `?singboxFakeIp=0` 只关掉这一份配置（`?singboxFakeIp=1` 反过来强制打开）。
 - 报 `missing fakeip record, try enable experimental.cache_file`：配置里少了 `experimental.cache_file`（`store_fakeip`），客户端重启后虚拟地址没法映射回域名。重新下载配置即可，现在的 profile 默认带这个字段。
-- IP 规则（`IP-CIDR`、`GEOIP`、`ipcidr` 规则集）仍然会生效：profile 在这些规则前面插了一条 `{ "action": "resolve", "server": "dns-bootstrap" }`，解析出真实地址后再匹配（和 Mihomo 遇到 IP 规则时补解析的行为一致）。副作用是解析过的连接会直接连解析出的地址；给规则加 `no-resolve` 可以保持只匹配直连 IP。
-- 解析器可以用模板里的 `dns.fake-ip-resolve` 选：`direct`（默认，国内引导 DNS，快；国内解析不出来的域名会直接失败）、`proxy`（经代理解析，不会失败也不泄露，但多一次代理 RTT）、`off`（不插这条动作，IP 规则只匹配直连 IP）。
+- IP 规则仍然会生效，按客户端内核版本走两条路径：
+  - **1.14+（SFI/SFA 等上报 1.14 及以上）**：DNS 侧 CN 分流——先解析一次，答案在 CN 规则集里就把**真实地址**返回给客户端（这些连接不进 fake-ip，客户端直连，IP 规则按真实地址匹配），其余域名照旧拿虚拟地址按域名分流。解析失败只会退回虚拟地址，不会断连；这条路径不会出现"代理收到 IP 而不是域名"。
+  - **1.12/1.13**：在第一条需要地址的规则前插 `{ "action": "resolve", "server": "dns-bootstrap" }`（这两个版本不支持 `evaluate` / `respond`）。
+  - CN 规则集优先用模板自己的（MetaCubeX `geoip/cn` / `GEOIP,CN`），没有就自动补一份 MetaCubeX `geoip/cn.srs`。
+- 解析器可以用模板里的 `dns.fake-ip-resolve` 选（两条路径共用）：`direct`（默认，国内引导 DNS，快；国内解析不出来的域名在 1.12/1.13 上会直接失败）、`proxy`（经代理解析，不会失败也不泄露，但多一次代理 RTT）、`off`（不解析也不分流，IP 规则只匹配直连 IP）。
 - 注意 CN IP 规则本来就是"补网"：实测 30 个国内域名里只有 6 个的地址落在 MetaCubeX 的 `geoip/cn` 列表里（腾讯 EdgeOne `43.159.x`、华为云 `155.102.x`、Akamai `23.x`/`174.35.x` 这类 anycast 地址在 GeoIP 库里不算 CN），用国内还是代理侧解析命中数一样。大站主要靠域名规则，IP 规则管的是剩下的小站。
 
 ## 节点被过滤掉
