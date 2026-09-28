@@ -1760,7 +1760,9 @@ function renderTarget(proxies: ProxyNode[], target: SubscriptionTarget, template
   if (target === "loon") return renderLoonProxies(proxies);
   if (target === "egern") return renderEgernYaml(proxies);
   if (target === "qx") return renderQxProxies(proxies);
-  if (target === "sing-box") return renderSingBoxJson(proxies, template, {});
+  if (target === "sing-box") {
+    return renderSingBoxJson(proxies, template, { fakeIp: singBoxUsesFakeIp(template || {}, undefined) });
+  }
   if (target === "v2ray") return base64Utf8(renderProxyUris(proxies));
   if (target === "uri" || target === "shadowrocket") return renderProxyUris(proxies);
   return JSON.stringify({ proxies }, null, 2);
@@ -1781,6 +1783,7 @@ function renderBuildTarget(proxies: ProxyNode[], options: BuildOptions) {
       rulesetCdn,
       converted: convertedRuleSetSource(options),
       httpClients: singBoxUsesHttpClients(options),
+      fakeIp: singBoxUsesFakeIp(options.template?.config || {}, options.requestUrl?.searchParams.get("singboxFakeIp")),
     });
   }
   if (options.target === "v2ray") return base64Utf8(renderProxyUris(proxies));
@@ -2189,7 +2192,31 @@ type SingBoxRenderOptions = {
   rulesetCdn?: unknown;
   converted?: ConvertedRuleSetSource;
   httpClients?: boolean;
+  fakeIp?: boolean;
 };
+
+// The Mihomo side of the same template resolves through `fake-ip`, so the
+// sing-box profile mirrors that mode and only overrides it when the template
+// asks for something else (`dns.enhanced-mode: redir-host`). Both ranges are
+// emitted: sing-box answers A and AAAA with a fake address, and the tun already
+// carries an IPv4 and an IPv6 address, so keeping the IPv6 side costs nothing.
+const FAKE_IP_DEFAULT_RANGES = { inet4: "198.18.0.0/15", inet6: "fc00::/18" };
+
+function singBoxFakeIpRanges(config: RoutingTemplateConfig) {
+  const dns = (config.dns || {}) as Record<string, unknown>;
+  return {
+    inet4: stringSetting(dns["fake-ip-range"] ?? dns.fakeIpRange) || FAKE_IP_DEFAULT_RANGES.inet4,
+    inet6: stringSetting(dns["fake-ip-range6"] ?? dns.fakeIpRange6) || FAKE_IP_DEFAULT_RANGES.inet6,
+  };
+}
+
+function singBoxUsesFakeIp(config: RoutingTemplateConfig, override: string | null | undefined) {
+  if (override === "1" || override === "true") return true;
+  if (override === "0" || override === "false") return false;
+  const dns = (config.dns || {}) as Record<string, unknown>;
+  const mode = stringSetting(dns["enhanced-mode"] ?? dns.enhancedMode);
+  return !mode || mode === "fake-ip";
+}
 
 function renderSingBoxJson(proxies: ProxyNode[], template?: RoutingTemplateConfig, options: SingBoxRenderOptions = {}) {
   const config = template || {};
@@ -2201,6 +2228,7 @@ function renderSingBoxJson(proxies: ProxyNode[], template?: RoutingTemplateConfi
   const policies = new Set([...Object.values(SING_BOX_POLICIES), ...groups.map((group) => String(group.tag))]);
   const cdn = rulesetCdnOrigin(options.rulesetCdn) || DEFAULT_RULESET_CDN;
   const httpClients = Boolean(options.httpClients);
+  const fakeIpRanges = options.fakeIp ? singBoxFakeIpRanges(config) : undefined;
   const { rules, ruleSets, final } = renderSingBoxRules(config, policies, groups, cdn, options.converted, httpClients);
   const mixedPort = numberSetting(config.mixedPort ?? config["mixed-port"], 7890, 1, 65535);
   const allowLan = Boolean(config.allowLan ?? config["allow-lan"]);
@@ -2222,7 +2250,14 @@ function renderSingBoxJson(proxies: ProxyNode[], template?: RoutingTemplateConfi
         servers: [
           { tag: "dns-proxy", type: "tls", server: "1.1.1.1", detour: final === "REJECT" ? "DIRECT" : final },
           { tag: "dns-bootstrap", type: "udp", server: "223.5.5.5" },
+          ...(fakeIpRanges
+            ? [{ tag: "dns-fakeip", type: "fakeip", inet4_range: fakeIpRanges.inet4, inet6_range: fakeIpRanges.inet6 }]
+            : []),
         ],
+        // Only A/AAAA are faked: sing-box rejects every other query type on a
+        // fakeip server, and those answers (HTTPS, PTR) are real anyway. The
+        // fakeip server can never be the default one, so `final` stays put.
+        ...(fakeIpRanges ? { rules: [{ query_type: ["A", "AAAA"], server: "dns-fakeip" }] } : {}),
         final: "dns-proxy",
       },
       ...(httpClients ? { http_clients: [{ tag: RULE_SET_HTTP_CLIENT_TAG, detour: "DIRECT" }] } : {}),
@@ -2246,6 +2281,12 @@ function renderSingBoxJson(proxies: ProxyNode[], template?: RoutingTemplateConfi
         rules,
         final,
       },
+      // Fake addresses are mapped back to their domain through the fakeip
+      // store; without the cache file a client restart loses the mapping and
+      // sing-box fails the connection with "missing fakeip record".
+      ...(fakeIpRanges
+        ? { experimental: { cache_file: { enabled: true, path: "cache.db", store_fakeip: true } } }
+        : {}),
     },
     null,
     2,

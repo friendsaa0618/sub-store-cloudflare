@@ -208,6 +208,29 @@ Surge、Surfboard、Loon、Egern、Shadowrocket、Quantumult X、v2ray、URI 和
 
 没有可用模板时（例如集合未绑定模板），`sing-box` 输出回落到内置的 `PROXY` / `AUTO` 两个分组。
 
+### DNS：双栈 Fake-IP
+
+Mihomo 侧用 `dns.enhanced-mode: fake-ip` 解析，所以 `sing-box` 输出默认镜像同一模式（模板写别的值，例如 `redir-host`，就退回普通解析），并同时下发 IPv4 和 IPv6 的虚拟地址池：
+
+```json
+"dns": {
+  "servers": [
+    { "tag": "dns-proxy", "type": "tls", "server": "1.1.1.1", "detour": "🚀 节点选择" },
+    { "tag": "dns-bootstrap", "type": "udp", "server": "223.5.5.5" },
+    { "tag": "dns-fakeip", "type": "fakeip", "inet4_range": "198.18.0.0/15", "inet6_range": "fc00::/18" }
+  ],
+  "rules": [{ "query_type": ["A", "AAAA"], "server": "dns-fakeip" }],
+  "final": "dns-proxy"
+},
+"experimental": { "cache_file": { "enabled": true, "path": "cache.db", "store_fakeip": true } }
+```
+
+- 池子可以用模板里的 `dns.fake-ip-range` / `dns.fake-ip-range6`（Mihomo 同名键）覆盖，默认 `198.18.0.0/15` + `fc00::/18`。
+- 只有 A / AAAA 走 fakeip：fakeip 服务器不支持其它查询类型，HTTPS、PTR 这类查询仍然走 `final`。fakeip 服务器不能当默认服务器，所以 `final` 保持在 `dns-proxy`。
+- 虚拟地址由 tun 的 `auto_route` 默认路由覆盖，不需要额外路由。客户端重启后要把旧地址映射回域名，因此必须带 `experimental.cache_file`（`store_fakeip`），否则 sing-box 报 `missing fakeip record`。
+- 出站域名解析（节点地址、规则集地址）走 `route.default_domain_resolver`（`dns-bootstrap`），不会拿到虚拟地址。
+- 代价：命中 fakeip 的连接在规则匹配前会被还原成域名，所以 `ip_cidr` / `geoip` 这类 IP 规则只对直连 IP 生效，域名流量要靠域名规则（Mihomo 在遇到 IP 规则时会补一次真实解析，sing-box 这里不补，需要的话可以在 `route.rules` 里加 `{ "action": "resolve" }`）。下载链接上的 `?singboxFakeIp=1|0` 可以强制开关，模板里的 `enhanced-mode` 是持久开关。
+
 ## 为什么只用 D1
 
 这个项目的数据是结构化配置，主要是订阅源、组合关系、过滤器和规则模板。D1 可以直接表达这些关系，也方便迁移和导出。大文件、后台任务和跨请求状态都不是核心路径，因此不默认引入其他 Cloudflare 存储或异步组件。

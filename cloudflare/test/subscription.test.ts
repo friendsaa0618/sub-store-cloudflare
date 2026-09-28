@@ -81,7 +81,11 @@ describe("subscription parsing and limits", () => {
       servers: [
         { tag: "dns-proxy", type: "tls", server: "1.1.1.1", detour: "PROXY" },
         { tag: "dns-bootstrap", type: "udp", server: "223.5.5.5" },
+        // The Mihomo side of a template resolves through fake-ip, so the
+        // sing-box profile mirrors that mode by default.
+        { tag: "dns-fakeip", type: "fakeip", inet4_range: "198.18.0.0/15", inet6_range: "fc00::/18" },
       ],
+      rules: [{ query_type: ["A", "AAAA"], server: "dns-fakeip" }],
       final: "dns-proxy",
     });
     expect(config.route.rules).toEqual([{ action: "sniff" }, { protocol: "dns", action: "hijack-dns" }]);
@@ -395,6 +399,70 @@ describe("subscription parsing and limits", () => {
     const forcedOn = JSON.parse(await build("SFI (sing-box 1.13.0; language zh_CN)", "?singboxHttpClients=1")) as Profile;
     expect(forcedOn.http_clients).toEqual([{ tag: "rule-set-download", detour: "DIRECT" }]);
     expect(forcedOn.route.rule_set?.every((entry) => entry.download_detour === undefined)).toBe(true);
+  });
+
+  it("mirrors the template fake-ip mode as a dual-stack fakeip server", async () => {
+    const source = {
+      id: "sing-box-fakeip",
+      name: "Sing Box FakeIP",
+      type: "local" as const,
+      url: "",
+      content: "trojan://password@example.com:443?sni=example.com#Trojan%20Node",
+    };
+    const profile = async (dns: Record<string, unknown> | undefined, query = "") => {
+      const output = await buildSubscription({
+        source,
+        sources: [],
+        requestUrl: new URL(`https://example.com/download/collection/sing-box-fakeip/sing-box${query}`),
+        target: "sing-box",
+        template: { id: "fakeip", name: "FakeIP", target: "mihomo", config: dns ? { dns } : {} },
+      });
+      return JSON.parse(output) as {
+        dns: { servers: Array<Record<string, unknown>>; rules?: Array<Record<string, unknown>>; final?: string };
+        experimental?: Record<string, unknown>;
+        route: { default_domain_resolver?: Record<string, unknown>; rules: Array<Record<string, unknown>> };
+      };
+    };
+
+    // The Mihomo side of a template resolves through fake-ip, so sing-box
+    // mirrors that mode with both address families: A and AAAA are answered
+    // with a fake address and the tun already routes both.
+    const fakeIp = await profile(undefined);
+    expect(fakeIp.dns.servers.at(-1)).toEqual({
+      tag: "dns-fakeip",
+      type: "fakeip",
+      inet4_range: "198.18.0.0/15",
+      inet6_range: "fc00::/18",
+    });
+    // Only A/AAAA go to fakeip; the fakeip server can never be the default one.
+    expect(fakeIp.dns.rules).toEqual([{ query_type: ["A", "AAAA"], server: "dns-fakeip" }]);
+    expect(fakeIp.dns.final).toBe("dns-proxy");
+    // The mapping survives a client restart only with the cache file.
+    expect(fakeIp.experimental).toEqual({ cache_file: { enabled: true, path: "cache.db", store_fakeip: true } });
+    // Node and rule-set host names are resolved by the bootstrap resolver, not
+    // by fakeip, or the outbound would dial a fake address.
+    expect(fakeIp.route.default_domain_resolver).toEqual({ server: "dns-bootstrap" });
+    expect(fakeIp.route.rules.some((rule) => JSON.stringify(rule).includes("198.18.0.0/15"))).toBe(false);
+
+    // A template that asks for another DNS mode keeps the plain resolvers.
+    const redirHost = await profile({ "enhanced-mode": "redir-host" });
+    expect(redirHost.dns.servers).toHaveLength(2);
+    expect(redirHost.dns.rules).toBeUndefined();
+    expect(redirHost.experimental).toBeUndefined();
+
+    // Mihomo's `fake-ip-range` / `fake-ip-range6` select the pools.
+    const custom = await profile({ "enhanced-mode": "fake-ip", "fake-ip-range": "198.19.0.0/16", "fake-ip-range6": "fd00::/18" });
+    expect(custom.dns.servers.at(-1)).toEqual({
+      tag: "dns-fakeip",
+      type: "fakeip",
+      inet4_range: "198.19.0.0/16",
+      inet6_range: "fd00::/18",
+    });
+
+    // `?singboxFakeIp=` overrides the template either way.
+    expect((await profile(undefined, "?singboxFakeIp=0")).dns.servers).toHaveLength(2);
+    expect((await profile({ "enhanced-mode": "redir-host" }, "?singboxFakeIp=1")).dns.servers.at(-1))
+      .toMatchObject({ type: "fakeip" });
   });
 
   it("detects the sing-box core version from the client User-Agent", () => {

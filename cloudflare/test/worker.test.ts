@@ -434,6 +434,8 @@ describe("Worker and D1 integration", () => {
 
     type Profile = {
       http_clients?: Array<Record<string, unknown>>;
+      experimental?: Record<string, unknown>;
+      dns: { servers: Array<Record<string, unknown>>; rules?: Array<Record<string, unknown>>; final?: string };
       route: { default_http_client?: string; rule_set?: Array<Record<string, unknown>> };
     };
     const profile = async (userAgent?: string) => {
@@ -471,6 +473,27 @@ describe("Worker and D1 integration", () => {
     );
     expect(forced.status).toBe(200);
     expect((JSON.parse(await forced.text()) as Profile).http_clients).toBeTruthy();
+
+    // The link also carries the dual-stack fake-ip DNS setup, which does not
+    // depend on the client version.
+    expect(modern.dns.servers.at(-1)).toEqual({
+      tag: "dns-fakeip",
+      type: "fakeip",
+      inet4_range: "198.18.0.0/15",
+      inet6_range: "fc00::/18",
+    });
+    expect(modern.dns.rules).toEqual([{ query_type: ["A", "AAAA"], server: "dns-fakeip" }]);
+    expect(modern.experimental).toEqual({ cache_file: { enabled: true, path: "cache.db", store_fakeip: true } });
+
+    const noFakeIp = await workerRequest(
+      `/download/collection/sing-box-ua/sing-box/${DOWNLOAD_TOKEN}?singboxFakeIp=0`,
+      {},
+      false,
+    );
+    const noFakeIpProfile = JSON.parse(await noFakeIp.text()) as Profile;
+    expect(noFakeIpProfile.dns.servers).toHaveLength(2);
+    expect(noFakeIpProfile.dns.rules).toBeUndefined();
+    expect(noFakeIpProfile.experimental).toBeUndefined();
   });
 });
 

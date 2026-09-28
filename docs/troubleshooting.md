@@ -197,6 +197,27 @@ legacy `download_detour` remote rule-set option is deprecated in sing-box 1.14.0
 
 看到这条告警说明客户端拿到的还是旧写法，重新下载配置即可；如果客户端改写了 User-Agent，用 `?singboxHttpClients=1` 强制新写法（旧内核不要用）。
 
+## sing-box 的 DNS 和 Fake-IP
+
+`sing-box` 链接默认跟 Mihomo 模板的 `dns.enhanced-mode: fake-ip` 一致，下发双栈虚拟地址池（`198.18.0.0/15` + `fc00::/18`），A 和 AAAA 都会返回虚拟地址，流量由 tun 接管后按模板规则分流：
+
+```json
+"dns": {
+  "servers": [
+    { "tag": "dns-proxy", "type": "tls", "server": "1.1.1.1", "detour": "🚀 节点选择" },
+    { "tag": "dns-bootstrap", "type": "udp", "server": "223.5.5.5" },
+    { "tag": "dns-fakeip", "type": "fakeip", "inet4_range": "198.18.0.0/15", "inet6_range": "fc00::/18" }
+  ],
+  "rules": [{ "query_type": ["A", "AAAA"], "server": "dns-fakeip" }],
+  "final": "dns-proxy"
+}
+```
+
+- 地址池可以用模板里的 `dns.fake-ip-range` / `dns.fake-ip-range6` 换掉。
+- 不想要 fake-ip：把模板的 `dns.enhanced-mode` 改成 `redir-host`，或者用 `?singboxFakeIp=0` 只关掉这一份配置（`?singboxFakeIp=1` 反过来强制打开）。
+- 报 `missing fakeip record, try enable experimental.cache_file`：配置里少了 `experimental.cache_file`（`store_fakeip`），客户端重启后虚拟地址没法映射回域名。重新下载配置即可，现在的 profile 默认带这个字段。
+- 命中虚拟地址的连接会先还原成域名再匹配规则，所以 `ip_cidr`、`geoip` 这类 IP 规则只对直连 IP 生效，域名流量看域名规则；需要 IP 规则也参与匹配时，在模板规则前加 `{ "action": "resolve" }`。
+
 ## 节点被过滤掉
 
 先移除包含规则较严格的 `include` 过滤器（例如只匹配指定地区的正则表达式）。保守起步建议只使用：
