@@ -186,6 +186,10 @@ describe("subscription parsing and limits", () => {
       { protocol: "dns", action: "hijack-dns" },
       { domain_suffix: ["openai.com"], outbound: "🚀 节点选择" },
       { ip_cidr: ["10.0.0.0/8"], outbound: "DIRECT" },
+      // `IP-CIDR,...,no-resolve` never asks for a resolved address, but the
+      // `GEOIP,CN` rule below does, so a `resolve` action lands in front of it:
+      // with fake-ip the destination is a domain by then.
+      { action: "resolve", server: "dns-bootstrap" },
       // `GEOIP,CN` has a MetaCubeX twin even when the template has no provider
       // for it; the provider-less `RULE-SET` above is skipped.
       { rule_set: ["geoip-cn"], outbound: "DIRECT" },
@@ -463,6 +467,77 @@ describe("subscription parsing and limits", () => {
     expect((await profile(undefined, "?singboxFakeIp=0")).dns.servers).toHaveLength(2);
     expect((await profile({ "enhanced-mode": "redir-host" }, "?singboxFakeIp=1")).dns.servers.at(-1))
       .toMatchObject({ type: "fakeip" });
+  });
+
+  it("resolves destination addresses in front of the IP rules under fake-ip", async () => {
+    const source = {
+      id: "sing-box-resolve",
+      name: "Sing Box Resolve",
+      type: "local" as const,
+      url: "",
+      content: "trojan://password@example.com:443?sni=example.com#Trojan%20Node",
+    };
+    const rules = async (config: Record<string, unknown>) => {
+      const output = await buildSubscription({
+        source,
+        sources: [],
+        requestUrl: new URL("https://example.com/download/collection/sing-box-resolve/sing-box"),
+        target: "sing-box",
+        template: { id: "resolve", name: "Resolve", target: "mihomo", config },
+      });
+      return (JSON.parse(output) as { route: { rules: Array<Record<string, unknown>> } }).route.rules;
+    };
+    const providers = {
+      ChinaIP: { type: "http", behavior: "ipcidr", format: "mrs", url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/cn.mrs", path: "./ruleset/geoip-cn.mrs", interval: 86400 },
+      ChinaDomain: { type: "http", behavior: "domain", format: "mrs", url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/cn.mrs", path: "./ruleset/geosite-cn.mrs", interval: 86400 },
+    };
+    const groups = [{ name: "🚀 节点选择", type: "select", proxies: ["$all"] }];
+
+    // Fake-ip restores the domain before matching, so an ipcidr rule set needs
+    // a `resolve` action in front of it to see the real addresses.
+    const ipBased = await rules({
+      proxyGroups: groups,
+      ruleProviders: providers,
+      rules: ["RULE-SET,ChinaDomain,DIRECT", "RULE-SET,ChinaIP,DIRECT", "MATCH,🚀 节点选择"],
+    });
+    expect(ipBased).toEqual([
+      { action: "sniff" },
+      { protocol: "dns", action: "hijack-dns" },
+      { rule_set: ["ChinaDomain"], outbound: "DIRECT" },
+      { action: "resolve", server: "dns-bootstrap" },
+      { rule_set: ["ChinaIP"], outbound: "DIRECT" },
+    ]);
+
+    // A `no-resolve` rule means literal addresses only, so it asks for nothing
+    // and the resolve action moves behind it.
+    const noResolve = await rules({
+      proxyGroups: groups,
+      ruleProviders: providers,
+      rules: ["IP-CIDR,10.0.0.0/8,DIRECT,no-resolve", "RULE-SET,ChinaIP,DIRECT", "MATCH,🚀 节点选择"],
+    });
+    expect(noResolve).toEqual([
+      { action: "sniff" },
+      { protocol: "dns", action: "hijack-dns" },
+      { ip_cidr: ["10.0.0.0/8"], outbound: "DIRECT" },
+      { action: "resolve", server: "dns-bootstrap" },
+      { rule_set: ["ChinaIP"], outbound: "DIRECT" },
+    ]);
+
+    // Domain-only templates do not need the extra lookup, and without fake-ip
+    // the destination is a real address anyway.
+    const domainOnly = await rules({
+      proxyGroups: groups,
+      ruleProviders: providers,
+      rules: ["RULE-SET,ChinaDomain,DIRECT", "MATCH,🚀 节点选择"],
+    });
+    expect(domainOnly.some((rule) => rule.action === "resolve")).toBe(false);
+    const noFakeIp = await rules({
+      dns: { "enhanced-mode": "redir-host" },
+      proxyGroups: groups,
+      ruleProviders: providers,
+      rules: ["RULE-SET,ChinaIP,DIRECT", "MATCH,🚀 节点选择"],
+    });
+    expect(noFakeIp.some((rule) => rule.action === "resolve")).toBe(false);
   });
 
   it("detects the sing-box core version from the client User-Agent", () => {

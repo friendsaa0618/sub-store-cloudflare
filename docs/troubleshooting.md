@@ -216,7 +216,7 @@ legacy `download_detour` remote rule-set option is deprecated in sing-box 1.14.0
 - 地址池可以用模板里的 `dns.fake-ip-range` / `dns.fake-ip-range6` 换掉。
 - 不想要 fake-ip：把模板的 `dns.enhanced-mode` 改成 `redir-host`，或者用 `?singboxFakeIp=0` 只关掉这一份配置（`?singboxFakeIp=1` 反过来强制打开）。
 - 报 `missing fakeip record, try enable experimental.cache_file`：配置里少了 `experimental.cache_file`（`store_fakeip`），客户端重启后虚拟地址没法映射回域名。重新下载配置即可，现在的 profile 默认带这个字段。
-- 命中虚拟地址的连接会先还原成域名再匹配规则，所以 `ip_cidr`、`geoip` 这类 IP 规则只对直连 IP 生效，域名流量看域名规则；需要 IP 规则也参与匹配时，在模板规则前加 `{ "action": "resolve" }`。
+- IP 规则（`IP-CIDR`、`GEOIP`、`ipcidr` 规则集）仍然会生效：profile 在这些规则前面插了一条 `{ "action": "resolve", "server": "dns-bootstrap" }`，用引导 DNS 解析出真实地址后再匹配（和 Mihomo 遇到 IP 规则时补解析的行为一致）。副作用是解析过的连接会直接连解析出的地址，而且国内解析不出来的域名会直接失败；给规则加 `no-resolve` 可以保持只匹配直连 IP。
 
 ## 节点被过滤掉
 

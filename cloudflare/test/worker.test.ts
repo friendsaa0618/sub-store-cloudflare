@@ -436,7 +436,11 @@ describe("Worker and D1 integration", () => {
       http_clients?: Array<Record<string, unknown>>;
       experimental?: Record<string, unknown>;
       dns: { servers: Array<Record<string, unknown>>; rules?: Array<Record<string, unknown>>; final?: string };
-      route: { default_http_client?: string; rule_set?: Array<Record<string, unknown>> };
+      route: {
+        default_http_client?: string;
+        rule_set?: Array<Record<string, unknown>>;
+        rules: Array<Record<string, unknown>>;
+      };
     };
     const profile = async (userAgent?: string) => {
       const response = await workerRequest(
@@ -484,6 +488,12 @@ describe("Worker and D1 integration", () => {
     });
     expect(modern.dns.rules).toEqual([{ query_type: ["A", "AAAA"], server: "dns-fakeip" }]);
     expect(modern.experimental).toEqual({ cache_file: { enabled: true, path: "cache.db", store_fakeip: true } });
+    // The Loyalsoldier template's ipcidr providers need a resolved address, so
+    // the download carries the resolve action in front of the first of them.
+    expect(modern.route.rules.filter((rule) => rule.action === "resolve"))
+      .toEqual([{ action: "resolve", server: "dns-bootstrap" }]);
+    expect(modern.route.rules.findIndex((rule) => rule.action === "resolve"))
+      .toBeLessThan(modern.route.rules.findIndex((rule) => Array.isArray(rule.rule_set) && (rule.rule_set as string[]).includes("cncidr")));
 
     const noFakeIp = await workerRequest(
       `/download/collection/sing-box-ua/sing-box/${DOWNLOAD_TOKEN}?singboxFakeIp=0`,

@@ -2144,6 +2144,13 @@ const SING_BOX_POLICIES: Record<string, string> = {
   "REJECT-DROP": "REJECT",
 };
 
+// Clash's `no-resolve` modifier means "match literal addresses only", which is
+// what sing-box does for IP rules until a `resolve` action fills in the
+// destination addresses, so those rules never ask for one.
+function ruleHasNoResolve(parts: string[]) {
+  return parts.slice(3).some((part) => part.toLowerCase() === "no-resolve");
+}
+
 type SingBoxGroup = RenderedProxyGroup & { members: string[] };
 
 // Clash rule providers that are not MetaCubeX lists are converted by the
@@ -2229,7 +2236,7 @@ function renderSingBoxJson(proxies: ProxyNode[], template?: RoutingTemplateConfi
   const cdn = rulesetCdnOrigin(options.rulesetCdn) || DEFAULT_RULESET_CDN;
   const httpClients = Boolean(options.httpClients);
   const fakeIpRanges = options.fakeIp ? singBoxFakeIpRanges(config) : undefined;
-  const { rules, ruleSets, final } = renderSingBoxRules(config, policies, groups, cdn, options.converted, httpClients);
+  const { rules, ruleSets, final } = renderSingBoxRules(config, policies, groups, cdn, options.converted, httpClients, Boolean(fakeIpRanges));
   const mixedPort = numberSetting(config.mixedPort ?? config["mixed-port"], 7890, 1, 65535);
   const allowLan = Boolean(config.allowLan ?? config["allow-lan"]);
 
@@ -2400,10 +2407,11 @@ function renderSingBoxRules(
   cdn: string,
   converted?: ConvertedRuleSetSource,
   httpClients = false,
+  fakeIp = false,
 ) {
   const rules: Array<Record<string, unknown>> = [{ action: "sniff" }, { protocol: "dns", action: "hijack-dns" }];
   const ruleSets = new Map<string, SingBoxRuleSet>();
-  const providers = (config.ruleProviders || config["rule-providers"] || {}) as Record<string, { url?: unknown }>;
+  const providers = (config.ruleProviders || config["rule-providers"] || {}) as Record<string, { url?: unknown; behavior?: unknown }>;
   const remoteRuleSet = (key: string, tag: string, format: "binary" | "source", url: string) => {
     let entry = ruleSets.get(key);
     if (!entry) {
@@ -2433,6 +2441,19 @@ function renderSingBoxRules(
   };
 
   let final = "";
+  // Fake-ip destinations are restored to their domain before rule matching, so
+  // IP rules would only ever match literal addresses. A `resolve` action in
+  // front of the first IP-based rule restores them: the rule then matches the
+  // resolved addresses and sing-box dials them (the answer is cached). The
+  // lookup uses the bootstrap resolver, because that is the one that answers
+  // like the client's own network would: a resolver on the proxy side returns
+  // foreign addresses for CN domains, and the CN IP rules would never match.
+  let ipRulesResolved = !fakeIp;
+  const ensureIpResolve = (parts: string[], ipBased: boolean) => {
+    if (ipRulesResolved || !ipBased || ruleHasNoResolve(parts)) return;
+    ipRulesResolved = true;
+    rules.push({ action: "resolve", server: "dns-bootstrap" });
+  };
   for (const rule of config.rules || []) {
     const parts = String(rule).split(",").map((part) => part.trim());
     const type = (parts[0] || "").toUpperCase();
@@ -2445,7 +2466,10 @@ function renderSingBoxRules(
       const provider = providers[parts[1]];
       const target = metaRulesetTarget(provider?.url);
       const set = target ? ruleSetFor(target.kind, target.name, parts[1]) : convertedRuleSetFor(provider, parts[1]);
-      if (set) rules.push(singBoxRuleOutcome([set.tag], parts[2]));
+      if (set) {
+        ensureIpResolve(parts, target?.kind === "geoip" || stringSetting(provider?.behavior) === "ipcidr");
+        rules.push(singBoxRuleOutcome([set.tag], parts[2]));
+      }
       continue;
     }
     if (type === "GEOIP") {
@@ -2453,11 +2477,13 @@ function renderSingBoxRules(
       // and a missing file makes sing-box refuse to start.
       const country = (parts[1] || "").toLowerCase();
       if (!/^[a-z]{2}$/.test(country) || !policies.has(parts[2])) continue;
+      ensureIpResolve(parts, true);
       rules.push(singBoxRuleOutcome([ruleSetFor("geoip", country, `geoip-${country}`).tag], parts[2]));
       continue;
     }
     const field = SING_BOX_RULE_FIELDS[type];
     if (!field || !parts[1] || !policies.has(parts[2])) continue;
+    ensureIpResolve(parts, field === "ip_cidr");
     rules.push({ [field]: [parts[1]], outbound: parts[2] });
   }
   // Rule types such as GEOSITE/SCRIPT/IP-ASN are skipped instead of emitting
