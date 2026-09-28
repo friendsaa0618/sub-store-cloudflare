@@ -208,6 +208,38 @@ Surge、Surfboard、Loon、Egern、Shadowrocket、Quantumult X、v2ray、URI 和
 
 没有可用模板时（例如集合未绑定模板），`sing-box` 输出回落到内置的 `PROXY` / `AUTO` 两个分组。
 
+### DNS：双栈 Fake-IP
+
+Mihomo 侧用 `dns.enhanced-mode: fake-ip` 解析，所以 `sing-box` 输出默认镜像同一模式（模板写别的值，例如 `redir-host`，就退回普通解析），并同时下发 IPv4 和 IPv6 的虚拟地址池：
+
+```json
+"dns": {
+  "servers": [
+    { "tag": "dns-proxy", "type": "tls", "server": "1.1.1.1", "detour": "🚀 节点选择" },
+    { "tag": "dns-bootstrap", "type": "udp", "server": "223.5.5.5" },
+    { "tag": "dns-fakeip", "type": "fakeip", "inet4_range": "198.18.0.0/15", "inet6_range": "fc00::/18" }
+  ],
+  "rules": [{ "query_type": ["A", "AAAA"], "server": "dns-fakeip" }],
+  "final": "dns-proxy"
+},
+"experimental": { "cache_file": { "enabled": true, "path": "cache.db", "store_fakeip": true } }
+```
+
+- 池子可以用模板里的 `dns.fake-ip-range` / `dns.fake-ip-range6`（Mihomo 同名键）覆盖，默认 `198.18.0.0/15` + `fc00::/18`。
+- 只有 A / AAAA 走 fakeip：fakeip 服务器不支持其它查询类型，HTTPS、PTR 这类查询仍然走 `final`。fakeip 服务器不能当默认服务器，所以 `final` 保持在 `dns-proxy`。
+- 虚拟地址由 tun 的 `auto_route` 默认路由覆盖，不需要额外路由。客户端重启后要把旧地址映射回域名，因此必须带 `experimental.cache_file`（`store_fakeip`），否则 sing-box 报 `missing fakeip record`。
+- 出站域名解析（节点地址、规则集地址）走 `route.default_domain_resolver`（`dns-bootstrap`），不会拿到虚拟地址。
+- IP 规则会跟着生效，两条路径按客户端内核版本自动选：
+  - **1.14+：DNS 侧 CN 分流**。DNS 规则先用 `evaluate` 让引导 DNS 解析一次，答案落在 CN 规则集里就用 `respond` 把**真实地址**返回给客户端（这些连接根本不进 fake-ip：客户端直连真实 IP，模板的 IP 规则按真实地址天然匹配），其余仍然拿虚拟地址按域名分流。这条路径不需要 route 层 `resolve`，所以没有"解析失败断连""代理收到 IP 而不是域名"的副作用——解析失败只会退回虚拟地址。
+  - **1.12/1.13：route 层 `resolve`**（见下一条），因为这两个版本不认识 `evaluate` / `respond`（会报 `unknown DNS rule action: evaluate`）。
+  - CN 规则集优先复用模板自己的那份（MetaCubeX `geoip/cn` provider，或 `GEOIP,CN` 生成的 `geoip-cn`），模板没有就自动补一份 MetaCubeX `geoip/cn.srs`。
+- route 层 `resolve`（1.12/1.13，以及关掉分流时）：命中 fakeip 的连接在匹配前被还原成域名，所以模板里第一条需要地址的规则（`IP-CIDR`、`GEOIP`、`behavior: ipcidr` 的 `RULE-SET`）前面会插一条 `{ "action": "resolve", "server": "dns-bootstrap" }`；带 `no-resolve` 的规则只匹配直连 IP，不会触发这条动作。
+- 解析器由模板的 `dns.fake-ip-resolve` 决定（两条路径共用）：`direct`（默认）用引导 DNS（国内直连，和 Mihomo 的 nameserver 一致），`proxy` 走 profile 自己的 DNS 路径（经代理的 `dns-proxy`，不泄露查询、也不会因为域名解析不出来而失败），`off` 不解析（1.14+ 也不做分流，IP 规则只匹配直连 IP）。
+- 用哪个解析器对"能不能命中 CN 列表"影响不大（实测 30 个国内域名，两边都是 6 个命中：大站多用 anycast/国际 CDN 地址，GeoIP 库里本来就不算 CN）；差别在速度和失败面：`direct` 更快、CN 站点直连时拿到国内节点，但国内解析不出来的域名会直接失败；`proxy` 不会失败、不泄露，但尾部流量要多一次代理 RTT。DNS 侧分流下"解析不出来"只会退回虚拟地址，不会断连。
+- route 层 `resolve` 的额外代价：解析过的连接会直接连解析出的地址（代理出站拿到的是 IP，不是域名）。DNS 侧分流没有这个问题——只有 CN 答案才返回真实 IP，其余连接仍然按域名交给代理。
+- DNS 侧分流的代价：每个新域名的 A/AAAA 查询要先等一次真实解析（之后走缓存），并且需要 sing-box 1.14+。
+- 下载链接上的 `?singboxFakeIp=1|0` 可以强制开关，模板里的 `enhanced-mode` 是持久开关。
+
 ## 为什么只用 D1
 
 这个项目的数据是结构化配置，主要是订阅源、组合关系、过滤器和规则模板。D1 可以直接表达这些关系，也方便迁移和导出。大文件、后台任务和跨请求状态都不是核心路径，因此不默认引入其他 Cloudflare 存储或异步组件。

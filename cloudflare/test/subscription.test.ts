@@ -6,7 +6,7 @@ import {
   MAX_REMOTE_SOURCE_URLS,
 } from "../src/lib/limits";
 import { readResponseText } from "../src/lib/read";
-import { buildSubscription, buildSubscriptionResult, convertSubscriptionContent, normalizeTargetAlias, singBoxSupportsHttpClients, validateSubscriptionContent } from "../src/lib/subscription";
+import { buildSubscription, buildSubscriptionResult, convertSubscriptionContent, normalizeTargetAlias, singBoxSupportsDnsSplit, singBoxSupportsHttpClients, validateSubscriptionContent } from "../src/lib/subscription";
 
 describe("subscription parsing and limits", () => {
   afterEach(() => vi.restoreAllMocks());
@@ -81,7 +81,11 @@ describe("subscription parsing and limits", () => {
       servers: [
         { tag: "dns-proxy", type: "tls", server: "1.1.1.1", detour: "PROXY" },
         { tag: "dns-bootstrap", type: "udp", server: "223.5.5.5" },
+        // The Mihomo side of a template resolves through fake-ip, so the
+        // sing-box profile mirrors that mode by default.
+        { tag: "dns-fakeip", type: "fakeip", inet4_range: "198.18.0.0/15", inet6_range: "fc00::/18" },
       ],
+      rules: [{ query_type: ["A", "AAAA"], server: "dns-fakeip" }],
       final: "dns-proxy",
     });
     expect(config.route.rules).toEqual([{ action: "sniff" }, { protocol: "dns", action: "hijack-dns" }]);
@@ -182,6 +186,10 @@ describe("subscription parsing and limits", () => {
       { protocol: "dns", action: "hijack-dns" },
       { domain_suffix: ["openai.com"], outbound: "🚀 节点选择" },
       { ip_cidr: ["10.0.0.0/8"], outbound: "DIRECT" },
+      // `IP-CIDR,...,no-resolve` never asks for a resolved address, but the
+      // `GEOIP,CN` rule below does, so a `resolve` action lands in front of it:
+      // with fake-ip the destination is a domain by then.
+      { action: "resolve", server: "dns-bootstrap" },
       // `GEOIP,CN` has a MetaCubeX twin even when the template has no provider
       // for it; the provider-less `RULE-SET` above is skipped.
       { rule_set: ["geoip-cn"], outbound: "DIRECT" },
@@ -397,6 +405,215 @@ describe("subscription parsing and limits", () => {
     expect(forcedOn.route.rule_set?.every((entry) => entry.download_detour === undefined)).toBe(true);
   });
 
+  it("mirrors the template fake-ip mode as a dual-stack fakeip server", async () => {
+    const source = {
+      id: "sing-box-fakeip",
+      name: "Sing Box FakeIP",
+      type: "local" as const,
+      url: "",
+      content: "trojan://password@example.com:443?sni=example.com#Trojan%20Node",
+    };
+    const profile = async (dns: Record<string, unknown> | undefined, query = "") => {
+      const output = await buildSubscription({
+        source,
+        sources: [],
+        requestUrl: new URL(`https://example.com/download/collection/sing-box-fakeip/sing-box${query}`),
+        target: "sing-box",
+        template: { id: "fakeip", name: "FakeIP", target: "mihomo", config: dns ? { dns } : {} },
+      });
+      return JSON.parse(output) as {
+        dns: { servers: Array<Record<string, unknown>>; rules?: Array<Record<string, unknown>>; final?: string };
+        experimental?: Record<string, unknown>;
+        route: { default_domain_resolver?: Record<string, unknown>; rules: Array<Record<string, unknown>> };
+      };
+    };
+
+    // The Mihomo side of a template resolves through fake-ip, so sing-box
+    // mirrors that mode with both address families: A and AAAA are answered
+    // with a fake address and the tun already routes both.
+    const fakeIp = await profile(undefined);
+    expect(fakeIp.dns.servers.at(-1)).toEqual({
+      tag: "dns-fakeip",
+      type: "fakeip",
+      inet4_range: "198.18.0.0/15",
+      inet6_range: "fc00::/18",
+    });
+    // Only A/AAAA go to fakeip; the fakeip server can never be the default one.
+    expect(fakeIp.dns.rules).toEqual([{ query_type: ["A", "AAAA"], server: "dns-fakeip" }]);
+    expect(fakeIp.dns.final).toBe("dns-proxy");
+    // The mapping survives a client restart only with the cache file.
+    expect(fakeIp.experimental).toEqual({ cache_file: { enabled: true, path: "cache.db", store_fakeip: true } });
+    // Node and rule-set host names are resolved by the bootstrap resolver, not
+    // by fakeip, or the outbound would dial a fake address.
+    expect(fakeIp.route.default_domain_resolver).toEqual({ server: "dns-bootstrap" });
+    expect(fakeIp.route.rules.some((rule) => JSON.stringify(rule).includes("198.18.0.0/15"))).toBe(false);
+
+    // A template that asks for another DNS mode keeps the plain resolvers.
+    const redirHost = await profile({ "enhanced-mode": "redir-host" });
+    expect(redirHost.dns.servers).toHaveLength(2);
+    expect(redirHost.dns.rules).toBeUndefined();
+    expect(redirHost.experimental).toBeUndefined();
+
+    // Mihomo's `fake-ip-range` / `fake-ip-range6` select the pools.
+    const custom = await profile({ "enhanced-mode": "fake-ip", "fake-ip-range": "198.19.0.0/16", "fake-ip-range6": "fd00::/18" });
+    expect(custom.dns.servers.at(-1)).toEqual({
+      tag: "dns-fakeip",
+      type: "fakeip",
+      inet4_range: "198.19.0.0/16",
+      inet6_range: "fd00::/18",
+    });
+
+    // `?singboxFakeIp=` overrides the template either way.
+    expect((await profile(undefined, "?singboxFakeIp=0")).dns.servers).toHaveLength(2);
+    expect((await profile({ "enhanced-mode": "redir-host" }, "?singboxFakeIp=1")).dns.servers.at(-1))
+      .toMatchObject({ type: "fakeip" });
+  });
+
+  it("resolves destination addresses in front of the IP rules under fake-ip", async () => {
+    const source = {
+      id: "sing-box-resolve",
+      name: "Sing Box Resolve",
+      type: "local" as const,
+      url: "",
+      content: "trojan://password@example.com:443?sni=example.com#Trojan%20Node",
+    };
+    const rules = async (config: Record<string, unknown>) => {
+      const output = await buildSubscription({
+        source,
+        sources: [],
+        requestUrl: new URL("https://example.com/download/collection/sing-box-resolve/sing-box"),
+        target: "sing-box",
+        template: { id: "resolve", name: "Resolve", target: "mihomo", config },
+      });
+      return (JSON.parse(output) as { route: { rules: Array<Record<string, unknown>> } }).route.rules;
+    };
+    const providers = {
+      ChinaIP: { type: "http", behavior: "ipcidr", format: "mrs", url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/cn.mrs", path: "./ruleset/geoip-cn.mrs", interval: 86400 },
+      ChinaDomain: { type: "http", behavior: "domain", format: "mrs", url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/cn.mrs", path: "./ruleset/geosite-cn.mrs", interval: 86400 },
+    };
+    const groups = [{ name: "🚀 节点选择", type: "select", proxies: ["$all"] }];
+
+    // Fake-ip restores the domain before matching, so an ipcidr rule set needs
+    // a `resolve` action in front of it to see the real addresses.
+    const ipBased = await rules({
+      proxyGroups: groups,
+      ruleProviders: providers,
+      rules: ["RULE-SET,ChinaDomain,DIRECT", "RULE-SET,ChinaIP,DIRECT", "MATCH,🚀 节点选择"],
+    });
+    expect(ipBased).toEqual([
+      { action: "sniff" },
+      { protocol: "dns", action: "hijack-dns" },
+      { rule_set: ["ChinaDomain"], outbound: "DIRECT" },
+      { action: "resolve", server: "dns-bootstrap" },
+      { rule_set: ["ChinaIP"], outbound: "DIRECT" },
+    ]);
+
+    // A `no-resolve` rule means literal addresses only, so it asks for nothing
+    // and the resolve action moves behind it.
+    const noResolve = await rules({
+      proxyGroups: groups,
+      ruleProviders: providers,
+      rules: ["IP-CIDR,10.0.0.0/8,DIRECT,no-resolve", "RULE-SET,ChinaIP,DIRECT", "MATCH,🚀 节点选择"],
+    });
+    expect(noResolve).toEqual([
+      { action: "sniff" },
+      { protocol: "dns", action: "hijack-dns" },
+      { ip_cidr: ["10.0.0.0/8"], outbound: "DIRECT" },
+      { action: "resolve", server: "dns-bootstrap" },
+      { rule_set: ["ChinaIP"], outbound: "DIRECT" },
+    ]);
+
+    // Domain-only templates do not need the extra lookup, and without fake-ip
+    // the destination is a real address anyway.
+    const domainOnly = await rules({
+      proxyGroups: groups,
+      ruleProviders: providers,
+      rules: ["RULE-SET,ChinaDomain,DIRECT", "MATCH,🚀 节点选择"],
+    });
+    expect(domainOnly.some((rule) => rule.action === "resolve")).toBe(false);
+    const noFakeIp = await rules({
+      dns: { "enhanced-mode": "redir-host" },
+      proxyGroups: groups,
+      ruleProviders: providers,
+      rules: ["RULE-SET,ChinaIP,DIRECT", "MATCH,🚀 节点选择"],
+    });
+    expect(noFakeIp.some((rule) => rule.action === "resolve")).toBe(false);
+
+    // `fake-ip-resolve` picks the resolver (or drops the action entirely).
+    const ipRules = ["RULE-SET,ChinaIP,DIRECT", "MATCH,🚀 节点选择"];
+    const viaProxy = await rules({ dns: { "fake-ip-resolve": "proxy" }, proxyGroups: groups, ruleProviders: providers, rules: ipRules });
+    expect(viaProxy.find((rule) => rule.action === "resolve")).toEqual({ action: "resolve", server: "dns-proxy" });
+    for (const off of ["off", false]) {
+      const disabled = await rules({ dns: { "fake-ip-resolve": off }, proxyGroups: groups, ruleProviders: providers, rules: ipRules });
+      expect(disabled.some((rule) => rule.action === "resolve"), `fake-ip-resolve: ${String(off)}`).toBe(false);
+    }
+  });
+
+  it("splits Chinese answers out of fake-ip on sing-box 1.14+", async () => {
+    const source = {
+      id: "sing-box-split",
+      name: "Sing Box Split",
+      type: "local" as const,
+      url: "",
+      content: "trojan://password@example.com:443?sni=example.com#Trojan%20Node",
+    };
+    const template = {
+      proxyGroups: [{ name: "🚀 节点选择", type: "select", proxies: ["$all"] }],
+      ruleProviders: {
+        ChinaIP: { type: "http", behavior: "ipcidr", format: "mrs", url: "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/cn.mrs", path: "./ruleset/geoip-cn.mrs", interval: 86400 },
+      },
+      rules: ["RULE-SET,ChinaIP,DIRECT", "MATCH,🚀 节点选择"],
+    };
+    const profile = async (userAgent: string | undefined, config: Record<string, unknown> = template, query = "") => {
+      const output = await buildSubscription({
+        source,
+        sources: [],
+        requestUrl: new URL(`https://example.com/download/collection/sing-box-split/sing-box${query}`),
+        target: "sing-box",
+        template: { id: "split", name: "Split", target: "mihomo", config },
+        requestUserAgent: userAgent,
+      });
+      return JSON.parse(output) as {
+        dns: { servers: Array<Record<string, unknown>>; rules?: Array<Record<string, unknown>> };
+        route: { rules: Array<Record<string, unknown>>; rule_set?: Array<{ tag: string; url: string; format: string }> };
+      };
+    };
+
+    // 1.14+ resolves first and answers with the real address when it is
+    // Chinese, so those connections never enter fake-ip and the IP rules match
+    // without the route-level resolve action.
+    const split = await profile("SFI (sing-box 1.14.2; language zh_CN)");
+    expect(split.dns.rules).toEqual([
+      { query_type: ["A", "AAAA"], action: "evaluate", server: "dns-bootstrap" },
+      // The template's own MetaCubeX `geoip/cn` rule set is reused, so the list
+      // is not downloaded twice.
+      { query_type: ["A", "AAAA"], match_response: true, rule_set: ["ChinaIP"], action: "respond" },
+      { query_type: ["A", "AAAA"], action: "route", server: "dns-fakeip" },
+    ]);
+    expect(split.route.rules.some((rule) => rule.action === "resolve")).toBe(false);
+    expect(split.route.rule_set?.filter((entry) => entry.tag === "geoip-cn")).toHaveLength(0);
+
+    // A template without any CN IP rule set gets one, so the split still works.
+    const bare = await profile("SFI (sing-box 1.14.2; language zh_CN)", { proxyGroups: template.proxyGroups, rules: ["MATCH,🚀 节点选择"] });
+    expect(bare.dns.rules?.[1]).toEqual({ query_type: ["A", "AAAA"], match_response: true, rule_set: ["geoip-cn"], action: "respond" });
+    expect(bare.route.rule_set?.filter((entry) => entry.tag === "geoip-cn")).toHaveLength(1);
+    expect(bare.route.rule_set?.find((entry) => entry.tag === "geoip-cn")?.url)
+      .toBe("https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/cn.srs");
+
+    // 1.12/1.13 reject the `evaluate` / `respond` actions, so they keep the
+    // route-level resolve action instead.
+    const older = await profile("SFA (sing-box 1.13.0; language zh_CN)");
+    expect(older.dns.rules).toEqual([{ query_type: ["A", "AAAA"], server: "dns-fakeip" }]);
+    expect(older.route.rules.filter((rule) => rule.action === "resolve")).toEqual([{ action: "resolve", server: "dns-bootstrap" }]);
+
+    // The resolver knob applies to the split as well, and `off` drops both.
+    const viaProxy = await profile("SFI (sing-box 1.14.2; language zh_CN)", { ...template, dns: { "fake-ip-resolve": "proxy" } });
+    expect(viaProxy.dns.rules?.[0]).toEqual({ query_type: ["A", "AAAA"], action: "evaluate", server: "dns-proxy" });
+    const disabled = await profile("SFI (sing-box 1.14.2; language zh_CN)", { ...template, dns: { "fake-ip-resolve": "off" } });
+    expect(disabled.dns.rules).toEqual([{ query_type: ["A", "AAAA"], server: "dns-fakeip" }]);
+    expect(disabled.route.rules.some((rule) => rule.action === "resolve")).toBe(false);
+  });
+
   it("detects the sing-box core version from the client User-Agent", () => {
     expect(singBoxSupportsHttpClients("SFI (sing-box 1.14.2; language zh_CN)")).toBe(true);
     expect(singBoxSupportsHttpClients("SFA (sing-box 1.13.0; language zh_CN)")).toBe(false);
@@ -405,6 +622,12 @@ describe("subscription parsing and limits", () => {
     expect(singBoxSupportsHttpClients("sing-box 1.9.0")).toBe(false);
     expect(singBoxSupportsHttpClients("Clash.Meta/v1.19.31")).toBe(false);
     expect(singBoxSupportsHttpClients(undefined)).toBe(false);
+    // The CN split rides on the same 1.14 core (`evaluate` / `respond`).
+    expect(singBoxSupportsDnsSplit("SFI (sing-box 1.14.2; language zh_CN)")).toBe(true);
+    expect(singBoxSupportsDnsSplit("SFA (sing-box 1.13.0; language zh_CN)")).toBe(false);
+    expect(singBoxSupportsDnsSplit("sing-box 1.13.9")).toBe(false);
+    expect(singBoxSupportsDnsSplit("sing-box 1.15.0-beta.1")).toBe(true);
+    expect(singBoxSupportsDnsSplit("Karing/1.2.3")).toBe(false);
   });
 
   it("skips Clash providers when the profile has no collection or token", async () => {
