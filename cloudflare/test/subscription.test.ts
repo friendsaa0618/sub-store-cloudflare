@@ -538,6 +538,15 @@ describe("subscription parsing and limits", () => {
       rules: ["RULE-SET,ChinaIP,DIRECT", "MATCH,🚀 节点选择"],
     });
     expect(noFakeIp.some((rule) => rule.action === "resolve")).toBe(false);
+
+    // `fake-ip-resolve` picks the resolver (or drops the action entirely).
+    const ipRules = ["RULE-SET,ChinaIP,DIRECT", "MATCH,🚀 节点选择"];
+    const viaProxy = await rules({ dns: { "fake-ip-resolve": "proxy" }, proxyGroups: groups, ruleProviders: providers, rules: ipRules });
+    expect(viaProxy.find((rule) => rule.action === "resolve")).toEqual({ action: "resolve", server: "dns-proxy" });
+    for (const off of ["off", false]) {
+      const disabled = await rules({ dns: { "fake-ip-resolve": off }, proxyGroups: groups, ruleProviders: providers, rules: ipRules });
+      expect(disabled.some((rule) => rule.action === "resolve"), `fake-ip-resolve: ${String(off)}`).toBe(false);
+    }
   });
 
   it("detects the sing-box core version from the client User-Agent", () => {

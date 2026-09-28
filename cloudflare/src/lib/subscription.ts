@@ -2225,6 +2225,20 @@ function singBoxUsesFakeIp(config: RoutingTemplateConfig, override: string | nul
   return !mode || mode === "fake-ip";
 }
 
+// IP rules need a resolved address under fake-ip, and the resolver decides how
+// those addresses look: `direct` (the default) asks the bootstrap resolver, the
+// way Mihomo's own nameserver does, while `proxy` keeps the lookup inside the
+// tunnel. `off` drops the action and leaves IP rules matching literal
+// addresses only.
+function singBoxFakeIpResolveServer(config: RoutingTemplateConfig) {
+  const dns = (config.dns || {}) as Record<string, unknown>;
+  const value = dns["fake-ip-resolve"] ?? dns.fakeIpResolve;
+  if (value === false) return undefined;
+  const mode = stringSetting(value) || "direct";
+  if (mode === "off" || mode === "none" || mode === "false") return undefined;
+  return mode === "proxy" ? "dns-proxy" : "dns-bootstrap";
+}
+
 function renderSingBoxJson(proxies: ProxyNode[], template?: RoutingTemplateConfig, options: SingBoxRenderOptions = {}) {
   const config = template || {};
   const nodes = proxies.map(toSingBoxNode).filter((node): node is SingBoxNode => Boolean(node));
@@ -2236,7 +2250,8 @@ function renderSingBoxJson(proxies: ProxyNode[], template?: RoutingTemplateConfi
   const cdn = rulesetCdnOrigin(options.rulesetCdn) || DEFAULT_RULESET_CDN;
   const httpClients = Boolean(options.httpClients);
   const fakeIpRanges = options.fakeIp ? singBoxFakeIpRanges(config) : undefined;
-  const { rules, ruleSets, final } = renderSingBoxRules(config, policies, groups, cdn, options.converted, httpClients, Boolean(fakeIpRanges));
+  const resolveServer = fakeIpRanges ? singBoxFakeIpResolveServer(config) : undefined;
+  const { rules, ruleSets, final } = renderSingBoxRules(config, policies, groups, cdn, options.converted, httpClients, resolveServer);
   const mixedPort = numberSetting(config.mixedPort ?? config["mixed-port"], 7890, 1, 65535);
   const allowLan = Boolean(config.allowLan ?? config["allow-lan"]);
 
@@ -2407,7 +2422,7 @@ function renderSingBoxRules(
   cdn: string,
   converted?: ConvertedRuleSetSource,
   httpClients = false,
-  fakeIp = false,
+  resolveServer?: string,
 ) {
   const rules: Array<Record<string, unknown>> = [{ action: "sniff" }, { protocol: "dns", action: "hijack-dns" }];
   const ruleSets = new Map<string, SingBoxRuleSet>();
@@ -2444,15 +2459,12 @@ function renderSingBoxRules(
   // Fake-ip destinations are restored to their domain before rule matching, so
   // IP rules would only ever match literal addresses. A `resolve` action in
   // front of the first IP-based rule restores them: the rule then matches the
-  // resolved addresses and sing-box dials them (the answer is cached). The
-  // lookup uses the bootstrap resolver, because that is the one that answers
-  // like the client's own network would: a resolver on the proxy side returns
-  // foreign addresses for CN domains, and the CN IP rules would never match.
-  let ipRulesResolved = !fakeIp;
+  // resolved addresses and sing-box dials them (the answer is cached).
+  let ipRulesResolved = !resolveServer;
   const ensureIpResolve = (parts: string[], ipBased: boolean) => {
     if (ipRulesResolved || !ipBased || ruleHasNoResolve(parts)) return;
     ipRulesResolved = true;
-    rules.push({ action: "resolve", server: "dns-bootstrap" });
+    rules.push({ action: "resolve", server: resolveServer });
   };
   for (const rule of config.rules || []) {
     const parts = String(rule).split(",").map((part) => part.trim());

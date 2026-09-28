@@ -229,8 +229,10 @@ Mihomo 侧用 `dns.enhanced-mode: fake-ip` 解析，所以 `sing-box` 输出默�
 - 只有 A / AAAA 走 fakeip：fakeip 服务器不支持其它查询类型，HTTPS、PTR 这类查询仍然走 `final`。fakeip 服务器不能当默认服务器，所以 `final` 保持在 `dns-proxy`。
 - 虚拟地址由 tun 的 `auto_route` 默认路由覆盖，不需要额外路由。客户端重启后要把旧地址映射回域名，因此必须带 `experimental.cache_file`（`store_fakeip`），否则 sing-box 报 `missing fakeip record`。
 - 出站域名解析（节点地址、规则集地址）走 `route.default_domain_resolver`（`dns-bootstrap`），不会拿到虚拟地址。
-- IP 规则会跟着生效：命中 fakeip 的连接在匹配前被还原成域名，所以模板里第一条需要地址的规则（`IP-CIDR`、`GEOIP`、`behavior: ipcidr` 的 `RULE-SET`）前面会自动插一条 `{ "action": "resolve", "server": "dns-bootstrap" }`，用引导 DNS（国内直连，和 Mihomo 的 nameserver 一致）解析出真实地址给规则匹配；带 `no-resolve` 的规则只匹配直连 IP，不会触发这条动作。
-- 这条动作的代价：解析过的连接会直接连解析出的地址（代理出站拿到的是 IP，不是域名），而且国内解析不出来的域名会直接失败，而不是交给代理去解析。不想要这个行为时，给规则加 `no-resolve`，或用 `?singboxFakeIp=0` 整体关掉 fakeip。
+- IP 规则会跟着生效：命中 fakeip 的连接在匹配前被还原成域名，所以模板里第一条需要地址的规则（`IP-CIDR`、`GEOIP`、`behavior: ipcidr` 的 `RULE-SET`）前面会自动插一条 `{ "action": "resolve", "server": "dns-bootstrap" }`，解析出真实地址给规则匹配；带 `no-resolve` 的规则只匹配直连 IP，不会触发这条动作。
+- 解析器由模板的 `dns.fake-ip-resolve` 决定：`direct`（默认）用引导 DNS（国内直连，和 Mihomo 的 nameserver 一致），`proxy` 走 profile 自己的 DNS 路径（经代理的 `dns-proxy`，不泄露查询、也不会因为域名解析不出来而失败），`off` 不插这条动作。
+- 用哪个解析器对"能不能命中 CN 列表"影响不大（实测 30 个国内域名，两边都是 6 个命中：大站多用 anycast/国际 CDN 地址，GeoIP 库里本来就不算 CN）；差别在速度和失败面：`direct` 更快、CN 站点直连时拿到国内节点，但国内解析不出来的域名会直接失败；`proxy` 不会失败、不泄露，但尾部流量要多一次代理 RTT。
+- 这条动作的另一个代价：解析过的连接会直接连解析出的地址（代理出站拿到的是 IP，不是域名）。不想要这个行为时，给规则加 `no-resolve`，或用 `?singboxFakeIp=0` 整体关掉 fakeip。
 - 下载链接上的 `?singboxFakeIp=1|0` 可以强制开关，模板里的 `enhanced-mode` 是持久开关。
 
 ## 为什么只用 D1
