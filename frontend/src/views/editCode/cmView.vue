@@ -354,7 +354,7 @@ const pasteNav = async () => {
 };
 </script>
 
-<style lang="scss">
+<style>
 .cm-panels.cm-panels-bottom {
   padding: 10px;
   border-top: none !important;
@@ -383,14 +383,14 @@ const pasteNav = async () => {
   height: 33px;
   width: 100%;
   justify-content: flex-end;
-  // position: absolute;
-  // top: 42px;
-  // background-color: var(--card-color);
-  img {
+  /* position: absolute; */
+  /* top: 42px; */
+  /* background-color: var(--card-color); */
+  & img {
     width: 16px;
     height: 16px;
   }
-  button {
+  & button {
     cursor: pointer;
   }
 }
@@ -406,7 +406,7 @@ const pasteNav = async () => {
   transition: transform 0.2s;
 }
 .cimg-button {
-  // width: 33px;
+  /* width: 33px; */
   height: 16px;
   font-size: 12px;
   background-repeat: no-repeat;
@@ -417,7 +417,7 @@ const pasteNav = async () => {
   margin-left: 10px;
   margin-top: 8px;
   color: var(--comment-text-color);
-  // position: absolute;
+  /* position: absolute; */
   cursor: pointer;
 }
 .cm-img-button button:hover {
@@ -512,13 +512,13 @@ input[type="checkbox"]:checked {
   border-bottom-right-radius: 12px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  .status-item {
+  & .status-item {
     display: inline-flex;
     align-items: center;
     gap: 4px;
   }
 
-  .dot {
+  & .dot {
     width: 6px;
     height: 6px;
     border-radius: 50%;

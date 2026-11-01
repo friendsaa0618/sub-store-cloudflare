@@ -229,7 +229,7 @@
   });
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
   .des-label {
     font-size: 12px;
     margin-bottom: 8px;
@@ -261,12 +261,12 @@
       cursor: -webkit-grabbing;
     }
 
-    .tag-item {
+    & .tag-item {
       max-width: 100%;
       margin-right: 8px;
       margin-bottom: 8px;
 
-      span {
+      & span {
         max-width: 95%;
         min-width: 20px;
         display: -webkit-box;
@@ -289,12 +289,12 @@
     display: flex;
     align-items: center;
 
-    > :deep(.app-input) {
+    & > :deep(.app-input) {
       padding: 8px 12px;
       margin-right: 16px;
     }
 
-    > svg {
+    & > svg {
       width: 20px;
       height: 20px;
       color: var(--primary-color);

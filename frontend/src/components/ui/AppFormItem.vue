@@ -95,7 +95,7 @@ onBeforeUnmount(() => form?.unregister(instance));
 defineExpose({ validate, clearValidate: () => (error.value = "") });
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .app-form-item {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -122,43 +122,43 @@ defineExpose({ validate, clearValidate: () => (error.value = "") });
     border-color: var(--danger-color);
   }
 
-  &__label {
-    display: inline-flex;
-    align-items: center;
-    gap: 2px;
-    width: auto;
-    min-width: 4.5em;
-    max-width: 7.5em;
-    margin: 0;
-    padding: 0;
-    color: var(--comment-text-color);
-    font-size: 13px;
-    line-height: 1.35;
-  }
-
-  &__required {
-    color: var(--danger-color);
-  }
-
-  &__body {
-    min-width: 0;
-    font-size: var(--text-base);
-  }
-
-  &__error {
-    grid-column: 2;
-    margin: 4px 0 0;
-    color: var(--danger-color);
-    font-size: 12px;
-    line-height: 1.4;
-  }
-
   &.has-no-label {
     grid-template-columns: minmax(0, 1fr);
 
-    .app-form-item__error {
+    & .app-form-item__error {
       grid-column: 1;
     }
   }
+}
+
+.app-form-item__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  width: auto;
+  min-width: 4.5em;
+  max-width: 7.5em;
+  margin: 0;
+  padding: 0;
+  color: var(--comment-text-color);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.app-form-item__required {
+  color: var(--danger-color);
+}
+
+.app-form-item__body {
+  min-width: 0;
+  font-size: var(--text-base);
+}
+
+.app-form-item__error {
+  grid-column: 2;
+  margin: 4px 0 0;
+  color: var(--danger-color);
+  font-size: 12px;
+  line-height: 1.4;
 }
 </style>

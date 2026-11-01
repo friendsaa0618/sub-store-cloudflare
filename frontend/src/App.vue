@@ -61,7 +61,7 @@ watchEffect(() => {
 });
 </script>
 
-<style lang="scss">
+<style>
 #app {
   font-family: var(--font-sans), sans-serif;
   position: absolute;
@@ -72,16 +72,18 @@ watchEffect(() => {
   overflow-y: auto;
 }
 
-// Chinese / CJK: avoid English-tuned negative tracking on titles
+/* Chinese / CJK: avoid English-tuned negative tracking on titles */
 :lang(zh),
 :lang(zh-CN),
 :lang(zh-TW),
 :lang(zh-HK) {
-  h1, h2, h3,
-  .nav-title,
-  .app-brand__name,
-  .section-header__title,
-  .nav-back-title {
+  & h1,
+  & h2,
+  & h3,
+  & .nav-title,
+  & .app-brand__name,
+  & .section-header__title,
+  & .nav-back-title {
     letter-spacing: 0;
     text-wrap: balance;
   }
@@ -118,7 +120,7 @@ h1, h2, h3,
   flex-direction: column;
   overflow: auto;
   width: 100%;
-  max-width: $content-max-width;
+  max-width: 1024px;
   margin-left: auto;
   margin-right: auto;
   min-width: 0;
@@ -126,11 +128,11 @@ h1, h2, h3,
   /* Slightly tighter horizontal pad on phones; desktop keeps 24px */
   padding: 12px 14px 20px;
 
-  @media screen and (min-width: $breakpoint-sm) {
+  @media screen and (min-width: 600px) {
     padding: 16px 16px 24px;
   }
 
-  @media screen and (min-width: $breakpoint-md) {
+  @media screen and (min-width: 768px) {
     padding-left: 24px;
     padding-right: 24px;
   }

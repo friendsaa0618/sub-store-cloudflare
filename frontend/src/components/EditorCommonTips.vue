@@ -26,7 +26,7 @@ const openTips = () => {
 };
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .editor-common-tips-button {
   flex: 0 0 28px;
   width: 28px;
@@ -55,7 +55,7 @@ const openTips = () => {
     box-shadow: 0 0 0 2px var(--focus-ring-color);
   }
 
-  svg {
+  & svg {
     width: 14px;
     height: 14px;
   }

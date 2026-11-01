@@ -100,7 +100,7 @@ onUnmounted(() => {
 });
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .language-dropdown-wrapper {
   position: relative;
   display: inline-flex;
@@ -137,38 +137,38 @@ onUnmounted(() => {
     transform: scale(0.95);
   }
 
-  &--compact {
-    width: 32px;
-    padding: 0;
-  }
-
-  &--icon {
-    width: 32px;
-    height: 32px;
-    padding: 0;
-    border: 0;
-    border-radius: 50%;
-    background: transparent;
-    color: var(--icon-nav-bar-right);
-
-    @media (hover: hover) and (pointer: fine) {
-      &:hover {
-        background: rgba(148, 163, 184, 0.15);
-      }
-    }
-  }
-
   &.is-open {
     color: var(--primary-color);
     background: color-mix(in srgb, var(--primary-color) 12%, transparent);
   }
+}
 
-  &__icon {
-    width: 14px;
-    height: 14px;
-    font-size: 14px;
-    color: currentColor;
+.language-switch-button--compact {
+  width: 32px;
+  padding: 0;
+}
+
+.language-switch-button--icon {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--icon-nav-bar-right);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .language-switch-button--icon:hover {
+    background: rgba(148, 163, 184, 0.15);
   }
+}
+
+.language-switch-button__icon {
+  width: 14px;
+  height: 14px;
+  font-size: 14px;
+  color: currentColor;
 }
 
 .language-dropdown-menu {
@@ -231,10 +231,10 @@ onUnmounted(() => {
     font-weight: 600;
     background: color-mix(in srgb, var(--primary-color) 10%, transparent);
   }
+}
 
-  &__check {
-    font-size: 12px;
-    color: var(--primary-color);
-  }
+.language-dropdown-item__check {
+  font-size: 12px;
+  color: var(--primary-color);
 }
 </style>

@@ -217,17 +217,17 @@
   });
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
   .form-block-wrapper {
-    .sticky-title-wrapper {
-      .common-title-row {
+    & .sticky-title-wrapper {
+      & .common-title-row {
         display: flex;
         align-items: center;
         justify-content: space-between;
         width: 100%;
       }
 
-      .title {
+      & .title {
         display: flex;
         flex: 1;
         justify-content: flex-start;
@@ -240,10 +240,10 @@
         font: inherit;
         text-align: left;
         cursor: pointer;
-        p {
+        & p {
           margin-right: 6px;
         }
-        :deep(svg) {
+        &:deep(svg) {
           font-size: 12px;
           height: 12px;
         }
@@ -279,16 +279,16 @@
     font-weight: normal;
     line-height: 18px;
     white-space: nowrap;
+  }
 
-    &--active {
-      border-color: var(--primary-color);
-      background: transparent;
-      color: var(--primary-color);
-    }
+  .quick-option-chip--active {
+    border-color: var(--primary-color);
+    background: transparent;
+    color: var(--primary-color);
   }
 
   .configured-option-item {
-    :deep(.app-form-item__body) {
+    &:deep(.app-form-item__body) {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto 22px;
       align-items: center;
@@ -332,20 +332,20 @@
       opacity: 1;
     }
 
-    :deep(svg) {
+    &:deep(svg) {
       font-size: 14px;
     }
   }
 
   .radio-wrapper.options-radio {
-    :deep(.app-radio-group) {
+    &:deep(.app-radio-group) {
       width: auto;
       display: flex;
       align-items: center;
       gap: 12px;
     }
 
-    :deep(.app-radio) {
+    &:deep(.app-radio) {
       display: inline-flex;
       align-items: center;
       margin: 0;

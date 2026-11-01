@@ -210,7 +210,7 @@
   
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
   .des-label {
     font-size: 12px;
     margin-bottom: 8px;
@@ -219,11 +219,11 @@
       display: flex;
       align-items: center;
       cursor: pointer;
-      img {
+      & img {
         width: 14px;
         height: 14px;
       }
-      span {
+      & span {
         margin: 0 4px;
       }
     }
@@ -238,7 +238,7 @@
     display: flex;
     align-items: center;
 
-    > :deep(.app-input) {
+    & > :deep(.app-input) {
       padding: 8px 12px;
       margin-right: 16px;
       border-bottom: 1px solid var(--lowest-text-color);
@@ -246,7 +246,7 @@
     }
   }
   .compact-input-wrapper {
-    :deep(.app-input) {
+    &:deep(.app-input) {
       min-height: 26px;
       padding: 2px 8px;
       margin-right: 0;
@@ -254,7 +254,7 @@
       line-height: 18px;
     }
 
-    :deep(.app-input__control) {
+    &:deep(.app-input__control) {
       height: 20px;
       font-size: 12px;
       line-height: 18px;
@@ -271,7 +271,7 @@
     max-width: 280px;
   }
   .edns-input-option {
-    .des-label {
+    & .des-label {
       margin-bottom: 2px;
     }
   }
@@ -281,12 +281,12 @@
     gap: 12px;
     margin: 4px 0 6px;
 
-    .des-label {
+    & .des-label {
       flex: 0 0 auto;
       margin-bottom: 0;
     }
 
-    .input-wrapper {
+    & .input-wrapper {
       flex: 1;
       min-width: 0;
     }

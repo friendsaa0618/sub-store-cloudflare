@@ -942,7 +942,7 @@ const refreshSubFlowsIfNeeded = async () => {
 }
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .sub-item-shell {
   position: relative;
   display: block;
@@ -958,11 +958,9 @@ const refreshSubFlowsIfNeeded = async () => {
 }
 
 .sub-item-customer-icon {
-  :deep(img) {
-    & {
+  &:deep(img) {
       opacity: 0.8;
       filter: brightness(var(--img-brightness));
-    }
   }
 }
 
@@ -994,26 +992,26 @@ const refreshSubFlowsIfNeeded = async () => {
     transform: scale(0.995);
   }
 
-  :deep(.app-avatar) {
+  &:deep(.app-avatar) {
     flex-shrink: 0;
     width: 48px;
     height: 48px;
     margin-right: 12px;
     border-radius: 12px;
 
-    @media screen and (min-width: $breakpoint-md) {
+    @media screen and (min-width: 768px) {
       width: 56px;
       height: 56px;
       margin-right: 15px;
     }
 
-    img {
+    & img {
       object-fit: contain;
       border-radius: 10px;
     }
   }
 
-  > .sub-item-content {
+  & > .sub-item-content {
     z-index: 1;
     flex: 1;
     min-width: 0;
@@ -1021,13 +1019,13 @@ const refreshSubFlowsIfNeeded = async () => {
     display: flex;
     flex-direction: column;
 
-    .sub-item-title-wrapper {
+    & .sub-item-title-wrapper {
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 8px;
 
-      .sub-item-title {
+      & .sub-item-title {
         flex: 1 1 auto;
         min-width: 0;
         display: flex;
@@ -1041,38 +1039,38 @@ const refreshSubFlowsIfNeeded = async () => {
         color: var(--primary-text-color);
         vertical-align: middle;
 
-        @media screen and (min-width: $breakpoint-md) {
+        @media screen and (min-width: 768px) {
           font-size: 16px;
         }
 
         /* Phones: tag pills squeeze the name into an early ellipsis, so keep
            them on desktop and let the card stay a clean two-line row. */
         @media screen and (max-width: 767px) {
-          .tag {
+          & .tag {
             display: none;
           }
         }
       }
-      .sub-item-name {
+      & .sub-item-name {
         min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
-      .app-url {
+      & .app-url {
         font-size: 14px !important;
         margin: 0 2px;
       }
-      .tag {
+      & .tag {
         display: inline-flex;
         flex: 0 0 auto;
         margin: 0 1px;
 
-        :deep(.app-tag) {
+        &:deep(.app-tag) {
           padding: 2px 3px;
         }
       }
-      .sub-item-menu {
+      & .sub-item-menu {
         position: relative;
         top: 0;
         padding: 0;
@@ -1091,7 +1089,7 @@ const refreshSubFlowsIfNeeded = async () => {
         &.is-compact {
           gap: 6px;
 
-          .sub-item-action {
+          & .sub-item-action {
             width: 40px;
             height: 40px;
             border-radius: 10px;
@@ -1099,7 +1097,7 @@ const refreshSubFlowsIfNeeded = async () => {
         }
       }
 
-      .sub-item-action {
+      & .sub-item-action {
         width: 32px;
         height: 32px;
         padding: 0;
@@ -1113,7 +1111,7 @@ const refreshSubFlowsIfNeeded = async () => {
         align-items: center;
         transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), background-color 200ms ease, color 200ms ease, border-color 200ms ease;
 
-        svg {
+        & svg {
           width: 14px;
           height: 14px;
         }
@@ -1133,36 +1131,36 @@ const refreshSubFlowsIfNeeded = async () => {
           background: color-mix(in srgb, var(--primary-color) 12%, transparent);
           color: var(--primary-color);
           border-color: color-mix(in srgb, var(--primary-color) 25%, transparent);
+        }
 
-          @media (hover: hover) and (pointer: fine) {
-            &:hover {
-              background: color-mix(in srgb, var(--primary-color) 22%, transparent);
-              border-color: color-mix(in srgb, var(--primary-color) 40%, transparent);
-            }
+        @media (hover: hover) and (pointer: fine) {
+          &.sub-item-action--primary:hover {
+            background: color-mix(in srgb, var(--primary-color) 22%, transparent);
+            border-color: color-mix(in srgb, var(--primary-color) 40%, transparent);
           }
         }
 
         &.sub-item-action--danger {
           color: var(--second-text-color);
+        }
 
-          @media (hover: hover) and (pointer: fine) {
-            &:hover {
-              background: color-mix(in srgb, #ef4444 14%, transparent);
-              color: #ef4444;
-              border-color: color-mix(in srgb, #ef4444 30%, transparent);
-            }
+        @media (hover: hover) and (pointer: fine) {
+          &.sub-item-action--danger:hover {
+            background: color-mix(in srgb, #ef4444 14%, transparent);
+            color: #ef4444;
+            border-color: color-mix(in srgb, #ef4444 30%, transparent);
           }
         }
       }
 
-      .sub-item-overflow {
+      & .sub-item-overflow {
         position: relative;
         display: flex;
         align-items: center;
       }
     }
 
-    .sub-item-detail {
+    & .sub-item-detail {
       display: -webkit-box;
       -webkit-box-orient: vertical;
       -webkit-line-clamp: 3;
@@ -1174,12 +1172,12 @@ const refreshSubFlowsIfNeeded = async () => {
       font-size: 12px;
       color: var(--comment-text-color);
 
-      span {
+      & span {
         display: block;
         line-height: 1.8;
       }
     }
-    .sub-item-remark {
+    & .sub-item-remark {
       display: -webkit-box;
       -webkit-box-orient: vertical;
       -webkit-line-clamp: 2;
@@ -1191,13 +1189,13 @@ const refreshSubFlowsIfNeeded = async () => {
       font-size: 12px;
       color: var(--comment-text-color);
 
-      span {
+      & span {
         display: block;
         line-height: 1.5;
       }
     }
 
-    .sub-item-detail-isSimple {
+    & .sub-item-detail-isSimple {
       display: -webkit-box;
       -webkit-box-orient: vertical;
       -webkit-line-clamp: 1;
@@ -1209,13 +1207,13 @@ const refreshSubFlowsIfNeeded = async () => {
       margin-top: 2px;
       max-width: 80%;
       color: var(--comment-text-color);
-      span {
+      & span {
         display: block;
         line-height: 1.5;
       }
     }
   }
-  .progress {
+  & .progress {
     position: absolute;
     left: 0;
     pointer-events: none;
@@ -1253,36 +1251,36 @@ const refreshSubFlowsIfNeeded = async () => {
 }
 
 .sub-item-shell.is-dual-column {
-  .sub-item-wrapper {
-    :deep(.app-avatar) {
+  & .sub-item-wrapper {
+    &:deep(.app-avatar) {
       margin-right: 12px;
     }
 
-    > .sub-item-content {
-      .sub-item-title-wrapper {
+    & > .sub-item-content {
+      & .sub-item-title-wrapper {
         align-items: flex-start;
         gap: 6px;
       }
 
-      .sub-item-title {
+      & .sub-item-title {
         font-size: 15px;
       }
 
-      .sub-item-detail {
+      & .sub-item-detail {
         -webkit-line-clamp: 1;
         line-clamp: 1;
       }
 
-      .sub-item-remark {
+      & .sub-item-remark {
         -webkit-line-clamp: 1;
         line-clamp: 1;
       }
 
-      .dual-non-simple-second-line {
+      & .dual-non-simple-second-line {
         min-height: 18px;
       }
 
-      .sub-item-detail-isSimple {
+      & .sub-item-detail-isSimple {
         max-width: 100%;
       }
     }
@@ -1398,7 +1396,7 @@ const refreshSubFlowsIfNeeded = async () => {
   white-space: nowrap;
   transition: background-color 0.15s ease, color 0.15s ease;
 
-  svg {
+  & svg {
     width: 14px;
     height: 14px;
     flex-shrink: 0;
@@ -1415,22 +1413,22 @@ const refreshSubFlowsIfNeeded = async () => {
       background: rgba(148, 163, 184, 0.12);
     }
   }
+}
 
-  &--danger {
+.sub-item-overflow__item--danger {
+  color: #ef4444;
+
+  & svg {
     color: #ef4444;
+  }
 
-    svg {
-      color: #ef4444;
-    }
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      background: rgba(239, 68, 68, 0.1);
+      color: #dc2626;
 
-    @media (hover: hover) and (pointer: fine) {
-      &:hover {
-        background: rgba(239, 68, 68, 0.1);
+      & svg {
         color: #dc2626;
-
-        svg {
-          color: #dc2626;
-        }
       }
     }
   }

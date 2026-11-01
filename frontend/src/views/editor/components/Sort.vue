@@ -43,7 +43,7 @@
   });
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
   .des-label {
     font-size: 12px;
     margin-bottom: 8px;
@@ -53,7 +53,7 @@
   .radio-wrapper.options-radio {
     justify-content: start;
 
-    :deep(.app-radio-group) {
+    &:deep(.app-radio-group) {
       width: 100%;
       display: grid;
       grid-template-columns: repeat(3, 1fr);

@@ -98,7 +98,7 @@ const formatList = (value: unknown) => Array.isArray(value) ? value.join('\n') :
 const localized = (english: string, chinese?: string) => locale.value.startsWith('zh') && chinese ? chinese : english;
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .script-action {
   width: 100%;
 }

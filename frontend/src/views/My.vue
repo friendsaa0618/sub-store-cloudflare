@@ -560,7 +560,7 @@ const errorMessage = (error: unknown) => error instanceof Error ? error.message 
 onMounted(fetchTemplates);
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .my-page-wrapper {
   min-height: 100%;
   padding: 0;
@@ -580,17 +580,17 @@ onMounted(fetchTemplates);
   min-height: 36px;
   padding: 0 2px 0 4px;
   color: var(--comment-text-color);
+}
 
-  &--clickable {
-    cursor: pointer;
-    -webkit-user-select: none;
-    user-select: none;
-    border-radius: var(--radius-md);
+.section-header--clickable {
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  border-radius: var(--radius-md);
 
-    &:focus-visible {
-      outline: none;
-      box-shadow: 0 0 0 2px var(--focus-ring-color);
-    }
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--focus-ring-color);
   }
 }
 
@@ -616,7 +616,7 @@ onMounted(fetchTemplates);
   gap: 6px;
   flex-shrink: 0;
 
-  input {
+  & input {
     display: none;
   }
 }
@@ -635,7 +635,7 @@ onMounted(fetchTemplates);
   transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
     background-color 200ms ease, color 200ms ease, border-color 200ms ease;
 
-  svg {
+  & svg {
     width: 13px;
     height: 13px;
     font-size: 13px;
@@ -686,13 +686,13 @@ onMounted(fetchTemplates);
   background: var(--card-color);
   border: 1px solid var(--divider-color);
 
-  .profile-top {
+  & .profile-top {
     display: flex;
     align-items: center;
     gap: 8px;
   }
 
-  .runtime-pill {
+  & .runtime-pill {
     margin: 0;
     padding: 3px 10px;
     flex-shrink: 0;
@@ -705,7 +705,7 @@ onMounted(fetchTemplates);
     color: var(--primary-color);
   }
 
-  .info {
+  & .info {
     width: 100%;
     margin: 0;
     padding: 12px 0 0;
@@ -715,26 +715,26 @@ onMounted(fetchTemplates);
     gap: var(--space-3);
   }
 
-  .avatar-wrapper {
+  & .avatar-wrapper {
     min-width: 0;
     max-width: 64%;
     display: flex;
     align-items: center;
 
-    :deep(.app-avatar) {
+    &:deep(.app-avatar) {
       background: var(--card-color);
       flex-shrink: 0;
     }
   }
 
-  .name {
+  & .name {
     min-width: 0;
     margin-left: 12px;
     display: flex;
     flex-direction: column;
   }
 
-  .title {
+  & .title {
     margin: 0;
     overflow: hidden;
     color: var(--primary-text-color);
@@ -745,7 +745,7 @@ onMounted(fetchTemplates);
     white-space: nowrap;
   }
 
-  .des {
+  & .des {
     margin-top: 4px;
     display: flex;
     flex-direction: column;
@@ -755,7 +755,7 @@ onMounted(fetchTemplates);
     line-height: 1.45;
   }
 
-  .actions {
+  & .actions {
     margin-left: 8px;
     display: flex;
     flex-direction: row;
@@ -763,21 +763,21 @@ onMounted(fetchTemplates);
     flex-shrink: 0;
     gap: 8px;
 
-    input {
+    & input {
       display: none;
     }
 
-    svg {
+    & svg {
       margin-right: 4px;
     }
 
-    .app-button {
+    & .app-button {
       width: 108px;
       padding: 0 10px;
     }
   }
 
-  .profile-note {
+  & .profile-note {
     margin: 12px 0 0;
     padding-top: 10px;
     border-top: 1px solid var(--divider-color);
@@ -823,7 +823,7 @@ onMounted(fetchTemplates);
     transform: scale(0.99);
   }
 
-  .template-info {
+  & .template-info {
     min-width: 0;
     flex: 1;
     display: flex;
@@ -831,14 +831,14 @@ onMounted(fetchTemplates);
     gap: 4px;
   }
 
-  .template-header-line {
+  & .template-header-line {
     display: flex;
     align-items: center;
     gap: 8px;
     min-width: 0;
   }
 
-  .template-title {
+  & .template-title {
     font-size: 14px;
     font-weight: 600;
     color: var(--primary-text-color);
@@ -847,7 +847,7 @@ onMounted(fetchTemplates);
     white-space: nowrap;
   }
 
-  .template-kind-pill {
+  & .template-kind-pill {
     flex-shrink: 0;
     padding: 1px 8px;
     border-radius: 9999px;
@@ -868,12 +868,12 @@ onMounted(fetchTemplates);
     }
   }
 
-  .template-target-pill {
+  & .template-target-pill {
     font-size: 12px;
     color: var(--comment-text-color);
   }
 
-  .template-actions {
+  & .template-actions {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -928,7 +928,7 @@ onMounted(fetchTemplates);
   color: var(--second-text-color);
   overflow: auto;
 
-  h2 {
+  & h2 {
     margin: 0 28px 4px 0;
     font-size: 15px;
     font-weight: 600;
@@ -987,11 +987,11 @@ onMounted(fetchTemplates);
   background: var(--background-color);
   overflow: auto;
 
-  :deep(.cmviewRef) {
+  &:deep(.cmviewRef) {
     min-height: 200px;
   }
 
-  :deep(.cm-editor) {
+  &:deep(.cm-editor) {
     min-height: 200px;
   }
 }
@@ -1018,10 +1018,10 @@ onMounted(fetchTemplates);
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
 
-  &--full {
-    grid-column: 1 / -1;
-  }
+.form-field-group--full {
+  grid-column: 1 / -1;
 }
 
 .form-field-label {
@@ -1062,7 +1062,7 @@ onMounted(fetchTemplates);
   background: var(--background-color);
   border: 1px solid var(--divider-color);
 
-  .toggle-card-title {
+  & .toggle-card-title {
     font-size: var(--text-sm);
     font-weight: 500;
     color: var(--primary-text-color);
@@ -1071,22 +1071,22 @@ onMounted(fetchTemplates);
 
 @media screen and (max-width: 767px) {
   .profile-block {
-    .info {
+    & .info {
       align-items: flex-start;
       flex-wrap: wrap;
     }
 
-    .avatar-wrapper {
+    & .avatar-wrapper {
       max-width: 100%;
     }
 
-    .actions {
+    & .actions {
       width: 100%;
       flex-direction: row;
       margin-left: 0;
       margin-top: 8px;
 
-      .app-button {
+      & .app-button {
         flex: 1;
         width: auto;
       }

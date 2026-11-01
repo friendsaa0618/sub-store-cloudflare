@@ -514,7 +514,7 @@
   };
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
   .type-tag {
     padding: 1px 4px;
     line-height: 1;
@@ -541,7 +541,7 @@
     width: 100%;
     min-width: 0;
 
-    > div {
+    & > div {
       width: 100%;
       min-width: 0;
       max-width: 100%;
@@ -554,26 +554,26 @@
   .compare-table-body {
     width: 100%;
 
-    .compare-table-row {
+    & .compare-table-row {
       padding-top: 20px;
       padding-bottom: 20px;
       border-bottom: 1px solid var(--divider-color);
     }
+  }
 
-    &--paired {
-      .processed-tr {
-        padding-bottom: 0;
-        border-bottom: none;
-      }
+  .compare-table-body--paired {
+    & .processed-tr {
+      padding-bottom: 0;
+      border-bottom: none;
+    }
 
-      .processed-tr--unpaired {
-        padding-bottom: 20px;
-        border-bottom: 1px solid var(--divider-color);
-      }
+    & .processed-tr--unpaired {
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--divider-color);
+    }
 
-      .original-tr {
-        padding-top: 10px;
-      }
+    & .original-tr {
+      padding-top: 10px;
     }
   }
 
@@ -593,16 +593,16 @@
     display: grid;
     grid-template-columns: 46% 1fr 1fr 1fr 1fr;
 
-    li,
-    td {
+    & li,
+    & td {
       display: flex;
       justify-content: center;
       align-items: center;
       min-width: 0;
     }
 
-    li:first-child,
-    td:first-child {
+    & li:first-child,
+    & td:first-child {
       justify-content: start;
     }
   }
@@ -647,8 +647,8 @@
     margin-right: 24px;
     min-width: 0;
 
-    .processed-item,
-    .original-item {
+    & .processed-item,
+    & .original-item {
       width: auto;
     }
   }
@@ -716,7 +716,7 @@
       cursor: not-allowed;
     }
 
-    :deep(svg) {
+    &:deep(svg) {
       width: 12px;
       height: 12px;
       color: var(--icon-nav-bar-right);
@@ -732,19 +732,19 @@
     position: relative;
     background: var(--compare-item-background-color);
 
-    .compare-title {
+    & .compare-title {
       padding: 0 var(--safe-area-side);
       z-index: 9;
       margin-top: 0;
       top: var(--compare-header-offset);
       background: var(--background-color);
-      small {
+      & small {
         cursor: pointer;
         text-decoration: underline;
       }
     }
 
-    .compare-des {
+    & .compare-des {
       padding: 6px var(--safe-area-side);
       z-index: 8;
       display: flex;
@@ -788,11 +788,11 @@
       gap: 0;
     }
 
-    .title {
+    & .title {
       white-space: nowrap;
       flex-shrink: 0;
     }
-    .displayName {
+    & .displayName {
       display: inline-flex;
       align-items: center;
       gap: 4px;
@@ -808,17 +808,17 @@
         flex-basis: 400px;
       }
 
-      > svg {
+      & > svg {
         flex-shrink: 0;
       }
 
-      .displayNameText {
+      & .displayNameText {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
     }
-    h1 {
+    & h1 {
       display: flex;
       align-items: center;
       gap: 8px;
@@ -829,28 +829,28 @@
       line-height: 1;
       font-weight: 500;
 
-      > svg {
+      & > svg {
         width: 20px;
         height: 20px;
         flex-shrink: 0;
       }
 
-      span {
+      & span {
         font-size: 14px;
         color: var(--second-text-color);
 
-        > svg {
+        & > svg {
           color: var(--comment-text-color);
         }
       }
     }
-    .btn-groups {
+    & .btn-groups {
       display: flex;
       align-items: center;
       flex-shrink: 0;
       gap: 10px;
     }
-    button {
+    & button {
       cursor: pointer;
       background: none;
       border: none;
@@ -886,7 +886,7 @@
     align-items: center;
     justify-content: center;
 
-    :deep(svg) {
+    &:deep(svg) {
       width: 14px;
       height: 14px;
       font-size: 14px;
@@ -925,24 +925,24 @@
     align-items: center;
     
     @media screen and (min-width: 768px) {
-      .compare-page-header,
-      .compare-page-body {
+      & .compare-page-header,
+      & .compare-page-body {
         width: 85%;
         max-width: 800px;
       }
     }
     
     @media screen and (min-width: 900px) {
-      .compare-page-header,
-      .compare-page-body {
+      & .compare-page-header,
+      & .compare-page-body {
         width: 80%;
         max-width: 900px;
       }
     }
     
     @media screen and (min-width: 1200px) {
-      .compare-page-header,
-      .compare-page-body {
+      & .compare-page-header,
+      & .compare-page-body {
         width: 75%;
         max-width: 1000px;
       }

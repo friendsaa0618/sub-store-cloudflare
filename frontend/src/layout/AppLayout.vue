@@ -9,7 +9,7 @@
   const height = "calc(12px + env(safe-area-inset-bottom, 0px))";
 </script>
 
-<style scoped lang="scss">
+<style scoped>
   .app-layout-wrapper {
     flex: 1 1 auto;
     width: 100%;

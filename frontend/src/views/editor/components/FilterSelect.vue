@@ -102,7 +102,7 @@
   });
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
   .des-label {
     font-size: 12px;
     margin-bottom: 8px;
@@ -115,19 +115,19 @@
   .checkbox-group {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    .item {
+    & .item {
       display: flex;
       align-items: center;
-      img {
+      & img {
         width: 14px;
         height: 14px;
       }
     }
 
-    view {
+    & view {
       margin-bottom: 16px;
 
-      :deep(.app-checkbox__label) {
+      &:deep(.app-checkbox__label) {
         font-size: 14px;
         color: var(--second-text-color);
       }

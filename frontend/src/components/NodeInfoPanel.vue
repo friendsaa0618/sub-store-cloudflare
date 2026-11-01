@@ -114,7 +114,7 @@
   onMounted(loadIpInfo);
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
   .type-tag {
     color: var(--primary-color);
     border: 1px solid var(--primary-color);
@@ -187,11 +187,11 @@
     justify-content: center;
     font-size: 12px;
 
-    li:first-child {
+    & li:first-child {
       margin-bottom: 20px;
     }
 
-    li:not(:first-child) {
+    & li:not(:first-child) {
       margin-bottom: 8px;
       color: var(--comment-text-color);
     }
@@ -228,7 +228,7 @@
     display: flex;
     align-items: center;
 
-    :deep(.app-textarea) {
+    &:deep(.app-textarea) {
       padding: 8px 12px;
       color: var(--second-text-color);
     }

@@ -65,7 +65,7 @@ const onChange = (event: Event) => {
 };
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .app-checkbox {
   display: inline-flex;
   align-items: center;
@@ -76,55 +76,8 @@ const onChange = (event: Event) => {
   cursor: pointer;
   user-select: none;
 
-  &__input {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    padding: 0;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-    border: 0;
-  }
-
-  &__box {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex: 0 0 18px;
-    width: 18px;
-    height: 18px;
-    box-sizing: border-box;
-    border: 1px solid var(--divider-color);
-    border-radius: var(--radius-sm);
-    background: var(--card-color);
-    color: var(--background-color);
-    font-size: 11px;
-    transition:
-      background-color 0.15s ease,
-      border-color 0.15s ease;
-  }
-
-  &__label {
-    min-width: 0;
-    line-height: 1.4;
-  }
-
   &.has-text-left {
     flex-direction: row;
-  }
-
-  &.is-checked &__box,
-  &.is-indeterminate &__box {
-    border-color: var(--primary-color);
-    background: var(--primary-color);
-    color: var(--background-color);
-  }
-
-  &__input:focus-visible + &__box,
-  &__input:focus-visible ~ &__box {
-    box-shadow: 0 0 0 2px var(--focus-ring-color);
   }
 
   &.is-disabled {
@@ -132,5 +85,52 @@ const onChange = (event: Event) => {
     cursor: not-allowed;
     opacity: 0.6;
   }
+}
+
+.app-checkbox__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.app-checkbox__box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  border: 1px solid var(--divider-color);
+  border-radius: var(--radius-sm);
+  background: var(--card-color);
+  color: var(--background-color);
+  font-size: 11px;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.app-checkbox__label {
+  min-width: 0;
+  line-height: 1.4;
+}
+
+.app-checkbox.is-checked .app-checkbox__box,
+.app-checkbox.is-indeterminate .app-checkbox__box {
+  border-color: var(--primary-color);
+  background: var(--primary-color);
+  color: var(--background-color);
+}
+
+.app-checkbox__input:focus-visible + .app-checkbox__box,
+.app-checkbox__input:focus-visible ~ .app-checkbox__box {
+  box-shadow: 0 0 0 2px var(--focus-ring-color);
 }
 </style>

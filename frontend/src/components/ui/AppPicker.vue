@@ -98,7 +98,7 @@ const confirm = () => {
 };
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .app-picker__shell {
   display: flex;
   flex-direction: column;

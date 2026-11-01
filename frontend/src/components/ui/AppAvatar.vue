@@ -53,7 +53,7 @@ const sizeValue = computed(() =>
 );
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .app-avatar {
   display: inline-flex;
   align-items: center;
@@ -64,15 +64,15 @@ const sizeValue = computed(() =>
   border-radius: 50%;
   background: var(--background-color);
   color: var(--comment-text-color);
+}
 
-  &__image {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-  }
+.app-avatar__image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
 
-  &__fallback {
-    font-size: 42%;
-  }
+.app-avatar__fallback {
+  font-size: 42%;
 }
 </style>

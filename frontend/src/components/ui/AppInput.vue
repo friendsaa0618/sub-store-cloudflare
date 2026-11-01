@@ -94,7 +94,7 @@ defineExpose({
 });
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .app-input {
   display: flex;
   align-items: center;
@@ -103,54 +103,54 @@ defineExpose({
   min-width: 0;
   color: var(--second-text-color);
 
-  &__control {
-    flex: 1 1 auto;
-    width: 100%;
-    min-width: 0;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    color: inherit;
-    font-family: inherit;
-    font-size: var(--text-base);
-    line-height: 20px;
-    text-align: left;
-
-    &:focus {
-      outline: none;
-    }
-
-    &::placeholder {
-      color: var(--comment-text-color);
-      opacity: 1;
-    }
-
-    &:disabled {
-      color: var(--lowest-text-color);
-      cursor: not-allowed;
-      -webkit-text-fill-color: var(--lowest-text-color);
-    }
-  }
-
-  &--right &__control {
-    text-align: right;
-  }
-
-  &--center &__control {
-    text-align: center;
-  }
-
-  &__adornment {
-    display: inline-flex;
-    align-items: center;
-    flex: 0 0 auto;
-    color: var(--comment-text-color);
-  }
-
   &.is-disabled,
   &.is-readonly {
     cursor: default;
   }
+}
+
+.app-input__control {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  font-size: var(--text-base);
+  line-height: 20px;
+  text-align: left;
+
+  &:focus {
+    outline: none;
+  }
+
+  &::placeholder {
+    color: var(--comment-text-color);
+    opacity: 1;
+  }
+
+  &:disabled {
+    color: var(--lowest-text-color);
+    cursor: not-allowed;
+    -webkit-text-fill-color: var(--lowest-text-color);
+  }
+}
+
+.app-input--right .app-input__control {
+  text-align: right;
+}
+
+.app-input--center .app-input__control {
+  text-align: center;
+}
+
+.app-input__adornment {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  color: var(--comment-text-color);
 }
 </style>

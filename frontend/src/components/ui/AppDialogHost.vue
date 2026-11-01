@@ -55,7 +55,7 @@ const onVisibleChange = (visible: boolean) => {
 };
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .app-dialog__body {
   display: flex;
   flex-direction: column;

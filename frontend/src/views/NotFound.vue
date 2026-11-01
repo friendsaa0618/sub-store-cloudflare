@@ -17,7 +17,7 @@ const route = useRoute();
 const isBackend = /\/(api|download)\/.+/.test(route.fullPath)
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
   .wrapper {
     width: 100%;
     min-height: 50vh;
@@ -39,19 +39,19 @@ const isBackend = /\/(api|download)\/.+/.test(route.fullPath)
     border: 1px solid var(--divider-color);
     box-shadow: var(--card-shadow, 0 2px 12px -2px rgba(0, 0, 0, 0.06));
 
-    h3 {
+    & h3 {
       margin: 0 0 var(--space-4);
       font-size: var(--text-md);
       font-weight: 600;
       line-height: 1.5;
       color: var(--primary-text-color);
 
-      p {
+      & p {
         margin: 0;
       }
     }
 
-    .home-link {
+    & .home-link {
       display: inline-flex;
       align-items: center;
       justify-content: center;

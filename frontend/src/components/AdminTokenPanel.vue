@@ -77,7 +77,7 @@ const saveTokenAndRetry = async () => {
 };
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .admin-token-panel {
   width: 100%;
   min-height: 50vh;
@@ -101,12 +101,12 @@ const saveTokenAndRetry = async () => {
   padding: 0 20px;
   box-sizing: border-box;
 
-  label {
+  & label {
     color: var(--second-text-color);
     font-size: 13px;
   }
 
-  input {
+  & input {
     width: 100%;
     box-sizing: border-box;
     border: 1px solid var(--divider-color);
@@ -136,7 +136,7 @@ const saveTokenAndRetry = async () => {
   gap: 18px;
   margin-top: 14px;
 
-  a {
+  & a {
     color: var(--primary-color);
     font-size: 14px;
   }

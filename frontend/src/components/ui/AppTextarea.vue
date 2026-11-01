@@ -100,7 +100,7 @@ defineExpose({
 });
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .app-textarea {
   position: relative;
   display: flex;
@@ -108,48 +108,48 @@ defineExpose({
   min-width: 0;
   color: var(--second-text-color);
 
-  &__control {
-    flex: 1 1 auto;
-    width: 100%;
-    min-width: 0;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    color: inherit;
-    font-family: inherit;
-    font-size: var(--text-base);
-    line-height: 1.5;
-    resize: vertical;
-
-    &:focus {
-      outline: none;
-    }
-
-    &::placeholder {
-      color: var(--comment-text-color);
-      opacity: 1;
-    }
-
-    &:disabled {
-      color: var(--lowest-text-color);
-      cursor: not-allowed;
-      -webkit-text-fill-color: var(--lowest-text-color);
-    }
-  }
-
-  &__counter {
-    position: absolute;
-    right: 0;
-    bottom: -14px;
-    color: var(--lowest-text-color);
-    font-size: 11px;
-    line-height: 1;
-  }
-
   &.is-disabled,
   &.is-readonly {
     cursor: default;
   }
+}
+
+.app-textarea__control {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  font-size: var(--text-base);
+  line-height: 1.5;
+  resize: vertical;
+
+  &:focus {
+    outline: none;
+  }
+
+  &::placeholder {
+    color: var(--comment-text-color);
+    opacity: 1;
+  }
+
+  &:disabled {
+    color: var(--lowest-text-color);
+    cursor: not-allowed;
+    -webkit-text-fill-color: var(--lowest-text-color);
+  }
+}
+
+.app-textarea__counter {
+  position: absolute;
+  right: 0;
+  bottom: -14px;
+  color: var(--lowest-text-color);
+  font-size: 11px;
+  line-height: 1;
 }
 </style>

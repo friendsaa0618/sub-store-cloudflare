@@ -41,7 +41,7 @@ const context: CheckboxGroupContext = {
 provide(CHECKBOX_GROUP_KEY, context);
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .app-checkbox-group {
   display: flex;
   flex-wrap: wrap;

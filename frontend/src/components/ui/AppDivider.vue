@@ -15,7 +15,7 @@ withDefaults(
 );
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .app-divider {
   display: flex;
   align-items: center;
@@ -36,10 +36,10 @@ withDefaults(
   &.is-dashed::after {
     border-top-style: dashed;
   }
+}
 
-  &__text {
-    flex: 0 0 auto;
-    white-space: nowrap;
-  }
+.app-divider__text {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 </style>

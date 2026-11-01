@@ -118,7 +118,7 @@ const copyUrl = async () => {
 };
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .compare-page-header {
   padding: env(safe-area-inset-top) var(--space-4) 0;
   position: sticky;
@@ -143,7 +143,7 @@ const copyUrl = async () => {
     gap: 0;
   }
 
-  .title {
+  & .title {
     display: inline-flex;
     align-items: center;
     gap: 4px;
@@ -151,42 +151,42 @@ const copyUrl = async () => {
     cursor: pointer;
     min-width: 0;
 
-    .titleText {
+    & .titleText {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
   }
-  .displayName {
+  & .displayName {
     display: inline-flex;
     align-items: center;
     gap: 4px;
     min-width: 0;
     overflow: hidden;
     flex: 1;
-    .displayNameText,
-    .url {
+    & .displayNameText,
+    & .url {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    .displayNameText,
-    .url {
+    & .displayNameText,
+    & .url {
       display: block;
     }
-    > svg {
+    & > svg {
       flex-shrink: 0;
     }
-    .copy {
+    & .copy {
       cursor: pointer;
       font-size: 16px;
       flex-shrink: 0;
     }
-    .url {
+    & .url {
       text-decoration: underline;
     }
   }
-  h1 {
+  & h1 {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -197,23 +197,23 @@ const copyUrl = async () => {
     line-height: 1;
     font-weight: 500;
 
-    > svg {
+    & > svg {
       width: 20px;
       height: 20px;
       flex-shrink: 0;
     }
 
-    span {
+    & span {
       font-size: 14px;
       color: var(--second-text-color);
 
-      > svg {
+      & > svg {
         color: var(--comment-text-color);
       }
     }
   }
 
-  button {
+  & button {
     cursor: pointer;
     background: none;
     border: none;
@@ -228,7 +228,7 @@ const copyUrl = async () => {
       font-size: 18px;
     }
   }
-  .btn-groups {
+  & .btn-groups {
     display: flex;
     align-items: center;
     flex-shrink: 0;
@@ -258,7 +258,7 @@ const copyUrl = async () => {
   align-items: center;
   justify-content: center;
 
-  :deep(svg) {
+  &:deep(svg) {
     width: 14px;
     height: 14px;
     font-size: 14px;
@@ -293,28 +293,28 @@ const copyUrl = async () => {
   flex-direction: column;
   align-items: center;
   background: var(--background-color);
-  .cmviewRef {
+  & .cmviewRef {
     width: 100%;
   }
   @media screen and (min-width: 768px) {
-    .compare-page-header,
-    .cmviewRef {
+    & .compare-page-header,
+    & .cmviewRef {
       width: 85%;
       max-width: 800px;
     }
   }
   
   @media screen and (min-width: 900px) {
-    .compare-page-header,
-    .cmviewRef {
+    & .compare-page-header,
+    & .cmviewRef {
       width: 80%;
       max-width: 900px;
     }
   }
   
   @media screen and (min-width: 1200px) {
-    .compare-page-header,
-    .cmviewRef {
+    & .compare-page-header,
+    & .cmviewRef {
       width: 75%;
       max-width: 1000px;
     }

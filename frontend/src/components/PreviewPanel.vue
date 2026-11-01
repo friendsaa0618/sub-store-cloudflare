@@ -181,7 +181,7 @@
   };
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
   .desc {
     display: flex;
     justify-content: center;
@@ -213,7 +213,7 @@
     margin: 0;
     list-style: none;
 
-    > li {
+    & > li {
       width: 100%;
       display: flex;
       align-items: center;
@@ -235,12 +235,12 @@
         transform: scale(0.99);
       }
 
-      .infos {
+      & .infos {
         display: flex;
         align-items: center;
         gap: 10px;
 
-        div {
+        & div {
           width: 28px;
           height: 28px;
           border-radius: 8px;
@@ -250,7 +250,7 @@
           justify-content: center;
         }
 
-        p {
+        & p {
           font-size: 14px;
           font-weight: 500;
           color: var(--primary-text-color);
@@ -258,12 +258,12 @@
         }
       }
 
-      .actions {
+      & .actions {
         display: flex;
         align-items: center;
         gap: 8px;
 
-        > button {
+        & > button {
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -280,7 +280,7 @@
             border-color: color-mix(in srgb, var(--primary-color) 40%, transparent);
             transform: scale(1.05);
 
-            .action-icon {
+            & .action-icon {
               color: var(--primary-color) !important;
             }
           }

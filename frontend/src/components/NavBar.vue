@@ -230,7 +230,7 @@ const toggleTheme = async () => {
 };
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 /*
  * Full-bleed fixed top bar.
  * Height is hardcoded to 56px (with CSS-var override from the store) so the
@@ -267,7 +267,7 @@ const toggleTheme = async () => {
   gap: 8px;
   box-sizing: border-box;
   width: 100%;
-  max-width: $content-max-width;
+  max-width: 1024px;
   height: 56px;
   margin-left: auto;
   margin-right: auto;
@@ -278,44 +278,44 @@ const toggleTheme = async () => {
   padding-left: 12px;
   overflow: visible;
 
-  @media screen and (min-width: $breakpoint-md) {
+  @media screen and (min-width: 768px) {
     gap: 12px;
     padding-left: 24px;
     padding-right: 24px;
   }
 
-  &__left,
-  &__right,
-  &__center {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    align-items: center;
-    min-width: 0;
-  }
-
-  &__left,
-  &__right {
-    gap: 4px;
-    flex: 0 0 auto;
-
-    @media screen and (min-width: $breakpoint-md) {
-      gap: 6px;
-    }
-  }
-
-  &__center {
-    justify-content: center;
-    flex: 1 1 auto;
-    min-width: 0;
-  }
-
   /* Secondary: keep left cluster compact so center tabs stay usable */
   &.is-secondary {
-    .nav-bar__left {
+    & .nav-bar__left {
       max-width: min(38vw, 180px);
     }
   }
+}
+
+.nav-bar__left,
+.nav-bar__right,
+.nav-bar__center {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center;
+  min-width: 0;
+}
+
+.nav-bar__left,
+.nav-bar__right {
+  gap: 4px;
+  flex: 0 0 auto;
+
+  @media screen and (min-width: 768px) {
+    gap: 6px;
+  }
+}
+
+.nav-bar__center {
+  justify-content: center;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .app-brand {
@@ -328,26 +328,26 @@ const toggleTheme = async () => {
   /* Expand hit area for touch */
   min-height: 40px;
   padding: 4px 2px;
+}
 
-  &__logo {
-    display: block;
-    width: 20px;
-    height: 20px;
-    flex-shrink: 0;
-    object-fit: contain;
-  }
+.app-brand__logo {
+  display: block;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
 
-  &__name {
-    font-size: 14px;
-    font-weight: 600;
-    letter-spacing: -0.015em;
-    color: var(--primary-text-color);
-    white-space: nowrap;
+.app-brand__name {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--primary-text-color);
+  white-space: nowrap;
 
-    /* Free space for segmented tabs on narrow phones */
-    @media screen and (max-width: 480px) {
-      display: none;
-    }
+  /* Free space for segmented tabs on narrow phones */
+  @media screen and (max-width: 480px) {
+    display: none;
   }
 }
 
@@ -410,7 +410,7 @@ const toggleTheme = async () => {
     box-shadow: 0 0 0 2px var(--focus-ring-color);
   }
 
-  @media screen and (min-width: $breakpoint-md) {
+  @media screen and (min-width: 768px) {
     min-height: 0;
     padding: 4px 14px;
   }
@@ -421,11 +421,11 @@ const toggleTheme = async () => {
     padding: 6px 10px;
     gap: 0;
 
-    .nav-segmented-item__label {
+    & .nav-segmented-item__label {
       display: none;
     }
 
-    .nav-segmented-item__icon {
+    & .nav-segmented-item__icon {
       font-size: 14px;
     }
   }
@@ -447,10 +447,10 @@ const toggleTheme = async () => {
     font-weight: 600;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
   }
+}
 
-  &__icon {
-    font-size: 12px;
-  }
+.nav-segmented-item__icon {
+  font-size: 12px;
 }
 
 .nav-btn {
@@ -467,7 +467,7 @@ const toggleTheme = async () => {
   justify-content: center;
   color: var(--second-text-color);
 
-  @media screen and (min-width: $breakpoint-md) {
+  @media screen and (min-width: 768px) {
     width: 32px;
     height: 32px;
   }
@@ -494,11 +494,11 @@ const toggleTheme = async () => {
     outline: none;
     box-shadow: 0 0 0 2px var(--focus-ring-color);
   }
+}
 
-  &__icon {
-    width: 14px;
-    height: 14px;
-    font-size: 14px;
-  }
+.nav-btn__icon {
+  width: 14px;
+  height: 14px;
+  font-size: 14px;
 }
 </style>

@@ -9,7 +9,7 @@
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
 .app-empty {
   display: flex;
   flex-direction: column;
@@ -18,32 +18,32 @@
   gap: 20px;
   padding: 24px 16px;
   text-align: center;
+}
 
-  &__image {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    max-width: 100%;
+.app-empty__image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+}
+
+.app-empty__description {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--comment-text-color);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+
+  &:deep(h3) {
+    margin: 0;
+    color: var(--primary-text-color);
+    font-size: var(--text-md);
+    font-weight: 600;
   }
 
-  &__description {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    color: var(--comment-text-color);
-    font-size: var(--text-sm);
-    line-height: 1.5;
-
-    :deep(h3) {
-      margin: 0;
-      color: var(--primary-text-color);
-      font-size: var(--text-md);
-      font-weight: 600;
-    }
-
-    :deep(p) {
-      margin: 0;
-    }
+  &:deep(p) {
+    margin: 0;
   }
 }
 </style>

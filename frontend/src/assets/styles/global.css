@@ -1,4 +1,4 @@
-@import "./tokens-root.scss";
+@import "./tokens-root.css";
 
 html {
   color-scheme: light dark;
@@ -145,7 +145,7 @@ a {
     border-radius: var(--radius-sm);
   }
 
-  > svg {
+  & > svg {
     flex: 0 0 auto;
     color: var(--comment-text-color);
     font-size: 11px;
@@ -260,19 +260,19 @@ img {
   justify-content: center;
   flex-direction: column;
 
-  h3 {
+  & h3 {
     font-size: 18px;
     font-weight: 600;
     margin-bottom: 12px;
     color: var(--primary-text-color);
   }
 
-  p {
+  & p {
     font-size: 14px;
     color: var(--comment-text-color);
   }
 
-  a {
+  & a {
     font-size: 14px;
     margin: 24px 0 12px 0;
     color: var(--primary-color);
@@ -348,7 +348,7 @@ img {
   }
 }
 
-// tab 切换面板
+/* tab 切换面板 */
 .tab-panel-wrapper {
   background-color: var(--popup-color);
   color: var(--primary-text-color);
@@ -366,7 +366,7 @@ img {
   overflow: auto;
   padding-bottom: var(--space-5);
   
-  // PC/平板端响应式最大宽度限制
+  /* PC/平板端响应式最大宽度限制 */
   @media screen and (min-width: 600px) {
     max-width: 500px;
     width: 500px;
@@ -387,7 +387,7 @@ img {
     width: 800px;
   }
 }
-// 顶部粘性定位标题样式
+/* 顶部粘性定位标题样式 */
 .sticky-title-wrapperse {
   position: sticky;
   display: block;

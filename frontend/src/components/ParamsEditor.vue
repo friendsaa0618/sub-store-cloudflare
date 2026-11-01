@@ -152,19 +152,19 @@ const handleKeyBlur = (item, index) => {
 };
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .key-value-container {
   border-radius: var(--item-card-radios);
   overflow: hidden;
-  .key-value-box {
-    .header {
+  & .key-value-box {
+    & .header {
       display: grid;
       grid-template-columns: 2fr 2fr 1fr;
       font-size: 14px;
       color: var(--second-text-color);
       padding: 8px 0;
       border-bottom: 1px solid var(--lowest-text-color);
-      .item {
+      & .item {
         text-align: left;
         padding: 8px 12px;
         &:last-child {
@@ -172,27 +172,27 @@ const handleKeyBlur = (item, index) => {
         }
       }
     }
-    .content {
-      .key-value-row {
+    & .content {
+      & .key-value-row {
         display: grid;
         grid-template-columns: 2fr 2fr 1fr;
         padding: 8px 0;
 
         &.duplicate-key-row {
-          background-color: rgba(255, 68, 68, 0.05); // 重复键行的背景色
+          background-color: rgba(255, 68, 68, 0.05); /* 重复键行的背景色 */
         }
 
-        .item {
+        & .item {
           text-align: left;
           display: flex;
-          align-items: flex-start; // 改为顶部对齐，方便显示错误提示
+          align-items: flex-start; /* 改为顶部对齐，方便显示错误提示 */
 
-          .input-container {
+          & .input-container {
             width: 100%;
             display: flex;
             flex-direction: column;
 
-            .duplicate-key-tip {
+            & .duplicate-key-tip {
               font-size: 10px;
               color: var(--danger-color, #ff4444);
               padding: 2px 12px;
@@ -200,7 +200,7 @@ const handleKeyBlur = (item, index) => {
             }
           }
 
-          :deep(.app-textarea) {
+          &:deep(.app-textarea) {
             width: 100%;
             padding: 8px 12px;
             color: var(--second-text-color);
@@ -214,7 +214,7 @@ const handleKeyBlur = (item, index) => {
             display: flex;
             align-items: center;
             justify-content: center;
-            .param-delete {
+            & .param-delete {
               cursor: pointer;
               color: var(--primary-color);
               margin: 0 8px;
@@ -226,12 +226,12 @@ const handleKeyBlur = (item, index) => {
           }
         }
       }
-      .empty-tips {
+      & .empty-tips {
         display: flex;
         justify-content: center;
         padding: 8px 0;
         color: var(--comment-text-color);
-        p {
+        & p {
           font-size: 12px;
         }
       }

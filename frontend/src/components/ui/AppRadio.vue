@@ -46,7 +46,7 @@ const select = () => {
 };
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .app-radio {
   display: inline-flex;
   align-items: center;
@@ -57,49 +57,6 @@ const select = () => {
   line-height: 1.4;
   cursor: pointer;
   user-select: none;
-
-  &__input {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    padding: 0;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-    border: 0;
-  }
-
-  &__dot {
-    position: relative;
-    display: inline-flex;
-    flex: 0 0 18px;
-    width: 18px;
-    height: 18px;
-    box-sizing: border-box;
-    border: 1px solid var(--divider-color);
-    border-radius: 50%;
-    background: var(--card-color);
-    transition:
-      border-color 0.15s ease,
-      background-color 0.15s ease;
-  }
-
-  &__label {
-    min-width: 0;
-  }
-
-  &.is-checked &__dot {
-    border-color: var(--primary-color);
-  }
-
-  &.is-checked &__dot::after {
-    content: "";
-    position: absolute;
-    inset: 4px;
-    border-radius: 50%;
-    background: var(--primary-color);
-  }
 
   &.is-button {
     padding: 5px 10px;
@@ -119,20 +76,63 @@ const select = () => {
     font-weight: 500;
   }
 
-  &__input:focus-visible + &__dot,
-  &__input:focus-visible ~ &__dot {
-    box-shadow: 0 0 0 2px var(--focus-ring-color);
-  }
-
-  &__input:focus-visible ~ &__label {
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-
   &.is-disabled {
     color: var(--lowest-text-color);
     cursor: not-allowed;
     opacity: 0.6;
   }
+}
+
+.app-radio__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.app-radio__dot {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  border: 1px solid var(--divider-color);
+  border-radius: 50%;
+  background: var(--card-color);
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.app-radio__label {
+  min-width: 0;
+}
+
+.app-radio.is-checked .app-radio__dot {
+  border-color: var(--primary-color);
+}
+
+.app-radio.is-checked .app-radio__dot::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: var(--primary-color);
+}
+
+.app-radio__input:focus-visible + .app-radio__dot,
+.app-radio__input:focus-visible ~ .app-radio__dot {
+  box-shadow: 0 0 0 2px var(--focus-ring-color);
+}
+
+.app-radio__input:focus-visible ~ .app-radio__label {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 </style>

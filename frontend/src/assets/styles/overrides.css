@@ -1,12 +1,12 @@
-// Global overrides shared across views (kept after dropping the UI kit).
+/* Global overrides shared across views (kept after dropping the UI kit). */
 
-// sticky title 顶部粘性定位标题 — tight rhythm with following fields
+/* sticky title 顶部粘性定位标题 — tight rhythm with following fields */
 .sticky-title-wrapper {
   margin-top: var(--space-2);
   margin-bottom: var(--space-2);
   color: var(--comment-text-color);
 
-  > p {
+  & > p {
     margin: 0;
     font-size: 13px;
     font-weight: 600;
@@ -14,12 +14,12 @@
   }
 }
 
-// Keep backend logos aligned with the page theme while they reload.
+/* Keep backend logos aligned with the page theme while they reload. */
 img.auto-reverse {
   filter: brightness(var(--img-brightness));
 }
 
-// Placeholders
+/* Placeholders */
 input::placeholder,
 textarea::placeholder {
   color: var(--comment-text-color) !important;
@@ -66,7 +66,7 @@ textarea::-webkit-input-placeholder {
   cursor: pointer;
 }
 
-// Skeleton pulse loader utility
+/* Skeleton pulse loader utility */
 @keyframes skeletonPulse {
   0% {
     opacity: 0.55;
@@ -89,7 +89,7 @@ textarea::-webkit-input-placeholder {
     color-mix(in srgb, var(--divider-color) 40%, transparent) 25%,
     color-mix(in srgb, var(--divider-color) 80%, transparent) 50%,
     color-mix(in srgb, var(--divider-color) 40%, transparent) 75%
-  );
+    );
   background-size: 200% 100%;
   animation: skeletonPulse 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }

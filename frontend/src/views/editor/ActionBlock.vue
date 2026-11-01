@@ -585,7 +585,7 @@ const toggleEditName = (element) => {
 defineExpose({ exitAllEditName });
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .paste-action {
   background-color: var(--dialog-color);
   box-shadow: 0 1px 40px var(--background-color);
@@ -610,11 +610,11 @@ defineExpose({ exitAllEditName });
   justify-content: center;
   margin-top: 12px;
 
-  span {
+  & span {
     display: inline-flex;
     align-items: center;
 
-    svg {
+    & svg {
       margin-right: 6px;
       width: 16px;
       height: 16px;
@@ -637,7 +637,7 @@ defineExpose({ exitAllEditName });
   background: var(--card-color);
   color: var(--primary-text-color);
 
-  .list-group-item-title {
+  & .list-group-item-title {
     display: flex;
     justify-content: space-between;
     padding-bottom: 8px;
@@ -646,13 +646,13 @@ defineExpose({ exitAllEditName });
     border-bottom: 1px solid var(--divider-color);
     width: 100%;
 
-    .input-wrapper {
+    & .input-wrapper {
       position: relative;
       display: flex;
       align-items: center;
       flex: 1;
       margin-right: 2px;
-      .custom-name-input {
+      & .custom-name-input {
         font-size: 12px;
         font-weight: bold;
         background: transparent;
@@ -661,7 +661,7 @@ defineExpose({ exitAllEditName });
         border: none;
         outline: none;
         text-overflow: ellipsis;
-        :deep(.app-input__control) {
+        &:deep(.app-input__control) {
           width: 100%;
           color: var(--second-text-color);
           text-overflow: ellipsis;
@@ -673,7 +673,7 @@ defineExpose({ exitAllEditName });
         }
       }
 
-      .input-overlay {
+      & .input-overlay {
         position: absolute;
         top: 0;
         left: 0;
@@ -685,11 +685,11 @@ defineExpose({ exitAllEditName });
       }
     }
 
-    .list-group-item-icons {
+    & .list-group-item-icons {
       display: flex;
       align-items: center;
       gap: 4px;
-      .svg-inline--fa {
+      & .svg-inline--fa {
         cursor: pointer;
       }
     }
@@ -700,18 +700,19 @@ defineExpose({ exitAllEditName });
       border-bottom: none;
     }
 
-    .left {
+    & .left {
       font-size: 12px;
       font-weight: bold;
       display: flex;
       align-items: center;
       flex: 1;
       padding-right: 5px;
-      .collapsed, .name {
+      & .collapsed,
+      & .name {
         cursor: pointer;
       }
 
-      button.collapsed {
+      & button.collapsed {
         display: inline-flex;
         align-items: center;
         margin-right: 6px;
@@ -721,61 +722,61 @@ defineExpose({ exitAllEditName });
         color: inherit;
       }
 
-      span {
+      & span {
         margin-right: 6px;
       }
 
-      svg {
+      & svg {
         color: var(--unimportant-icon-color);
       }
     }
 
-    .right {
+    & .right {
       display: flex;
       align-items: center;
       flex-shrink: 0;
-      .action-switch {
+      & .action-switch {
         display: flex;
         align-items: center;
         padding-right: 8px;
 
-        .toggle {
+        & .toggle {
           color: var(--unimportant-icon-color);
         }
-        span,
-        .switch-label {
+        & span,
+        & .switch-label {
           font-weight: normal;
           font-size: 12px;
           flex-shrink: 0;
         }
-        .switch-label {
+        & .switch-label {
           padding: 0;
           border: 0;
           background: transparent;
           color: inherit;
           cursor: pointer;
         }
-        .my-switch {
+        & .my-switch {
           width: 18px;
         }
       }
-      .preview-switch {
+      & .preview-switch {
         -webkit-user-select: none;
         user-select: none;
         cursor: pointer;
         display: flex;
         align-items: center;
-        // margin-right: 12px;
+        /* margin-right: 12px; */
         padding-right: 5px;
 
-        span,
-        .switch-label {
-          // margin-right: 8px;
+        & span,
+        & .switch-label {
+          /* margin-right: 8px; */
           flex-shrink: 0;
           font-weight: normal;
           font-size: 12px;
         }
-        .switch-label {
+        & .switch-label {
           padding: 0;
           border: 0;
           background: transparent;
@@ -783,28 +784,18 @@ defineExpose({ exitAllEditName });
           cursor: pointer;
         }
 
-        .my-switch {
+        & .my-switch {
           width: 18px;
         }
-        &--disabled {
-          color: var(--comment-text-color);
-          opacity: 0.48;
-          filter: grayscale(1);
-          cursor: help;
-
-          span {
-            color: var(--comment-text-color);
-          }
-        }
       }
-      .preview-switch-popover {
+      & .preview-switch-popover {
         position: relative;
         display: flex;
         align-items: center;
 
 
       }
-      .preview-switch-tooltip {
+      & .preview-switch-tooltip {
         position: absolute;
         right: 0;
         bottom: calc(100% + 6px);
@@ -822,9 +813,9 @@ defineExpose({ exitAllEditName });
         white-space: normal;
         pointer-events: none;
       }
-      .icon-button,
-      .icon-action,
-      .delete {
+      & .icon-button,
+      & .icon-action,
+      & .delete {
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -835,16 +826,13 @@ defineExpose({ exitAllEditName });
         cursor: pointer;
         font: inherit;
       }
-      .icon-button {
-        &__input {
-          padding-right: 20px;
-        }
+      & .icon-button {
       }
-      .delete {
+      & .delete {
         color: var(--danger-color);
       }
 
-      .drag-handler {
+      & .drag-handler {
         padding-left: 8px;
         color: var(--lowest-text-color);
         cursor: move;
@@ -853,7 +841,7 @@ defineExpose({ exitAllEditName });
         cursor: -webkit-grab;
       }
 
-      .drag-handler:active {
+      & .drag-handler:active {
           cursor: grabbing;
           cursor: -moz-grabbing;
           cursor: -webkit-grabbing;
@@ -861,6 +849,19 @@ defineExpose({ exitAllEditName });
   
     }
   }
+}
+.list-group-item .list-group-item-title .right .preview-switch--disabled {
+  color: var(--comment-text-color);
+  opacity: 0.48;
+  filter: grayscale(1);
+  cursor: help;
+
+  & span {
+    color: var(--comment-text-color);
+  }
+}
+.list-group-item .list-group-item-title .right .icon-button__input {
+  padding-right: 20px;
 }
 
 .list-group-itemsa {
@@ -874,16 +875,16 @@ defineExpose({ exitAllEditName });
   background: var(--card-color);
   color: var(--primary-text-color);
 
-  .list-group-item-titlesa {
+  & .list-group-item-titlesa {
     color: var(--comment-text-color);
     border-bottom: 1px solid var(--divider-color);
     padding: 1px 0 12px 12px;
 
-    span {
+    & span {
       margin-right: 6px;
     }
 
-    svg {
+    & svg {
       color: var(--unimportant-icon-color);
     }
   }
@@ -894,7 +895,7 @@ defineExpose({ exitAllEditName });
   justify-content: space-between;
   align-items: center;
 
-  .toggle-btn {
+  & .toggle-btn {
     display: inline-flex;
     align-items: center;
     margin-left: 18px;
@@ -906,11 +907,11 @@ defineExpose({ exitAllEditName });
     cursor: pointer;
   }
 
-  .toggle {
+  & .toggle {
     cursor: pointer;
   }
 
-  button {
+  & button {
     background: none;
     border: none;
     font-weight: normal;
@@ -918,7 +919,7 @@ defineExpose({ exitAllEditName });
     padding: 0;
     color: var(--comment-text-color);
 
-    svg {
+    & svg {
       margin-right: 4px;
     }
   }

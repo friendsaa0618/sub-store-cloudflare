@@ -40,7 +40,7 @@ withDefaults(
 );
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .app-button {
   --app-button-color: var(--second-text-color);
   --app-button-bg: var(--card-color);
@@ -95,36 +95,6 @@ withDefaults(
     box-shadow: 0 0 0 2px var(--focus-ring-color);
   }
 
-  &--primary {
-    --app-button-color: var(--background-color);
-    --app-button-bg: var(--primary-color);
-    --app-button-border: var(--primary-color);
-  }
-
-  &--success {
-    --app-button-color: #fff;
-    --app-button-bg: var(--succeed-color);
-    --app-button-border: var(--succeed-color);
-  }
-
-  &--danger {
-    --app-button-color: #fff;
-    --app-button-bg: var(--danger-color);
-    --app-button-border: var(--danger-color);
-  }
-
-  &--warning {
-    --app-button-color: #fff;
-    --app-button-bg: var(--warning-color, #d97706);
-    --app-button-border: var(--warning-color, #d97706);
-  }
-
-  &--info {
-    --app-button-color: var(--second-text-color);
-    --app-button-bg: var(--divider-color);
-    --app-button-border: var(--divider-color);
-  }
-
   &.is-plain {
     background: transparent;
     color: var(--app-button-border);
@@ -139,28 +109,6 @@ withDefaults(
     }
   }
 
-  &--large {
-    height: 44px;
-    padding: 0 20px;
-    font-size: var(--text-md);
-  }
-
-  &--normal {
-    height: 36px;
-  }
-
-  &--small {
-    height: 32px;
-    padding: 0 12px;
-    font-size: var(--text-sm);
-  }
-
-  &--mini {
-    height: 28px;
-    padding: 0 10px;
-    font-size: var(--text-xs);
-  }
-
   &.is-block {
     display: flex;
     width: 100%;
@@ -169,23 +117,75 @@ withDefaults(
   &.is-square {
     border-radius: var(--radius-sm);
   }
+}
 
-  &__content {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    min-width: 0;
-  }
+.app-button--primary {
+  --app-button-color: var(--background-color);
+  --app-button-bg: var(--primary-color);
+  --app-button-border: var(--primary-color);
+}
 
-  &__spinner {
-    width: 14px;
-    height: 14px;
-    flex: 0 0 14px;
-    border: 2px solid currentColor;
-    border-right-color: transparent;
-    border-radius: 50%;
-    animation: app-button-spin 0.7s linear infinite;
-  }
+.app-button--success {
+  --app-button-color: #fff;
+  --app-button-bg: var(--succeed-color);
+  --app-button-border: var(--succeed-color);
+}
+
+.app-button--danger {
+  --app-button-color: #fff;
+  --app-button-bg: var(--danger-color);
+  --app-button-border: var(--danger-color);
+}
+
+.app-button--warning {
+  --app-button-color: #fff;
+  --app-button-bg: var(--warning-color, #d97706);
+  --app-button-border: var(--warning-color, #d97706);
+}
+
+.app-button--info {
+  --app-button-color: var(--second-text-color);
+  --app-button-bg: var(--divider-color);
+  --app-button-border: var(--divider-color);
+}
+
+.app-button--large {
+  height: 44px;
+  padding: 0 20px;
+  font-size: var(--text-md);
+}
+
+.app-button--normal {
+  height: 36px;
+}
+
+.app-button--small {
+  height: 32px;
+  padding: 0 12px;
+  font-size: var(--text-sm);
+}
+
+.app-button--mini {
+  height: 28px;
+  padding: 0 10px;
+  font-size: var(--text-xs);
+}
+
+.app-button__content {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.app-button__spinner {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: app-button-spin 0.7s linear infinite;
 }
 
 @keyframes app-button-spin {
@@ -201,10 +201,10 @@ withDefaults(
     &:active:not(:disabled) {
       transform: none;
     }
+  }
 
-    &__spinner {
-      animation-duration: 2s;
-    }
+  .app-button__spinner {
+    animation-duration: 2s;
   }
 }
 </style>

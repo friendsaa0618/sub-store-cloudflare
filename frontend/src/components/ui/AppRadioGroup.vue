@@ -42,7 +42,7 @@ const context: RadioGroupContext = {
 provide(RADIO_GROUP_KEY, context);
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .app-radio-group {
   display: flex;
   flex-wrap: wrap;

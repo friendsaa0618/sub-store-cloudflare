@@ -366,7 +366,7 @@ const notifyError = (error: unknown) => showNotify({ type: 'danger', title: t('t
 onMounted(() => Promise.all([loadShares(), loadRecycle()]));
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .tools-page {
   min-height: 100%;
   /* page-body already provides horizontal padding — avoid double inset */
@@ -383,7 +383,7 @@ onMounted(() => Promise.all([loadShares(), loadRecycle()]));
     column-gap: var(--space-4);
     row-gap: var(--space-5);
 
-    .tool-section:first-child {
+    & .tool-section:first-child {
       grid-column: 1 / -1;
     }
   }
@@ -446,11 +446,11 @@ onMounted(() => Promise.all([loadShares(), loadRecycle()]));
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
 
-  &--grow {
-    flex: 2;
-    min-width: 180px;
-  }
+.form-field--grow {
+  flex: 2;
+  min-width: 180px;
 }
 
 .field-label {
@@ -461,7 +461,7 @@ onMounted(() => Promise.all([loadShares(), loadRecycle()]));
   line-height: 1.3;
 }
 
-// Standardized Control Heights (40px/44px) & Focus Ring
+/* Standardized Control Heights (40px/44px) & Focus Ring */
 .field-control {
   box-sizing: border-box;
   width: 100%;
@@ -486,7 +486,6 @@ onMounted(() => Promise.all([loadShares(), loadRecycle()]));
     outline: none;
   }
 
-  &--mono,
   &:is(textarea) {
     height: auto;
     min-height: 140px;
@@ -497,6 +496,15 @@ onMounted(() => Promise.all([loadShares(), loadRecycle()]));
   }
 }
 
+.field-control--mono {
+  height: auto;
+  min-height: 140px;
+  padding: var(--space-3);
+  resize: vertical;
+  font-family: var(--font-mono);
+  line-height: 1.5;
+}
+
 select.field-control {
   appearance: none;
   /* Light chevron; inverted on dark via filter so it tracks theme */
@@ -505,10 +513,11 @@ select.field-control {
   background-position: right 10px center;
   background-size: 14px;
   padding-right: 28px;
+}
 
-  :global(html[data-theme="dark"]) & {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23A1A1AA'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-  }
+/* Dark chevron; :global() keeps the html selector unscoped. */
+:global(html[data-theme="dark"]) {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23A1A1AA'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
 }
 
 .btn-icon {
@@ -587,37 +596,37 @@ select.field-control {
   &:active {
     transform: scale(0.99);
   }
+}
 
-  &__main {
-    min-width: 0;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-  }
+.feature-card__main {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
 
-  &__title {
-    color: var(--primary-text-color);
-    font-size: var(--text-base);
-    font-weight: 600;
-    overflow-wrap: anywhere;
-  }
+.feature-card__title {
+  color: var(--primary-text-color);
+  font-size: var(--text-base);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
 
-  &__meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--space-2);
-    color: var(--comment-text-color);
-    font-size: var(--text-xs);
-  }
+.feature-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--comment-text-color);
+  font-size: var(--text-xs);
+}
 
-  &__actions {
-    display: flex;
-    flex-shrink: 0;
-    align-items: center;
-    gap: var(--space-2);
-  }
+.feature-card__actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 /* Skeleton Loaders */
@@ -699,7 +708,7 @@ select.field-control {
   color: var(--lowest-text-color);
   font-size: var(--text-sm);
 
-  svg {
+  & svg {
     width: 14px;
     height: 14px;
     opacity: 0.8;
@@ -713,12 +722,12 @@ select.field-control {
   .feature-card {
     align-items: flex-start;
     flex-direction: column;
+  }
 
-    &__actions {
-      width: 100%;
-      justify-content: flex-start;
-      margin-top: var(--space-1);
-    }
+  .feature-card__actions {
+    width: 100%;
+    justify-content: flex-start;
+    margin-top: var(--space-1);
   }
 }
 </style>

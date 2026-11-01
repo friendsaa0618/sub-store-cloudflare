@@ -58,7 +58,7 @@ provide(FORM_KEY, {
 defineExpose({ validate });
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .app-form {
   display: flex;
   flex-direction: column;

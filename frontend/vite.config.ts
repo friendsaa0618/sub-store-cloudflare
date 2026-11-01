@@ -50,6 +50,9 @@ const viteConfig = defineConfig((mode: ConfigEnv) => {
       assetsInlineLimit: 2048,
       chunkSizeWarningLimit: 2048,
       target: "es2015",
+      // CSS nesting ships in the sources; esbuild only flattens it when a real
+      // browser target is given ("es2015" is JS-only and leaves `&` untouched).
+      cssTarget: ["chrome107", "edge107", "firefox104", "safari16"],
       minify: "terser",
       input: {
         main: "src/main.ts",
@@ -87,15 +90,6 @@ const viteConfig = defineConfig((mode: ConfigEnv) => {
         compress: {
           drop_console: true,
           drop_debugger: true,
-        },
-      },
-    },
-    css: {
-      preprocessorOptions: {
-        scss: {
-          // 配置自定义覆盖主题变量
-          additionalData: `@import "@/assets/styles/custom_variables.scss";@import '@/assets/styles/mixins.scss';@import '@/assets/styles/tokens.scss';`,
-          silenceDeprecations: ["import"],
         },
       },
     },

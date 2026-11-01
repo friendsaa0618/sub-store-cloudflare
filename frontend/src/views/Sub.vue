@@ -609,7 +609,7 @@ const importTips = () => {
 };
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .floating-refresh {
   position: fixed;
   left: 15px;
@@ -645,7 +645,7 @@ const importTips = () => {
     box-shadow: 0 0 0 2px var(--focus-ring-color);
   }
 
-  > svg {
+  & > svg {
     width: 20px;
     height: 20px;
     color: #fff;
@@ -665,13 +665,13 @@ const importTips = () => {
   background: linear-gradient(135deg, color-mix(in srgb, var(--primary-color) 8%, var(--card-color)), var(--card-color));
   color: var(--second-text-color);
 
-  h3 {
+  & h3 {
     margin: 4px 0 6px;
     color: var(--primary-text-color);
     font-size: 18px;
   }
 
-  p {
+  & p {
     margin: 0;
     color: var(--comment-text-color);
     font-size: 13px;
@@ -716,7 +716,7 @@ const importTips = () => {
   gap: 10px;
   list-style: none;
 
-  li {
+  & li {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -728,7 +728,7 @@ const importTips = () => {
     text-align: left;
   }
 
-  strong {
+  & strong {
     width: 24px;
     height: 24px;
     flex: 0 0 24px;
@@ -746,7 +746,7 @@ const importTips = () => {
   justify-content: center;
   gap: 16px;
 
-  a:not(.onboarding-action) {
+  & a:not(.onboarding-action) {
     color: var(--primary-color);
     font-size: 13px;
   }
@@ -771,7 +771,7 @@ const importTips = () => {
   background-color: transparent;
   color: var(--second-text-color);
 
-  .preview-sheet-handle {
+  & .preview-sheet-handle {
     width: 36px;
     height: 4px;
     margin: 0 auto 10px;
@@ -779,7 +779,7 @@ const importTips = () => {
     background: color-mix(in srgb, var(--comment-text-color) 28%, transparent);
   }
 
-  .title-btn {
+  & .title-btn {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -787,7 +787,7 @@ const importTips = () => {
     gap: 4px;
   }
 
-  .import-tips-btn {
+  & .import-tips-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -809,7 +809,7 @@ const importTips = () => {
     }
   }
 
-  .add-sub-panel-title {
+  & .add-sub-panel-title {
     width: auto;
     text-align: center;
     font-size: 16px;
@@ -820,7 +820,7 @@ const importTips = () => {
     }
   }
 
-  .add-sub-panel-list {
+  & .add-sub-panel-list {
     padding: 16px 0;
     font-size: 16px;
     font-weight: bold;
@@ -828,19 +828,19 @@ const importTips = () => {
     width: 100%;
     color: var(--second-text-color);
 
-    > li {
+    & > li {
       width: 50%;
       display: flex;
       justify-content: center;
 
-      .router-link {
+      & .router-link {
         width: 100%;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: space-between;
 
-        > svg {
+        & > svg {
           width: 44px;
           height: 44px;
           color: var(--primary-color);
@@ -917,7 +917,7 @@ const importTips = () => {
   transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
     background-color 200ms ease, color 200ms ease, border-color 200ms ease;
 
-  svg {
+  & svg {
     width: 13px;
     height: 13px;
     font-size: 13px;
@@ -986,7 +986,7 @@ const importTips = () => {
   width: 100%;
   box-sizing: border-box;
 
-  .list-draggable {
+  & .list-draggable {
     display: flex;
     flex-direction: column;
     gap: 0;
@@ -994,14 +994,14 @@ const importTips = () => {
     min-width: 0;
   }
 
-  .list-draggable.dual-column {
+  & .list-draggable.dual-column {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
     align-items: start;
     padding-top: 12px;
 
-    > .draggable-item {
+    & > .draggable-item {
       min-width: 0;
       margin: 0;
       border-radius: var(--radius-lg, var(--item-card-radios));
@@ -1009,14 +1009,14 @@ const importTips = () => {
     }
   }
 
-  .subs-list-content {
+  & .subs-list-content {
     width: 100%;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
   }
 
-  .subs-list-content + .subs-list-content {
+  & .subs-list-content + .subs-list-content {
     margin-top: 8px;
   }
 }
@@ -1035,7 +1035,7 @@ const importTips = () => {
   border-radius: 10px;
   box-sizing: border-box;
 
-  .overview-stat {
+  & .overview-stat {
     flex: 1 1 0;
     min-width: 0;
     display: flex;
@@ -1057,7 +1057,7 @@ const importTips = () => {
     }
   }
 
-  .overview-stat-label {
+  & .overview-stat-label {
     font-size: 11px;
     font-weight: 500;
     letter-spacing: -0.01em;
@@ -1065,16 +1065,16 @@ const importTips = () => {
     line-height: 1.2;
   }
 
-  .overview-stat-value {
+  & .overview-stat-value {
     font-size: 18px;
     font-weight: 600;
-    // Mild tracking for Latin digits; CJK locales reset via App.vue :lang(zh)
+    /* Mild tracking for Latin digits; CJK locales reset via App.vue :lang(zh) */
     letter-spacing: -0.02em;
     color: var(--primary-text-color);
     line-height: 1.25;
   }
 
-  .overview-stat-detail {
+  & .overview-stat-detail {
     font-size: 11px;
     color: var(--second-text-color);
     line-height: 1.3;
@@ -1093,21 +1093,21 @@ const importTips = () => {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
 
-    .overview-stat {
+    & .overview-stat {
       flex: 1 1 auto;
       min-width: 88px;
       padding: 0 10px;
     }
 
-    .overview-stat-value {
+    & .overview-stat-value {
       font-size: 16px;
     }
 
-    .overview-stat-detail {
+    & .overview-stat-detail {
       display: none;
     }
 
-    .overview-stat-refresh .overview-stat-value {
+    & .overview-stat-refresh .overview-stat-value {
       font-size: 12px;
       font-weight: 500;
       white-space: nowrap;

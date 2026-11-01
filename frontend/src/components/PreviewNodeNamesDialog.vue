@@ -107,7 +107,7 @@ const copyPrompt = async () => {
 };
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .preview-node-names-content {
   display: flex;
   flex-direction: column;
@@ -124,7 +124,7 @@ const copyPrompt = async () => {
   line-height: 1.6;
   text-align: left;
 
-  a {
+  & a {
     color: var(--primary-color);
     text-decoration: underline;
   }

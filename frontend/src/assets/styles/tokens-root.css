@@ -1,5 +1,5 @@
-// Pre-JS design token defaults (imported once from global.scss).
-// Overwritten at runtime by useThemes designTokens — keep values in sync.
+/* Pre-JS design token defaults (imported once from global.css). */
+/* Overwritten at runtime by useThemes designTokens — keep values in sync. */
 :root {
   --radius-sm: 6px;
   --radius-md: 8px;

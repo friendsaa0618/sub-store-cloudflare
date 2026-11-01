@@ -1,6 +1,6 @@
-import '@/assets/styles/fonts.scss';
-import '@/assets/styles/global.scss';
-import '@/assets/styles/overrides.scss';
+import '@/assets/styles/fonts.css';
+import '@/assets/styles/global.css';
+import '@/assets/styles/overrides.css';
 import SvgIcon from '@/components/SvgIcon.vue';
 import i18n from '@/locales';
 import '@/plugin/awesomeIcon';
@@ -10,7 +10,7 @@ import '@/plugin/touch'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 import 'modern-css-reset/dist/reset.min.css';
-import '@/assets/styles/reduced-motion-fix.scss';
+import '@/assets/styles/reduced-motion-fix.css';
 import { createPinia } from 'pinia';
 import 'virtual:svg-sprite-register';
 import { createApp } from 'vue';
