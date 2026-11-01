@@ -941,7 +941,9 @@ function parseHysteria(line: string, index: number): ProxyNode {
     type: "hysteria",
     server: url.hostname,
     port: Number(url.port || 443),
-    auth_str: decodeURIComponent(url.username || params.get("auth") || params.get("auth_str") || ""),
+    // Mihomo/Stash spell this `auth-str`; sing-box's `auth_str` is converted at
+    // render time instead of leaking into the YAML output.
+    "auth-str": decodeURIComponent(url.username || params.get("auth") || params.get("auth_str") || params.get("auth-str") || ""),
     protocol: params.get("protocol") || undefined,
     up: params.get("up") || params.get("upmbps") || undefined,
     down: params.get("down") || params.get("downmbps") || undefined,
@@ -973,7 +975,9 @@ function parseTrojan(line: string, index: number): ProxyNode {
 
 function parseVmess(line: string, index: number): ProxyNode | undefined {
   try {
-    const payload = JSON.parse(atob(line.slice("vmess://".length)));
+    // The payload is UTF-8 JSON in base64 (standard or URL-safe), so decode it
+    // as text; `atob` alone turns non-ASCII node names into mojibake.
+    const payload = JSON.parse(decodeBase64UrlText(line.slice("vmess://".length)));
     return stripUndefined({
       name: payload.ps || `vmess-${index + 1}`,
       type: "vmess",
@@ -996,23 +1000,120 @@ function parseVmess(line: string, index: number): ProxyNode | undefined {
 function parseShadowsocks(line: string, index: number): ProxyNode | undefined {
   try {
     const withoutScheme = line.slice("ss://".length);
-    const [main, hash = ""] = withoutScheme.split("#");
-    const decodedMain = main.includes("@") ? main : atob(main);
-    const [userInfo, hostInfo] = decodedMain.split("@");
+    const hashIndex = withoutScheme.indexOf("#");
+    const mainWithQuery = hashIndex >= 0 ? withoutScheme.slice(0, hashIndex) : withoutScheme;
+    const hash = hashIndex >= 0 ? withoutScheme.slice(hashIndex + 1) : "";
+    const queryIndex = mainWithQuery.indexOf("?");
+    const main = queryIndex >= 0 ? mainWithQuery.slice(0, queryIndex) : mainWithQuery;
+    const params = new URLSearchParams(queryIndex >= 0 ? mainWithQuery.slice(queryIndex + 1) : "");
+
+    // SIP002 keeps `BASE64(method:password)@host:port`, while older links
+    // base64 the whole `method:password@host:port` string.
+    const decodedMain = main.includes("@") ? main : decodeBase64UrlText(main);
+    const atIndex = decodedMain.lastIndexOf("@");
+    if (atIndex <= 0) return undefined;
+    const userInfo = decodedMain.slice(0, atIndex);
+    const hostInfo = decodedMain.slice(atIndex + 1);
     const decodedUserInfo = userInfo.includes(":") ? userInfo : decodeBase64UrlText(userInfo);
-    const [cipher, password] = decodedUserInfo.split(":");
+    const colonIndex = decodedUserInfo.indexOf(":");
+    if (colonIndex <= 0) return undefined;
+
     const lastColon = hostInfo.lastIndexOf(":");
+    if (lastColon <= 0) return undefined;
+    const port = Number(hostInfo.slice(lastColon + 1).split("/")[0]);
+    if (!Number.isFinite(port)) return undefined;
+
     return stripUndefined({
       name: decodeURIComponent(hash || `ss-${index + 1}`),
       type: "ss",
       server: hostInfo.slice(0, lastColon),
-      port: Number(hostInfo.slice(lastColon + 1).split("?")[0]),
-      cipher,
-      password,
+      port,
+      cipher: decodedUserInfo.slice(0, colonIndex),
+      password: decodeUriComponentSafe(decodedUserInfo.slice(colonIndex + 1)),
+      ...ssPluginOptions(params.get("plugin")),
       udp: true,
     });
   } catch {
     return undefined;
+  }
+}
+
+// `plugin` follows the SIP003 form `name;key=value;flag`, with the obfs and
+// v2ray plugins mapping onto Mihomo's `plugin` / `plugin-opts` fields.
+type SsPluginFields = { plugin?: string; "plugin-opts"?: Record<string, unknown> };
+
+function ssPluginOptions(value: string | null): SsPluginFields {
+  const text = stringSetting(value);
+  if (!text) return {};
+  const [rawName, ...parts] = text.split(";").map((part) => part.trim()).filter(Boolean);
+  const name = (rawName || "").toLowerCase();
+  const options: Record<string, string | boolean> = {};
+  for (const part of parts) {
+    const equalIndex = part.indexOf("=");
+    if (equalIndex > 0) options[part.slice(0, equalIndex).trim().toLowerCase()] = part.slice(equalIndex + 1).trim();
+    else options[part.toLowerCase()] = true;
+  }
+
+  if (name === "obfs-local" || name === "simple-obfs" || name === "obfs") {
+    return {
+      plugin: "obfs",
+      "plugin-opts": stripUndefined({
+        mode: stringSetting(options.obfs) || stringSetting(options.mode) || "http",
+        host: stringSetting(options["obfs-host"]) || stringSetting(options.host),
+      }),
+    };
+  }
+
+  if (name === "v2ray-plugin") {
+    return {
+      plugin: "v2ray-plugin",
+      "plugin-opts": stripUndefined({
+        mode: stringSetting(options.mode) || "websocket",
+        host: stringSetting(options.host),
+        path: stringSetting(options.path),
+        tls: options.tls === true || options.tls === "true" ? true : undefined,
+        mux: options.mux === true || options.mux === "true" ? true : undefined,
+      }),
+    };
+  }
+
+  return {
+    plugin: name || undefined,
+    "plugin-opts": Object.keys(options).length > 0 ? options : undefined,
+  };
+}
+
+function ssPluginQuery(proxy: ProxyNode) {
+  const pluginOpts = proxy["plugin-opts"] as Record<string, unknown> | undefined;
+  if (!proxy.plugin || !pluginOpts) return "";
+  if (proxy.plugin === "obfs") {
+    // Mihomo calls the SIP003 `obfs-local` plugin just `obfs`; links need the
+    // original implementation name.
+    const parts = ["obfs-local", `obfs=${String(pluginOpts.mode || "http")}`];
+    if (pluginOpts.host) parts.push(`obfs-host=${String(pluginOpts.host)}`);
+    return parts.join(";");
+  }
+  const parts = [String(proxy.plugin)];
+  if (proxy.plugin === "v2ray-plugin") {
+    parts.push(`mode=${String(pluginOpts.mode || "websocket")}`);
+    if (pluginOpts.host) parts.push(`host=${String(pluginOpts.host)}`);
+    if (pluginOpts.path) parts.push(`path=${String(pluginOpts.path)}`);
+    if (pluginOpts.tls === true) parts.push("tls");
+    if (pluginOpts.mux === true) parts.push("mux");
+    return parts.join(";");
+  }
+  for (const [key, value] of Object.entries(pluginOpts)) {
+    if (value === true) parts.push(key);
+    else if (value !== undefined && value !== "") parts.push(`${key}=${String(value)}`);
+  }
+  return parts.join(";");
+}
+
+function decodeUriComponentSafe(value: string) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
   }
 }
 
@@ -1175,7 +1276,10 @@ function handleDuplicateProxies(proxies: ProxyNode[], filter: FilterRule) {
 
 function normalizeDedupeFields(fields: unknown) {
   const list = Array.isArray(fields) ? fields : [fields];
-  return list.map(String).filter(Boolean);
+  const normalized = list.map(String).map((field) => field.trim()).filter(Boolean);
+  // An empty field list would collapse every node into one key and delete all
+  // but the first, so fall back to the default dedupe key.
+  return normalized.length > 0 ? normalized : ["name"];
 }
 
 function deleteDuplicateProxies(proxies: ProxyNode[], fields: string[]) {
@@ -1487,11 +1591,18 @@ function normalizeTaiwanFlag(flag: string, mode: string) {
 }
 
 function ensureUniqueProxyNames(proxies: ProxyNode[]) {
-  const seen = new Map<string, number>();
+  const used = new Set<string>();
   return proxies.map((proxy) => {
-    const count = seen.get(proxy.name) || 0;
-    seen.set(proxy.name, count + 1);
-    return count === 0 ? proxy : { ...proxy, name: `${proxy.name}-${count + 1}` };
+    let name = proxy.name;
+    let suffix = 2;
+    // Check the emitted names, not just the inputs, so `A, A, A-2` cannot end
+    // up with two `A-2` entries.
+    while (used.has(name)) {
+      name = `${proxy.name}-${suffix}`;
+      suffix += 1;
+    }
+    used.add(name);
+    return name === proxy.name ? proxy : { ...proxy, name };
   });
 }
 
@@ -2615,7 +2726,7 @@ function toSingBoxOutbound(proxy: ProxyNode): SingBoxOutbound | undefined {
       tag: proxy.name,
       server: proxy.server,
       server_port: proxy.port,
-      auth_str: proxy.auth_str,
+      auth_str: proxy["auth-str"],
       up_mbps: numberOrUndefined(proxy.up),
       down_mbps: numberOrUndefined(proxy.down),
       obfs: proxy.obfs ? String(proxy.obfs) : undefined,
@@ -2812,7 +2923,7 @@ function toProxyUri(proxy: ProxyNode) {
     if (proxy.down) params.set("down", String(proxy.down));
     if (proxy.obfs) params.set("obfs", String(proxy.obfs));
     if (proxy["obfs-password"]) params.set("obfs-password", String(proxy["obfs-password"]));
-    return `hysteria://${encodeURIComponent(String(proxy.auth_str || ""))}@${proxy.server}:${proxy.port}?${params.toString()}#${encodeURIComponent(proxy.name)}`;
+    return `hysteria://${encodeURIComponent(String(proxy["auth-str"] || ""))}@${proxy.server}:${proxy.port}?${params.toString()}#${encodeURIComponent(proxy.name)}`;
   }
 
   if (proxy.type === "anytls") {
@@ -2856,8 +2967,12 @@ function toProxyUri(proxy: ProxyNode) {
   }
 
   if (proxy.type === "ss") {
-    const userInfo = base64Utf8(`${proxy.cipher}:${proxy.password}@${proxy.server}:${proxy.port}`);
-    return `ss://${userInfo}#${encodeURIComponent(proxy.name)}`;
+    // SIP002: base64url(method:password)@host:port?plugin=...
+    const params = new URLSearchParams();
+    const plugin = ssPluginQuery(proxy);
+    if (plugin) params.set("plugin", plugin);
+    const query = params.toString();
+    return `ss://${encodeBase64UrlText(`${proxy.cipher}:${proxy.password}`)}@${proxy.server}:${proxy.port}${query ? `?${query}` : ""}#${encodeURIComponent(proxy.name)}`;
   }
 
   if (proxy.type === "ssr") {
@@ -2971,7 +3086,8 @@ function base64Utf8(input: string) {
 }
 
 function decodeBase64UrlText(input: string) {
-  const padded = input.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(input.length / 4) * 4, "=");
+  const normalized = input.replace(/\s+/g, "");
+  const padded = normalized.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(normalized.length / 4) * 4, "=");
   try {
     const binary = atob(padded);
     const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));

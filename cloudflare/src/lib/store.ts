@@ -137,15 +137,6 @@ export async function getSource(env: SubStoreEnv, id: string) {
   return row ? sourceFromRow(row) : undefined;
 }
 
-export async function deleteSource(env: SubStoreEnv, id: string) {
-  const references = (await listCollections(env))
-    .filter((collection) => collection.sourceIds.includes(id))
-    .map((collection) => collection.id);
-  if (references.length > 0) return { deleted: false, references };
-  await env.DB.prepare("DELETE FROM sources WHERE id = ?").bind(id).run();
-  return { deleted: true, references: [] as string[] };
-}
-
 export async function listCollections(env: SubStoreEnv) {
   const rows = await env.DB.prepare("SELECT * FROM collections ORDER BY created_at ASC").all<CollectionRow>();
   return rows.results.map(collectionFromRow);
@@ -211,11 +202,6 @@ export async function getCollection(env: SubStoreEnv, id: string) {
   return row ? collectionFromRow(row) : undefined;
 }
 
-export async function deleteCollection(env: SubStoreEnv, id: string) {
-  await env.DB.prepare("DELETE FROM collections WHERE id = ?").bind(id).run();
-  return { deleted: true };
-}
-
 export async function listTemplates(env: SubStoreEnv) {
   const rows = await env.DB.prepare("SELECT * FROM templates ORDER BY created_at ASC").all<TemplateRow>();
   const custom = rows.results
@@ -257,12 +243,6 @@ export async function getTemplate(env: SubStoreEnv, id: string) {
   if (builtin) return builtinTemplateRecord(builtin);
   const row = await env.DB.prepare("SELECT * FROM templates WHERE id = ?").bind(id).first<TemplateRow>();
   return row ? templateFromRow(row) : undefined;
-}
-
-export async function deleteTemplate(env: SubStoreEnv, id: string) {
-  if (BUILTIN_TEMPLATE_IDS.has(id)) throw new Error("Built-in templates cannot be deleted");
-  await env.DB.prepare("DELETE FROM templates WHERE id = ?").bind(id).run();
-  return { deleted: true };
 }
 
 export async function getSettings(env: SubStoreEnv): Promise<AppSettings> {

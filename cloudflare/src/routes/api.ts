@@ -836,11 +836,6 @@ function textField(input: string, key: string) {
   return match ? decodeURIComponent(match[1]) : undefined;
 }
 
-function keepMeta(input: JsonMap, excluded: string[]) {
-  const excludedSet = new Set(excluded);
-  return Object.fromEntries(Object.entries(input).filter(([key]) => !excludedSet.has(key)));
-}
-
 function objectValue(input: unknown): JsonMap {
   return input && typeof input === "object" && !Array.isArray(input) ? (input as JsonMap) : {};
 }
@@ -880,10 +875,6 @@ function normalizeResolveProvider(input: unknown) {
 
 function stringArray(input: unknown): string[] {
   return Array.isArray(input) ? input.map(String).filter(Boolean) : [];
-}
-
-function arrayValue(input: unknown): unknown[] {
-  return Array.isArray(input) ? input : [];
 }
 
 function stringValue(input: unknown): string {

@@ -946,4 +946,138 @@ describe("subscription parsing and limits", () => {
     expect(document["rule-providers"]?.Ads.url).toContain("https://cdn.jsdelivr.net/");
 
   });
+
+  it("keeps UTF-8 vmess names from base64 and base64url payloads", () => {
+    const payload = {
+      v: "2",
+      ps: "香港 01",
+      add: "example.com",
+      port: "443",
+      id: "00000000-0000-4000-8000-000000000002",
+      aid: "0",
+      net: "ws",
+      host: "example.com",
+      path: "/ws",
+      tls: "tls",
+    };
+    const encode = (input: string) => {
+      const bytes = new TextEncoder().encode(input);
+      let binary = "";
+      for (const byte of bytes) binary += String.fromCharCode(byte);
+      return btoa(binary);
+    };
+    const standard = `vmess://${encode(JSON.stringify(payload))}`;
+    const urlSafe = `vmess://${encode(JSON.stringify(payload)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "")}`;
+
+    expect(validateSubscriptionContent(standard)[0].name).toBe("香港 01");
+    expect(validateSubscriptionContent(urlSafe)[0].name).toBe("香港 01");
+  });
+
+  it("keeps the Shadowsocks plugin in Mihomo output and SIP002 links", async () => {
+    const output = await buildSubscription({
+      source: {
+        id: "ss-plugin",
+        name: "SS Plugin",
+        type: "local",
+        url: "",
+        content: "ss://YWVzLTI1Ni1nY206cGFzcw@example.com:8388?plugin=obfs-local%3Bobfs%3Dhttp%3Bobfs-host%3Dbing.com#SS%20Plugin",
+      },
+      sources: [],
+      requestUrl: new URL("https://example.com/download/source/ss-plugin/mihomo"),
+      target: "mihomo",
+    });
+    const document = parseYaml(output) as { proxies: Array<Record<string, unknown>> };
+    expect(document.proxies[0]).toMatchObject({
+      type: "ss",
+      plugin: "obfs",
+      "plugin-opts": { mode: "http", host: "bing.com" },
+    });
+
+    const uri = await buildSubscription({
+      source: {
+        id: "ss-plugin",
+        name: "SS Plugin",
+        type: "local",
+        url: "",
+        content: "ss://YWVzLTI1Ni1nY206cGFzcw@example.com:8388?plugin=obfs-local%3Bobfs%3Dhttp%3Bobfs-host%3Dbing.com#SS%20Plugin",
+      },
+      sources: [],
+      requestUrl: new URL("https://example.com/download/source/ss-plugin/uri"),
+      target: "uri",
+    });
+    expect(uri).toContain("@example.com:8388?plugin=");
+    expect(decodeURIComponent(uri)).toContain("obfs-local;obfs=http;obfs-host=bing.com");
+  });
+
+  it("writes Hysteria auth as auth-str for Mihomo and auth_str for sing-box", async () => {
+    const source = {
+      id: "hysteria-auth",
+      name: "Hysteria Auth",
+      type: "local" as const,
+      url: "",
+      content: "hysteria://secret@example.com:443?protocol=udp&up=30&down=100&sni=example.com#HY1",
+    };
+    const mihomo = await buildSubscription({
+      source,
+      sources: [],
+      requestUrl: new URL("https://example.com/download/source/hysteria-auth/mihomo"),
+      target: "mihomo",
+    });
+    const yaml = parseYaml(mihomo) as { proxies: Array<Record<string, unknown>> };
+    expect(yaml.proxies[0]["auth-str"]).toBe("secret");
+    expect(yaml.proxies[0].auth_str).toBeUndefined();
+
+    const singBox = await buildSubscription({
+      source,
+      sources: [],
+      requestUrl: new URL("https://example.com/download/source/hysteria-auth/sing-box"),
+      target: "sing-box",
+    });
+    const config = JSON.parse(singBox) as { outbounds: Array<Record<string, unknown>> };
+    const hysteria = config.outbounds.find((outbound) => outbound.type === "hysteria");
+    expect(hysteria?.auth_str).toBe("secret");
+  });
+
+  it("does not collapse nodes when dedupe fields are empty and keeps suffixed names unique", async () => {
+    const output = await buildSubscription({
+      source: {
+        id: "dedupe-edge",
+        name: "Dedupe Edge",
+        type: "local",
+        url: "",
+        content: [
+          "trojan://password@example.com:443?sni=example.com#A",
+          "trojan://password@example.com:444?sni=example.com#A",
+          "trojan://password@example.com:445?sni=example.com#A-2",
+        ].join("\n"),
+      },
+      sources: [],
+      requestUrl: new URL("https://example.com/download/source/dedupe-edge/json"),
+      target: "json",
+      template: undefined,
+    });
+    const json = JSON.parse(output) as { proxies: Array<{ name: string }> };
+    // Unique-name generation runs before filters are applied to the collection,
+    // but the source-level filter list is empty here, so all three survive.
+    expect(json.proxies.map((proxy) => proxy.name)).toEqual(["A", "A-2", "A-2-2"]);
+
+    const filtered = await buildSubscription({
+      source: {
+        id: "dedupe-empty",
+        name: "Dedupe Empty",
+        type: "local",
+        url: "",
+        content: [
+          "trojan://password@example.com:443?sni=example.com#A",
+          "trojan://password@example.com:444?sni=example.com#B",
+        ].join("\n"),
+        filters: [{ type: "dedupe", fields: [] }],
+      },
+      sources: [],
+      requestUrl: new URL("https://example.com/download/source/dedupe-empty/json"),
+      target: "json",
+    });
+    const filteredJson = JSON.parse(filtered) as { proxies: Array<{ name: string }> };
+    expect(filteredJson.proxies.map((proxy) => proxy.name)).toEqual(["A", "B"]);
+  });
 });

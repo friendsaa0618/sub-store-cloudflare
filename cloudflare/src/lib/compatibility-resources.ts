@@ -89,10 +89,6 @@ export async function updateDownloadGrant(
   return getDownloadGrant(env, id);
 }
 
-export async function deleteDownloadGrant(env: SubStoreEnv, id: string) {
-  await env.DB.prepare("DELETE FROM download_grants WHERE id = ?").bind(id).run();
-}
-
 export async function restoreDownloadGrantSnapshot(env: SubStoreEnv, snapshot: Record<string, unknown>) {
   const id = stringValue(snapshot.id);
   const tokenHash = stringValue(snapshot.tokenHash);
@@ -138,27 +134,6 @@ export async function authorizeScopedDownload(
   if (row.expires_at && row.expires_at <= Date.now()) return false;
   const restrictedTarget = normalizeTargetAlias(row.target);
   return !restrictedTarget || restrictedTarget === target;
-}
-
-export async function archiveResource(
-  env: SubStoreEnv,
-  resourceType: RecycleBinRecord["resourceType"],
-  resourceId: string,
-  snapshot: Record<string, unknown>,
-) {
-  const deletedAt = Date.now();
-  const id = crypto.randomUUID();
-  await env.DB.batch([
-    env.DB.prepare(
-      "INSERT INTO recycle_bin (id, resource_type, resource_id, snapshot_json, deleted_at) VALUES (?, ?, ?, ?, ?)",
-    ).bind(id, resourceType, resourceId, JSON.stringify(snapshot), deletedAt),
-    env.DB.prepare(
-      `DELETE FROM recycle_bin WHERE id IN (
-         SELECT id FROM recycle_bin ORDER BY deleted_at DESC LIMIT -1 OFFSET ?
-       )`,
-    ).bind(MAX_RECYCLE_ENTRIES),
-  ]);
-  return { id, resourceType, resourceId, deletedAt };
 }
 
 export async function archiveAndDeleteResource(
