@@ -515,8 +515,10 @@ select.field-control {
   padding-right: 28px;
 }
 
-/* Dark chevron; :global() keeps the html selector unscoped. */
-:global(html[data-theme="dark"]) {
+/* Dark chevron: the whole selector goes inside :global() — Vue drops anything
+   after :global(...) in a scoped block, which is how this rule used to land on
+   <html> instead of the select. */
+:global(html[data-theme="dark"] select.field-control) {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23A1A1AA'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
 }
 
