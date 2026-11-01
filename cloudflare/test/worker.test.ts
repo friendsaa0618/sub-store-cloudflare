@@ -1,5 +1,5 @@
 import { env, exports as workerExports } from "cloudflare:workers";
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
 const ADMIN_TOKEN = "test-admin-token";
 const DOWNLOAD_TOKEN = "test-download-token";
@@ -36,6 +36,94 @@ describe("Worker and D1 integration", () => {
     const authorized = await workerRequest("/api/env");
     expect(authorized.status).toBe(200);
     expect(getPath(await jsonObject(authorized), "status")).toBe("success");
+  });
+
+  describe("Cloudflare Access", () => {
+    const TEAM_DOMAIN = "team.cloudflareaccess.com";
+    const AUDIENCE = "test-access-aud";
+    let signingKey: CryptoKey;
+    let publicJwk: JsonWebKey & { kid: string };
+
+    const toBase64Url = (input: Uint8Array | string) => {
+      const bytes = typeof input === "string" ? new TextEncoder().encode(input) : input;
+      let binary = "";
+      for (const byte of bytes) binary += String.fromCharCode(byte);
+      return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    };
+
+    const signAccessJwt = async (payload: Record<string, unknown>, key: CryptoKey) => {
+      const header = toBase64Url(JSON.stringify({ alg: "RS256", kid: "test-access-kid", typ: "JWT" }));
+      const body = toBase64Url(JSON.stringify(payload));
+      const signature = await crypto.subtle.sign(
+        "RSASSA-PKCS1-v1_5",
+        key,
+        new TextEncoder().encode(`${header}.${body}`),
+      );
+      return `${header}.${body}.${toBase64Url(new Uint8Array(signature))}`;
+    };
+
+    const validPayload = () => ({
+      iss: `https://${TEAM_DOMAIN}`,
+      aud: [AUDIENCE],
+      exp: Math.floor(Date.now() / 1000) + 300,
+      email: "proxy@duanfei.org",
+    });
+
+    beforeAll(async () => {
+      const pair = await crypto.subtle.generateKey(
+        { name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" },
+        true,
+        ["sign", "verify"],
+      ) as CryptoKeyPair;
+      signingKey = pair.privateKey;
+      const exported = await crypto.subtle.exportKey("jwk", pair.publicKey) as JsonWebKey;
+      publicJwk = { ...exported, kid: "test-access-kid", alg: "RS256", use: "sig" } as JsonWebKey & { kid: string };
+    });
+
+    const withAccessCerts = (run: () => Promise<void>) => async () => {
+      const originalFetch = globalThis.fetch;
+      const spy = vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
+        const url = typeof input === "string" ? input : input instanceof Request ? input.url : String(input);
+        if (url === `https://${TEAM_DOMAIN}/cdn-cgi/access/certs`) {
+          return new Response(JSON.stringify({ keys: [publicJwk] }), { headers: { "content-type": "application/json" } });
+        }
+        return originalFetch(input as RequestInfo, init);
+      });
+      try {
+        await run();
+      } finally {
+        spy.mockRestore();
+      }
+    };
+
+    it("accepts a request already authenticated by Access", withAccessCerts(async () => {
+      const token = await signAccessJwt(validPayload(), signingKey);
+      const response = await workerRequest("/api/env", { headers: { "cf-access-jwt-assertion": token } }, false);
+      expect(response.status).toBe(200);
+      expect(getPath(await jsonObject(response), "status")).toBe("success");
+    }));
+
+    it("rejects a JWT that was not signed by Access", withAccessCerts(async () => {
+      const other = await crypto.subtle.generateKey(
+        { name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" },
+        true,
+        ["sign", "verify"],
+      ) as CryptoKeyPair;
+      const token = await signAccessJwt(validPayload(), other.privateKey);
+      const response = await workerRequest("/api/env", { headers: { "cf-access-jwt-assertion": token } }, false);
+      expect(response.status).toBe(401);
+    }));
+
+    it("rejects a JWT issued for another Access application", withAccessCerts(async () => {
+      const token = await signAccessJwt({ ...validPayload(), aud: ["some-other-app"] }, signingKey);
+      const response = await workerRequest("/api/env", { headers: { "cf-access-jwt-assertion": token } }, false);
+      expect(response.status).toBe(401);
+    }));
+
+    it("still requires a credential when no Access JWT is present", withAccessCerts(async () => {
+      const response = await workerRequest("/api/env", {}, false);
+      expect(response.status).toBe(401);
+    }));
   });
 
   it("serves the boot payload in one request and matches the individual endpoints", async () => {

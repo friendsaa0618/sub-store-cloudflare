@@ -49,8 +49,13 @@ if (!assets || typeof assets !== "object") {
   if (assets.not_found_handling !== "single-page-application") {
     findings.push('assets.not_found_handling must be "single-page-application"');
   }
-  if (assets.run_worker_first !== true) {
-    findings.push("assets.run_worker_first must be true");
+  // `true` (every request through the Worker) or the explicit route list the
+  // production config uses to keep static assets on the asset server.
+  const workerFirst = assets.run_worker_first;
+  const validWorkerFirst = workerFirst === true
+    || (Array.isArray(workerFirst) && workerFirst.length > 0 && workerFirst.every((route) => typeof route === "string"));
+  if (!validWorkerFirst) {
+    findings.push("assets.run_worker_first must be true or a non-empty route list");
   }
 }
 

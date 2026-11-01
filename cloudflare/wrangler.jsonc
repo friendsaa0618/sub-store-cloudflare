@@ -30,6 +30,8 @@
   ],
   "vars": {
     "SUB_STORE_APP_NAME": "Sub-Store Cloudflare",
-    "SUB_STORE_PUBLIC_DOWNLOAD_HOSTS": ""
+    "SUB_STORE_PUBLIC_DOWNLOAD_HOSTS": "",
+    "SUB_STORE_ACCESS_TEAM_DOMAIN": "",
+    "SUB_STORE_ACCESS_AUD": ""
   }
 }

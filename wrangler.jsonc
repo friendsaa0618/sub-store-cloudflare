@@ -2,7 +2,7 @@
   "$schema": "./cloudflare/node_modules/wrangler/config-schema.json",
   "name": "sub-store-cloudflare",
   "main": "cloudflare/src/index.ts",
-  "workers_dev": true,
+  "workers_dev": false,
   "compatibility_date": "2026-07-08",
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
@@ -36,6 +36,8 @@
   ],
   "vars": {
     "SUB_STORE_APP_NAME": "Sub-Store Cloudflare",
-    "SUB_STORE_PUBLIC_DOWNLOAD_HOSTS": ""
+    "SUB_STORE_PUBLIC_DOWNLOAD_HOSTS": "",
+    "SUB_STORE_ACCESS_TEAM_DOMAIN": "proxy-00f.cloudflareaccess.com",
+    "SUB_STORE_ACCESS_AUD": "35f9511e9006d940e708d6e126b44501386e4e1def9b12bc5cc74b875ae1230a"
   }
 }

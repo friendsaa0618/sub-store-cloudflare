@@ -16,6 +16,8 @@ export default defineConfig({
           SUB_STORE_PUBLIC_DOWNLOAD_TOKEN: "test-download-token",
           SUB_STORE_APP_NAME: "Sub-Store Cloudflare Test",
           SUB_STORE_PUBLIC_DOWNLOAD_HOSTS: "downloads.example.com",
+          SUB_STORE_ACCESS_TEAM_DOMAIN: "team.cloudflareaccess.com",
+          SUB_STORE_ACCESS_AUD: "test-access-aud",
         },
       },
     })),
