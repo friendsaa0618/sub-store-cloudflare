@@ -11,21 +11,17 @@
 </template>
 
 <script setup lang="ts">
-import { Dialog } from "@nutui/nutui";
+import { showDialog } from "@/utils/dialog";
 import { useI18n } from "vue-i18n";
 
 const { t } = useI18n();
 
 const openTips = () => {
-  Dialog({
+  showDialog({
     title: t("editorPage.groupingTips.title"),
     content: t("editorPage.groupingTips.content"),
-    popClass: "auto-dialog",
-    textAlign: "left",
     okText: "OK",
     noCancelBtn: true,
-    closeOnPopstate: true,
-    lockScroll: false,
   });
 };
 </script>

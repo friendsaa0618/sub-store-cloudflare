@@ -10,7 +10,9 @@ export default {
     or: "或",
     type: "类型",
     none: "无",
-    confirm: "确定"
+    confirm: "确定",
+    cancel: "取消",
+    close: "关闭"
   },
   globalNotify: {
     refresh: {
@@ -78,7 +80,10 @@ export default {
       desc: "粘贴节点、订阅或规则，不保存到 D1，直接转换为目标格式。",
       proxy: "节点/订阅",
       rule: "规则",
+      target: "输出格式",
+      content: "待转换内容",
       input: "粘贴待转换内容…",
+      result: "转换结果",
       output: "转换结果…",
       run: "开始转换",
       copy: "复制结果",
@@ -88,9 +93,11 @@ export default {
       title: "独立分享链接",
       desc: "为单个订阅源或组合创建可撤销、可过期、可限制格式的下载链接。Token 只在创建时显示。",
       resourceType: "资源类型",
-      resourceId: "资源 ID…",
-      target: "限制输出格式，可留空…",
-      expires: "有效小时数，0 表示不过期…",
+      resourceId: "资源 ID",
+      resourceIdPlaceholder: "例如 daily-mix",
+      target: "输出格式",
+      expires: "有效小时数",
+      expiresHint: "0 表示不过期",
       create: "创建链接",
       empty: "还没有独立分享链接",
       disable: "停用",

@@ -48,7 +48,7 @@
       item-key="id"
     >
       <template #item="{ element, index }">
-        <nut-cell class="list-group-item" aria-hidden="true">
+        <div class="list-group-item">
           <div :class="{ 'list-group-item-title': true, 'collapsed': collapsedElements.includes(element.id) }">
             <div class="title-text left">
               <button
@@ -59,21 +59,21 @@
                   : $t('editorPage.subConfig.actions.collapseItem')"
                 @click="toggleElementCollapsed(element.id)"
               >
-                <nut-icon v-if="!collapsedElements.includes(element.id)" name="rect-down" size="12px" aria-hidden="true"></nut-icon>
-                <nut-icon v-if="collapsedElements.includes(element.id)" name="rect-right" size="12px" aria-hidden="true"></nut-icon>
+                <font-awesome-icon
+                  :icon="collapsedElements.includes(element.id) ? 'fa-solid fa-chevron-right' : 'fa-solid fa-chevron-down'"
+                  aria-hidden="true"
+                />
               </button>
               <div class="input-wrapper">
-                <nut-input
+                <AppInput
                   :id="`action-input-${element.id}`"
-                  @click.stop
                   v-model="findEditItemById(element).customName"
                   class="custom-name-input"
-                  type="text"
                   :readonly="!findEditItemById(element).isEditing"
                   :placeholder="findEditItemById(element).defaultName"
                   @blur="saveEditName(element)"
                   @keyup.enter="saveEditName(element)"
-                  @click="toggleInput(element)"
+                  @click.stop="toggleInput(element)"
                 >
                   <!-- <template #button>
                     <div class="list-group-item-icons">
@@ -87,7 +87,7 @@
                       <font-awesome-icon icon="fa-solid fa-circle-question" @click.stop="pop(element.type, element.tipsDes)" />
                     </div>
                   </template> -->
-                </nut-input>
+                </AppInput>
                 <!-- <div
                   v-if="!findEditItemById(element).isEditing"
                   class="input-overlay"
@@ -122,10 +122,10 @@
                 </template>
               </div>
               <div class="action-switch">
-                <nut-checkbox
+                <AppCheckbox
                   v-model="element.enabled"
                   class="my-switch"
-                ></nut-checkbox>
+                />
                 <button type="button" class="switch-label" @click="toggleActionSwitch(element.id)">{{ $t(`editorPage.subConfig.actions.enable`) }}</button>
               </div>
               <div
@@ -136,41 +136,32 @@
                 @focusin="showPreviewTooltip(element.id)"
                 @focusout="hidePreviewTooltip(element.id)"
               >
-                <nut-popover
-                  v-model:visible="previewTooltipVisible[element.id]"
-                  location="top"
-                  theme="dark"
-                  custom-class="preview-switch-nut-popover"
-                  :overlay="false"
-                  :close-on-click-outside="true"
+                <div
+                  class="preview-switch preview-switch--disabled"
+                  @click.stop="showPreviewTooltip(element.id)"
                 >
-                  <template #reference>
-                    <div
-                      class="preview-switch preview-switch--disabled"
-                      @click.stop="showPreviewTooltip(element.id)"
-                    >
-                      <nut-checkbox
-                        v-model="getItem(element.id)[1]"
-                        disabled
-                        class="my-switch"
-                      ></nut-checkbox>
-                      <span>
-                        {{ $t(`editorPage.subConfig.basic.previewSwitch`) }}
-                      </span>
-                    </div>
-                  </template>
-                  <template #content>
-                    <span class="preview-switch-tooltip">
-                      {{ $t(`editorPage.subConfig.basic.previewDisabledResponseOnlyTips`) }}
-                    </span>
-                  </template>
-                </nut-popover>
+                  <AppCheckbox
+                    :model-value="getItem(element.id)[1]"
+                    disabled
+                    class="my-switch"
+                  />
+                  <span>
+                    {{ $t(`editorPage.subConfig.basic.previewSwitch`) }}
+                  </span>
+                </div>
+                <span
+                  v-if="previewTooltipVisible[element.id]"
+                  class="preview-switch-tooltip"
+                  role="tooltip"
+                >
+                  {{ $t(`editorPage.subConfig.basic.previewDisabledResponseOnlyTips`) }}
+                </span>
               </div>
               <div v-else class="preview-switch">
-                <nut-checkbox
+                <AppCheckbox
                   v-model="getItem(element.id)[1]"
                   class="my-switch"
-                ></nut-checkbox>
+                />
                 <button type="button" class="switch-label" @click="togglePreviewSwitch(element)">
                   {{ $t(`editorPage.subConfig.basic.previewSwitch`) }}
                 </button>
@@ -190,18 +181,11 @@
             </div>
           </div>
           <Component v-show="!collapsedElements.includes(element.id)" :is="element.component" :type="element.type" :id="element.id" :sourceType="sourceType"/>
-        </nut-cell>
+        </div>
       </template>
     </Draggable>
 
-    <!-- <nut-picker
-      v-model:visible="showAddPicker"
-      :columns="columns"
-      :title="$t(`editorPage.subConfig.actions.addAction.title`)"
-      :cancel-text="$t(`editorPage.subConfig.actions.addAction.cancel`)"
-      :ok-text="$t(`editorPage.subConfig.actions.addAction.confirm`)"
-      @confirm="confirm"
-    ></nut-picker> -->
+
 
     <!-- <button class="add-action-btn" @click="onClickAddBtn"> -->
     <!-- <span class="add-action-btn"
@@ -211,7 +195,7 @@
       > -->
     <!-- </button> -->
 
-    <nut-cell class="list-group-itemsa" aria-hidden="true">
+    <div class="list-group-itemsa">
       <div class="list-group-item-titlesa">
         <!-- <div class="title-text left"> -->
         <span>{{
@@ -235,15 +219,15 @@
           {{ $t(`editorPage.subConfig.actions.pasteAction.label`) }}
         </button>
       </div>
-    </nut-cell>
-    <nut-form v-if="showPasteboard" class="paste-action">
-      <nut-form-item>
-        <nut-textarea
+    </div>
+    <AppForm v-if="showPasteboard" class="paste-action">
+      <AppFormItem>
+        <AppTextarea
           class="textarea-wrapper"
           v-model="pasteboard"
           :autosize="{ maxHeight: 110, minHeight: 50 }"
           :placeholder="$t(`editorPage.subConfig.actions.pasteAction.placeholder`)"
-          text-align="center"
+          input-align="center"
         />
         <div class="horizontal-button-container">
           <button @click="cancelPaste" class="custom-button">
@@ -253,14 +237,15 @@
             {{ $t(`editorPage.subConfig.actions.pasteAction.label`) }}
           </button>
         </div>
-      </nut-form-item>
-  </nut-form>
+      </AppFormItem>
+  </AppForm>
   </div>
 </template>
 
 <script lang="ts" setup>
 import i18nFile from '@/locales/zh';
-import { Dialog, Toast } from '@nutui/nutui';
+import { showDialog } from '@/utils/dialog';
+import { notify } from '@/utils/notify';
 import { ref, inject, reactive, watch, nextTick, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import Draggable from 'vuedraggable';
@@ -378,7 +363,7 @@ const toggleElementCollapsed = (id) => {
 };
 const onButtonClick = (item) => {
   if ((item.value === 'Script Filter' || item.value === 'Script Operator') && form.process.filter(process => process.type === 'Script Filter' || process.type === 'Script Operator').length >= 2) {
-    Toast.text(t('editorPage.subConfig.actions.script.limit'));
+    notify({ title: t('editorPage.subConfig.actions.script.limit') });
     return;
   }
   emit('addAction', [item]);
@@ -392,7 +377,7 @@ const copyItem = async element => {
   } else {
     await copyFallback(data);
   }
-  Toast.text(t("editorPage.subConfig.actions.pasteAction.copied"));
+  notify({ title: t("editorPage.subConfig.actions.pasteAction.copied") });
 
 };
 const cancelPaste = async () => {
@@ -436,7 +421,7 @@ const paste = async () => {
   }
   } catch (e) {
     console.error(e)
-    Toast.text(t("editorPage.subConfig.actions.pasteAction.importFailed", { e: e.message ?? e }));
+    notify({ title: t("editorPage.subConfig.actions.pasteAction.importFailed", { e: e.message ?? e }) });
   }
 };
 const emit = defineEmits(['addAction', 'deleteAction', 'updateCustomNameModeFlag', 'toggleAction']);
@@ -467,16 +452,14 @@ const togglePreviewSwitch = (element) => {
 
 // 删除条目，actionsList 中记录的顺序 和 对应预览开关
 const deleteItem = id => {
-  Dialog({
+  showDialog({
     title: t(`editorPage.subConfig.pop.deleteTitle`),
     content: t(`editorPage.subConfig.pop.deleteDes`),
-    popClass: 'auto-dialog',
     okText: t(`editorPage.subConfig.pop.deleteConfirm`),
     cancelText: t(`editorPage.subConfig.pop.deleteCancel`),
     onOk: () => {
       emit('deleteAction', id);
     },
-    // @ts-ignore
     closeOnClickOverlay: true,
   });
 };
@@ -488,24 +471,20 @@ const deleteItem = id => {
 
 // 节点帮助弹窗
 const popActionsHelp = () => {
-  Dialog({
+  showDialog({
     title: t(`editorPage.subConfig.pop.helpTitle`),
     content: t(`editorPage.subConfig.pop.helpContent`),
-    popClass: 'auto-dialog',
     noCancelBtn: true,
-    // @ts-ignore
     closeOnClickOverlay: true,
   });
 };
 
 // tips 弹窗
 const pop = (type: string, tipsDes: string) => {
-  Dialog({
+  showDialog({
     title: t(`editorPage.subConfig.nodeActions['${type}'].tipsTitle`),
     content: tipsDes,
-    popClass: 'auto-dialog',
     noCancelBtn: true,
-    // @ts-ignore
     closeOnClickOverlay: true,
   });
 };
@@ -650,7 +629,13 @@ defineExpose({ exitAllEditName });
 .list-group-item {
   display: flex;
   flex-direction: column;
-  box-shadow: none;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border: 1px solid var(--divider-color);
+  border-radius: var(--radius-lg);
+  background: var(--card-color);
+  color: var(--primary-text-color);
 
   .list-group-item-title {
     display: flex;
@@ -676,18 +661,14 @@ defineExpose({ exitAllEditName });
         border: none;
         outline: none;
         text-overflow: ellipsis;
-        :deep(.nut-input) {
+        :deep(.app-input__control) {
           width: 100%;
           color: var(--second-text-color);
           text-overflow: ellipsis;
 
-        }
-        &.nut-input-readonly,
-        &.nut-input-disabled {
-          :deep(.input-text) {
+          &[readonly] {
             cursor: pointer;
             color: var(--second-text-color);
-            text-overflow: ellipsis;
           }
         }
       }
@@ -776,9 +757,6 @@ defineExpose({ exitAllEditName });
         }
         .my-switch {
           width: 18px;
-          :deep(.nut-icon) {
-            font-size: 16px;
-          }
         }
       }
       .preview-switch {
@@ -807,9 +785,6 @@ defineExpose({ exitAllEditName });
 
         .my-switch {
           width: 18px;
-          :deep(.nut-icon) {
-            font-size: 16px;
-          }
         }
         &--disabled {
           color: var(--comment-text-color);
@@ -823,25 +798,29 @@ defineExpose({ exitAllEditName });
         }
       }
       .preview-switch-popover {
+        position: relative;
         display: flex;
         align-items: center;
 
-        :deep(.nut-popover-wrapper) {
-          display: flex;
-          align-items: center;
-        }
 
-        :deep(.preview-switch-nut-popover) {
-          position: fixed;
-          z-index: 2200;
-        }
       }
       .preview-switch-tooltip {
+        position: absolute;
+        right: 0;
+        bottom: calc(100% + 6px);
+        z-index: 20;
         display: block;
         max-width: 220px;
-        padding: 2px 4px;
+        padding: 6px 8px;
+        border: 1px solid var(--divider-color);
+        border-radius: var(--radius-sm);
+        background: var(--popup-color);
+        box-shadow: var(--card-shadow);
+        color: var(--second-text-color);
+        font-size: 12px;
         line-height: 1.45;
         white-space: normal;
+        pointer-events: none;
       }
       .icon-button,
       .icon-action,
@@ -887,7 +866,13 @@ defineExpose({ exitAllEditName });
 .list-group-itemsa {
   display: flex;
   flex-direction: column;
-  box-shadow: none;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border: 1px solid var(--divider-color);
+  border-radius: var(--radius-lg);
+  background: var(--card-color);
+  color: var(--primary-text-color);
 
   .list-group-item-titlesa {
     color: var(--comment-text-color);
@@ -966,10 +951,6 @@ defineExpose({ exitAllEditName });
 .list-group {
   min-height: 20px;
 }
-
-// .list-group-item {
-//   cursor: move;
-// }
 
 .list-group-item li {
   cursor: pointer;

@@ -19,14 +19,14 @@
             </select>
           </div>
           <div class="form-field">
-            <label class="field-label" for="tools-conversion-target">{{ t('toolsPage.converter.title') }}</label>
+            <label class="field-label" for="tools-conversion-target">{{ t('toolsPage.converter.target') }}</label>
             <select id="tools-conversion-target" v-model="conversionTarget" class="field-control">
               <option v-for="target in conversionTargets" :key="target" :value="target">{{ target }}</option>
             </select>
           </div>
         </div>
 
-        <label class="field-label" for="tools-conversion-input">{{ t('toolsPage.converter.input') }}</label>
+        <label class="field-label" for="tools-conversion-input">{{ t('toolsPage.converter.content') }}</label>
         <textarea
           id="tools-conversion-input"
           v-model="conversionInput"
@@ -35,17 +35,17 @@
         />
 
         <div class="actions">
-          <nut-button type="primary" :loading="converting" @click="runConversion">
+          <AppButton type="primary" :loading="converting" :disabled="!conversionInput.trim()" @click="runConversion">
             <font-awesome-icon icon="fa-solid fa-play" class="btn-icon" aria-hidden="true" />
             {{ t('toolsPage.converter.run') }}
-          </nut-button>
-          <nut-button plain type="primary" :disabled="!conversionOutput" @click="copyText(conversionOutput)">
+          </AppButton>
+          <AppButton plain type="primary" :disabled="!conversionOutput" @click="copyText(conversionOutput)">
             <font-awesome-icon icon="fa-solid fa-clone" class="btn-icon" aria-hidden="true" />
             {{ t('toolsPage.converter.copy') }}
-          </nut-button>
+          </AppButton>
         </div>
 
-        <label class="field-label" for="tools-conversion-output">{{ t('toolsPage.converter.output') }}</label>
+        <label class="field-label" for="tools-conversion-output">{{ t('toolsPage.converter.result') }}</label>
         <textarea
           id="tools-conversion-output"
           v-model="conversionOutput"
@@ -69,7 +69,7 @@
       <div class="tool-card">
         <div class="row share-form">
           <div class="form-field">
-            <label class="field-label" for="tools-share-type">{{ t('toolsPage.shares.source') }}</label>
+            <label class="field-label" for="tools-share-type">{{ t('toolsPage.shares.resourceType') }}</label>
             <select id="tools-share-type" v-model="shareForm.resourceType" class="field-control">
               <option value="source">{{ t('toolsPage.shares.source') }}</option>
               <option value="collection">{{ t('toolsPage.shares.collection') }}</option>
@@ -81,13 +81,13 @@
               id="tools-share-id"
               v-model.trim="shareForm.resourceId"
               class="field-control"
-              :placeholder="t('toolsPage.shares.resourceId')"
+              :placeholder="t('toolsPage.shares.resourceIdPlaceholder')"
               autocomplete="off"
               spellcheck="false"
             />
           </div>
           <div class="form-field">
-            <label class="field-label" for="tools-share-target">{{ t('toolsPage.shares.auto') }}</label>
+            <label class="field-label" for="tools-share-target">{{ t('toolsPage.shares.target') }}</label>
             <select id="tools-share-target" v-model="shareForm.target" class="field-control">
               <option value="">{{ t('toolsPage.shares.auto') }}</option>
               <option v-for="target in proxyTargets" :key="target" :value="target">{{ target }}</option>
@@ -102,15 +102,15 @@
               type="number"
               min="0"
               max="8760"
-              :placeholder="t('toolsPage.shares.expires')"
+              :placeholder="t('toolsPage.shares.expiresHint')"
             />
           </div>
         </div>
 
-        <nut-button type="primary" :loading="shareCreating" @click="createShare">
+        <AppButton type="primary" :loading="shareCreating" @click="createShare">
           <font-awesome-icon icon="fa-solid fa-plus" class="btn-icon" aria-hidden="true" />
           {{ t('toolsPage.shares.create') }}
-        </nut-button>
+        </AppButton>
       </div>
 
       <button
@@ -138,7 +138,10 @@
         </div>
       </div>
 
-      <p v-else-if="shares.length === 0" class="empty">{{ t('toolsPage.shares.empty') }}</p>
+      <div v-else-if="shares.length === 0" class="empty">
+        <font-awesome-icon icon="fa-solid fa-share-nodes" aria-hidden="true" />
+        <span>{{ t('toolsPage.shares.empty') }}</span>
+      </div>
 
       <div v-else class="feature-card-list">
         <div v-for="share in shares" :key="share.id" class="feature-card">
@@ -153,12 +156,12 @@
             </div>
           </div>
           <div class="feature-card__actions">
-            <nut-button plain size="mini" @click="toggleShare(share)">
+            <AppButton plain size="mini" @click="toggleShare(share)">
               {{ share.enabled ? t('toolsPage.shares.disable') : t('toolsPage.shares.enable') }}
-            </nut-button>
-            <nut-button plain type="danger" size="mini" @click="removeShare(share.id)">
+            </AppButton>
+            <AppButton plain type="danger" size="mini" @click="removeShare(share.id)">
               {{ t('myPage.btn.delete') }}
-            </nut-button>
+            </AppButton>
           </div>
         </div>
       </div>
@@ -188,7 +191,10 @@
         </div>
       </div>
 
-      <p v-else-if="recycleEntries.length === 0" class="empty">{{ t('toolsPage.recycle.empty') }}</p>
+      <div v-else-if="recycleEntries.length === 0" class="empty">
+        <font-awesome-icon icon="fa-solid fa-trash-can" aria-hidden="true" />
+        <span>{{ t('toolsPage.recycle.empty') }}</span>
+      </div>
 
       <div v-else class="feature-card-list">
         <div v-for="entry in recycleEntries" :key="entry.id" class="feature-card">
@@ -197,12 +203,12 @@
             <div class="feature-card__meta mono-time">{{ formatDateTime(entry.deletedAt) }}</div>
           </div>
           <div class="feature-card__actions">
-            <nut-button plain type="primary" size="mini" @click="restoreEntry(entry.id)">
+            <AppButton plain type="primary" size="mini" @click="restoreEntry(entry.id)">
               {{ t('toolsPage.recycle.restore') }}
-            </nut-button>
-            <nut-button plain type="danger" size="mini" @click="purgeEntry(entry.id)">
+            </AppButton>
+            <AppButton plain type="danger" size="mini" @click="purgeEntry(entry.id)">
               {{ t('toolsPage.recycle.purge') }}
-            </nut-button>
+            </AppButton>
           </div>
         </div>
       </div>
@@ -211,7 +217,7 @@
 </template>
 
 <script lang="ts" setup>
-import { Dialog } from '@nutui/nutui';
+import { showDialog } from '@/utils/dialog';
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useCloudflareApi } from '@/api/app';
@@ -330,7 +336,7 @@ const createShare = async () => {
 
 const toggleShare = async (share: any) => { await api.updateShare(share.id, { enabled: !share.enabled }); await loadShares(); };
 const removeShare = (id: string) => {
-  Dialog({
+  showDialog({
     title: t('myPage.btn.delete'),
     content: t('toolsPage.shares.title'),
     cancelText: t('myPage.btn.cancel'),
@@ -343,7 +349,7 @@ const removeShare = (id: string) => {
 };
 const restoreEntry = async (id: string) => { await api.restoreRecycleEntry(id); await loadRecycle(); };
 const purgeEntry = (id: string) => {
-  Dialog({
+  showDialog({
     title: t('toolsPage.recycle.purge'),
     content: t('toolsPage.recycle.desc'),
     cancelText: t('myPage.btn.cancel'),
@@ -670,17 +676,34 @@ select.field-control {
   }
 }
 
-.stats, .empty {
+.stats {
   color: var(--comment-text-color);
   font-size: var(--text-sm);
   margin-top: var(--space-2);
-}
-
-.stats {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
+}
+
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: var(--space-2);
+  padding: 18px 12px;
+  border: 1px dashed var(--divider-color);
+  border-radius: var(--radius-lg, 12px);
+  background: color-mix(in srgb, var(--card-color) 55%, transparent);
+  color: var(--lowest-text-color);
+  font-size: var(--text-sm);
+
+  svg {
+    width: 14px;
+    height: 14px;
+    opacity: 0.8;
+  }
 }
 
 @media (max-width: 520px) {

@@ -9,11 +9,13 @@
         <router-view v-else />
       </main>
     </div>
+    <AppDialogHost />
   </div>
 </template>
 
 <script setup lang="ts">
 import AdminTokenPanel from "@/components/AdminTokenPanel.vue";
+import AppDialogHost from "@/components/ui/AppDialogHost.vue";
 import NavBar from "@/components/NavBar.vue";
 import { useThemes } from "@/hooks/useThemes";
 import { useGlobalStore } from "@/store/global";
@@ -61,7 +63,7 @@ watchEffect(() => {
 
 <style lang="scss">
 #app {
-  font-family: var(--font-sans), "nutui-iconfont", sans-serif;
+  font-family: var(--font-sans), sans-serif;
   position: absolute;
   min-height: 100%;
   width: 100%;

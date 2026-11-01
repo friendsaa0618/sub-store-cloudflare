@@ -7,9 +7,9 @@
       </div>
       <div class="info">
         <div class="avatar-wrapper">
-          <nut-avatar
-            size="56"
-            bg-color="var(--card-color)"
+          <AppAvatar
+            :size="56"
+            bg-color="var(--profile-avatar-bg, var(--card-color))"
             :url="icon"
             class="auto-reverse"
           />
@@ -23,14 +23,14 @@
         </div>
         <div class="actions">
           <input ref="fileInput" type="file" accept="application/json,.json" @change="restoreFromFile" />
-          <nut-button plain type="primary" size="small" :loading="restoreIsLoading" @click="selectBackupFile">
+          <AppButton plain type="primary" size="small" :loading="restoreIsLoading" @click="selectBackupFile">
             <font-awesome-icon v-if="!restoreIsLoading" icon="fa-solid fa-cloud-arrow-up" />
             {{ t("myPage.backup.restore") }}
-          </nut-button>
-          <nut-button type="primary" size="small" :loading="exportIsLoading" @click="exportBackup">
+          </AppButton>
+          <AppButton type="primary" size="small" :loading="exportIsLoading" @click="exportBackup">
             <font-awesome-icon v-if="!exportIsLoading" icon="fa-solid fa-cloud-arrow-down" />
             {{ t("myPage.backup.export") }}
-          </nut-button>
+          </AppButton>
         </div>
       </div>
       <p class="profile-note">{{ t("myPage.backup.desc") }}</p>
@@ -97,12 +97,12 @@
             </span>
           </div>
           <div class="template-actions">
-            <nut-button v-if="!template.readonly" plain type="primary" size="mini" @click="openTemplateEdit(template)">
+            <AppButton v-if="!template.readonly" plain type="primary" size="mini" @click="openTemplateEdit(template)">
               {{ t("myPage.btn.edit") }}
-            </nut-button>
-            <nut-button v-if="!template.readonly" plain type="danger" size="mini" @click="deleteCustomTemplate(template.name)">
+            </AppButton>
+            <AppButton v-if="!template.readonly" plain type="danger" size="mini" @click="deleteCustomTemplate(template.name)">
               {{ t("myPage.btn.delete") }}
-            </nut-button>
+            </AppButton>
           </div>
         </div>
       </div>
@@ -112,7 +112,12 @@
     <section class="settings-section">
       <header
         class="section-header section-header--clickable"
-        @click="requestEditing ? cancelRequestEdit() : startRequestEdit()"
+        role="button"
+        tabindex="0"
+        :aria-expanded="requestEditing"
+        @click="toggleRequestEdit"
+        @keydown.enter.prevent="toggleRequestEdit"
+        @keydown.space.prevent="toggleRequestEdit"
       >
         <div class="section-header__text">
           <h2 class="section-header__title">{{ t("myPage.request.title") }}</h2>
@@ -120,14 +125,14 @@
         </div>
         <div class="section-header__actions" @click.stop>
           <template v-if="requestEditing">
-            <nut-button class="cancel-btn" plain type="info" size="mini" :disabled="requestSaving" @click="cancelRequestEdit">
+            <AppButton class="cancel-btn" plain type="info" size="mini" :disabled="requestSaving" @click="cancelRequestEdit">
               <font-awesome-icon icon="fa-solid fa-ban" />
               {{ t("myPage.btn.cancel") }}
-            </nut-button>
-            <nut-button class="save-btn" type="primary" size="mini" :loading="requestSaving" @click="saveRequestSettings">
+            </AppButton>
+            <AppButton class="save-btn" type="primary" size="mini" :loading="requestSaving" @click="saveRequestSettings">
               <font-awesome-icon v-if="!requestSaving" icon="fa-solid fa-floppy-disk" />
               {{ t("myPage.btn.save") }}
-            </nut-button>
+            </AppButton>
           </template>
           <font-awesome-icon
             v-else
@@ -211,49 +216,42 @@
 
           <div class="toggle-card-row form-field-group--full">
             <span class="toggle-card-title">{{ t('myPage.request.remoteCacheStaleOnError') }}</span>
-            <nut-switch v-model="requestForm.remoteCacheStaleOnError" />
+            <AppSwitch v-model="requestForm.remoteCacheStaleOnError" />
           </div>
         </div>
       </div>
     </section>
 
     <!-- Template editor: desktop modal · mobile bottom sheet -->
-    <nut-popup
+    <AppPopup
       v-model:visible="templateImportVisible"
       :position="templatePopupPosition"
       :pop-class="templatePopupClass"
       :round="!isDesktop"
       closeable
-      close-icon-position="top-right"
-      :style="templatePopupStyle"
+      :panel-style="templatePopupStyle"
     >
       <div class="template-import-panel">
         <div v-if="!isDesktop" class="preview-sheet-handle" aria-hidden="true" />
         <h2>{{ templateEditingId ? t("myPage.templates.editTitle") : t("myPage.templates.importTitle") }}</h2>
-        <nut-input class="input" v-model.trim="templateForm.id" :placeholder="t('myPage.templates.idPlaceholder')" input-align="left" :disabled="Boolean(templateEditingId)" />
-        <nut-input class="input" v-model.trim="templateForm.name" :placeholder="t('myPage.templates.namePlaceholder')" input-align="left" />
-        <nut-cell class="template-target-trigger" @click="openTemplateTargetPicker">
-          <view class="nut-cell__title">{{ t("myPage.templates.target") }}</view>
-          <view class="nut-cell__value">
-            <nut-input
-              :model-value="templateTargetLabel"
-              :border="false"
-              readonly
-              input-align="right"
-              right-icon="rect-right"
-              @click-right-icon.stop="openTemplateTargetPicker"
-            />
-          </view>
-        </nut-cell>
+        <AppInput class="input" v-model.trim="templateForm.id" :placeholder="t('myPage.templates.idPlaceholder')" input-align="left" :disabled="Boolean(templateEditingId)" />
+        <AppInput class="input" v-model.trim="templateForm.name" :placeholder="t('myPage.templates.namePlaceholder')" input-align="left" />
+        <button type="button" class="template-target-trigger" @click="openTemplateTargetPicker">
+          <span class="template-target-trigger__label">{{ t("myPage.templates.target") }}</span>
+          <span class="template-target-trigger__value">
+            {{ templateTargetLabel }}
+            <font-awesome-icon icon="fa-solid fa-chevron-right" aria-hidden="true" />
+          </span>
+        </button>
         <div class="template-content-editor">
           <CmView v-if="templateImportVisible" :is-read-only="false" id="TemplateEditor" />
         </div>
-        <nut-button block type="primary" :loading="templateImporting" @click="saveTemplate">
+        <AppButton block type="primary" :loading="templateImporting" @click="saveTemplate">
           {{ t("myPage.templates.save") }}
-        </nut-button>
+        </AppButton>
       </div>
-    </nut-popup>
-    <DesktopPicker
+    </AppPopup>
+    <AppPicker
       v-model="selectedTemplateTargetValue"
       v-model:visible="templateTargetPickerVisible"
       :columns="templateTargetColumns"
@@ -267,12 +265,11 @@
 
 <script lang="ts" setup>
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from "vue";
-import { Dialog } from "@nutui/nutui";
+import { showDialog } from "@/utils/dialog";
 import { useMediaQuery } from "@vueuse/core";
 import { useI18n } from "vue-i18n";
 
 import { useCloudflareApi } from "@/api/app";
-import DesktopPicker from "@/components/DesktopPicker.vue";
 import { useSettingsApi } from "@/api/settings";
 import { useBackend } from "@/hooks/useBackend";
 import { useAppNotifyStore } from "@/store/appNotify";
@@ -383,6 +380,11 @@ const startRequestEdit = () => {
 const cancelRequestEdit = () => {
   syncRequestForm();
   requestEditing.value = false;
+};
+
+const toggleRequestEdit = () => {
+  if (requestEditing.value) cancelRequestEdit();
+  else startRequestEdit();
 };
 
 const saveRequestSettings = async () => {
@@ -508,10 +510,9 @@ const saveTemplate = async () => {
 };
 
 const deleteCustomTemplate = (name: string) => {
-  Dialog({
+  showDialog({
     title: t("myPage.templates.deleteTitle"),
     content: t("myPage.templates.deleteContent", { name }),
-    popClass: "auto-dialog",
     okText: t("myPage.btn.delete"),
     cancelText: t("myPage.btn.cancel"),
     closeOnClickOverlay: true,
@@ -531,10 +532,9 @@ const restoreFromFile = async (event: Event) => {
   target.value = "";
   if (!file) return;
 
-  Dialog({
+  showDialog({
     title: t("myPage.backup.restoreTitle"),
     content: t("myPage.backup.restoreContent"),
-    popClass: "auto-dialog",
     okText: t("myPage.backup.restore"),
     cancelText: t("myPage.btn.cancel"),
     closeOnClickOverlay: true,
@@ -585,6 +585,12 @@ onMounted(fetchTemplates);
     cursor: pointer;
     -webkit-user-select: none;
     user-select: none;
+    border-radius: var(--radius-md);
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--focus-ring-color);
+    }
   }
 }
 
@@ -715,7 +721,7 @@ onMounted(fetchTemplates);
     display: flex;
     align-items: center;
 
-    :deep(.nut-avatar) {
+    :deep(.app-avatar) {
       background: var(--card-color);
       flex-shrink: 0;
     }
@@ -752,7 +758,8 @@ onMounted(fetchTemplates);
   .actions {
     margin-left: 8px;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     flex-shrink: 0;
     gap: 8px;
 
@@ -764,13 +771,9 @@ onMounted(fetchTemplates);
       margin-right: 4px;
     }
 
-    .nut-button {
+    .app-button {
       width: 108px;
       padding: 0 10px;
-    }
-
-    .nut-button--plain {
-      background: transparent;
     }
   }
 
@@ -788,6 +791,13 @@ onMounted(fetchTemplates);
   display: flex;
   flex-direction: column;
   gap: 8px;
+
+  /* Desktop: pair the templates so six built-ins do not become a long scroll */
+  @media screen and (min-width: 900px) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
 }
 
 .template-card {
@@ -927,10 +937,46 @@ onMounted(fetchTemplates);
   }
 }
 
+.template-import-panel :deep(.app-input) {
+  padding: 8px 10px;
+  border: 1px solid var(--divider-color);
+  border-radius: var(--radius-md);
+  background: var(--background-color);
+}
+
 .template-target-trigger {
-  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--divider-color);
   border-radius: var(--item-card-radios);
   background: var(--background-color);
+  color: var(--second-text-color);
+  font-size: var(--text-base);
+  text-align: left;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--focus-ring-color);
+  }
+}
+
+.template-target-trigger__label {
+  color: var(--comment-text-color);
+  font-size: 13px;
+}
+
+.template-target-trigger__value {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: var(--second-text-color);
+  font-size: 12px;
 }
 
 .template-content-editor {
@@ -1023,7 +1069,7 @@ onMounted(fetchTemplates);
   }
 }
 
-@media screen and (max-width: 430px) {
+@media screen and (max-width: 767px) {
   .profile-block {
     .info {
       align-items: flex-start;
@@ -1040,13 +1086,15 @@ onMounted(fetchTemplates);
       margin-left: 0;
       margin-top: 8px;
 
-      .nut-button {
+      .app-button {
         flex: 1;
         width: auto;
       }
     }
   }
+}
 
+@media screen and (max-width: 430px) {
   .template-card {
     align-items: flex-start;
     flex-direction: column;

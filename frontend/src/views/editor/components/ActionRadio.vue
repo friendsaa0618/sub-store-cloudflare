@@ -4,34 +4,34 @@
       {{ $t(`editorPage.subConfig.nodeActions['${type}'].des`) }}
     </p>
     <div class="radio-wrapper options-radio">
-      <nut-radiogroup direction="horizontal" v-model="value">
-        <nut-radio v-for="(key, index) in opt[type]" :label="key" :key="index"
+      <AppRadioGroup direction="horizontal" v-model="value">
+        <AppRadio v-for="(key, index) in opt[type]" :label="key" :key="index"
           >
           <div
             class="input-wrapper compact-input-wrapper compact-input-wrapper--custom"
             v-if="type === 'Resolve Domain Operator' && value==='Custom' && key==='Custom'"
           >
-            <nut-input :placeholder="$t(`editorPage.subConfig.nodeActions['${type}'].customDohPlaceholder`)" v-model="rdoUrl" />
+            <AppInput :placeholder="$t(`editorPage.subConfig.nodeActions['${type}'].customDohPlaceholder`)" v-model="rdoUrl" />
           </div>
           <div v-else>
             {{
             $t(`editorPage.subConfig.nodeActions['${type}'].options[${index}]`)
           }}
           </div>
-        </nut-radio>
-      </nut-radiogroup>
+        </AppRadio>
+      </AppRadioGroup>
     </div>
     <template v-if="type === 'Resolve Domain Operator' && rdoNewVersion">
       <div class="radio-wrapper options-radio edns-input-option">
         <p class="des-label">{{ $t(`editorPage.subConfig.nodeActions['${type}'].edns`) }}</p>
         <div class="input-wrapper compact-input-wrapper compact-input-wrapper--edns">
-          <nut-input :placeholder="$t(`editorPage.subConfig.nodeActions['${type}'].ednsPlaceholder`)" v-model="rdoEdns" />
+          <AppInput :placeholder="$t(`editorPage.subConfig.nodeActions['${type}'].ednsPlaceholder`)" v-model="rdoEdns" />
         </div>
       </div>
       <div class="radio-wrapper options-radio inline-input-option">
         <p class="des-label">{{ $t(`editorPage.subConfig.nodeActions['${type}'].concurrency`) }}</p>
         <div class="input-wrapper compact-input-wrapper compact-input-wrapper--concurrency">
-          <nut-input
+          <AppInput
             type="number"
             :placeholder="$t(`editorPage.subConfig.nodeActions['${type}'].concurrencyPlaceholder`)"
             v-model="rdoConcurrency"
@@ -40,25 +40,25 @@
       </div>
       <div class="radio-wrapper options-radio">
         <p class="des-label" style="cursor: pointer" @click="rdoTypeInfo">{{ $t(`editorPage.subConfig.nodeActions['${type}'].resolveType`) }} <font-awesome-icon icon="fa-solid fa-circle-question"/></p>
-        <nut-radiogroup direction="horizontal" v-model="rdoType">
-          <nut-radio v-for="(key, index) in rdoTypeOpt" :label="key" :key="index"
+        <AppRadioGroup direction="horizontal" v-model="rdoType">
+          <AppRadio v-for="(key, index) in rdoTypeOpt" :label="key" :key="index"
             >{{
               $t(`editorPage.subConfig.nodeActions['${type}'].types[${index}]`)
             }}
             <!-- <font-awesome-icon v-if="key === 'IPv6'" @click="rdoTypeInfo" icon="fa-solid fa-circle-question"/> -->
-          </nut-radio>
-        </nut-radiogroup>
+          </AppRadio>
+        </AppRadioGroup>
       </div>
       
       <div class="radio-wrapper options-radio">
         <p class="des-label">{{ $t(`editorPage.subConfig.nodeActions['${type}'].filterResult`) }}</p>
-        <nut-radiogroup direction="horizontal" v-model="rdoFilter">
-          <nut-radio v-for="(key, index) in rdoFilterOpt" :label="key" :key="index"
+        <AppRadioGroup direction="horizontal" v-model="rdoFilter">
+          <AppRadio v-for="(key, index) in rdoFilterOpt" :label="key" :key="index"
             >{{
               $t(`editorPage.subConfig.nodeActions['${type}'].filters[${index}]`)
             }}
-          </nut-radio>
-        </nut-radiogroup>
+          </AppRadio>
+        </AppRadioGroup>
       </div>
     </template>
     <template v-if="type === 'Flag Operator' && foNewVersion && value === 'add'">
@@ -67,22 +67,23 @@
             <span>{{ $t(`editorPage.subConfig.nodeActions['${type}'].twWhenPrefix`) }}</span>
             <img :src="tw" alt="">
             <span>{{ $t(`editorPage.subConfig.nodeActions['${type}'].twWhenSuffix`) }}</span>
-            <nut-icon name="tips" size="12px"></nut-icon>
+            <font-awesome-icon icon="fa-solid fa-circle-question" aria-hidden="true" />
         </p>
-        <nut-radiogroup direction="horizontal" v-model="foTw">
-          <nut-radio v-for="(key, index) in foTwOpt" :label="key" :key="index"
+        <AppRadioGroup direction="horizontal" v-model="foTw">
+          <AppRadio v-for="(key, index) in foTwOpt" :label="key" :key="index"
             >{{
               $t(`editorPage.subConfig.nodeActions['${type}'].twOptions[${index}]`)
             }}
-          </nut-radio>
-        </nut-radiogroup>
+          </AppRadio>
+        </AppRadioGroup>
       </div>
     </template>
   </div>
 </template>
 
 <script lang="ts" setup>
-  import { Toast, Dialog } from "@nutui/nutui";
+  import { showDialog } from "@/utils/dialog";
+  import { notify } from "@/utils/notify";
   import { inject, onMounted, ref, watch } from 'vue';
   import tw from '@/assets/icons/tw.png';
   import { useI18n } from 'vue-i18n';
@@ -133,16 +134,14 @@
   };
 
   const showTwTips = () => {
-    Toast.text(t("editorPage.subConfig.nodeActions['Flag Operator'].disclaimer"));
+    notify({ title: t("editorPage.subConfig.nodeActions['Flag Operator'].disclaimer") });
   };
   const rdoTypeInfo = () => {
-    Dialog({
+    showDialog({
       title: t("editorPage.subConfig.nodeActions['Resolve Domain Operator'].ip4pTitle"),
       content: t("editorPage.subConfig.nodeActions['Resolve Domain Operator'].ip4pContent"),
-      popClass: 'auto-dialog',
       okText: t("editorPage.subConfig.nodeActions['Resolve Domain Operator'].ip4pOk"),
       cancelText: t("editorPage.subConfig.pop.deleteCancel"),
-      // @ts-ignore
       closeOnClickOverlay: true,
       onOk: async () => {
         window.open('https://github.com/heiher/natmap/wiki/faq#%E5%9F%9F%E5%90%8D%E8%AE%BF%E9%97%AE%E6%98%AF%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E7%9A%84')
@@ -150,8 +149,6 @@
       // onCancel: async () => {
         
       // },
-      closeOnPopstate: true,
-      lockScroll: false,
     });
   };
 
@@ -232,7 +229,7 @@
     }
   }
 
-  .nut-radiogroup {
+  :deep(.app-radio-group) {
     width: 100%;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
@@ -241,8 +238,7 @@
     display: flex;
     align-items: center;
 
-    > view.nut-input {
-      background: transparent;
+    > :deep(.app-input) {
       padding: 8px 12px;
       margin-right: 16px;
       border-bottom: 1px solid var(--lowest-text-color);
@@ -250,29 +246,15 @@
     }
   }
   .compact-input-wrapper {
-    > view.nut-input {
+    :deep(.app-input) {
       min-height: 26px;
-      height: 26px;
       padding: 2px 8px;
       margin-right: 0;
       font-size: 12px;
       line-height: 18px;
     }
 
-    :deep(.nut-input) {
-      min-height: 26px;
-      height: 26px;
-      padding: 2px 8px;
-      font-size: 12px;
-      line-height: 18px;
-    }
-
-    :deep(.nut-input-inner),
-    :deep(.nut-input-value),
-    :deep(.nut-input-box),
-    :deep(.nut-input-text),
-    :deep(input) {
-      min-height: 20px;
+    :deep(.app-input__control) {
       height: 20px;
       font-size: 12px;
       line-height: 18px;

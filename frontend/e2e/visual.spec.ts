@@ -83,7 +83,7 @@ test.describe("visual snapshots", () => {
 
   test("editor new source desktop light", async ({ page }) => {
     await openReady(page, "/edit/subs/UNTITLED", "populated", ".page-wrapper");
-    await expect(page.locator("input.nut-input-text").first()).toBeVisible();
+    await expect(page.locator(".app-form-item input").first()).toBeVisible();
     await screenshot(page, "editor-new-source-desktop-light");
   });
 

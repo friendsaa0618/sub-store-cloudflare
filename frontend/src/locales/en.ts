@@ -10,7 +10,9 @@ export default {
     or: "or",
     type: "Type",
     none: "None",
-    confirm: "Confirm"
+    confirm: "Confirm",
+    cancel: "Cancel",
+    close: "Close"
   },
   globalNotify: {
     refresh: {
@@ -78,7 +80,10 @@ export default {
       desc: "Paste nodes, a subscription, or rules and convert without saving to D1.",
       proxy: "Nodes / subscription",
       rule: "Rules",
+      target: "Output format",
+      content: "Content to convert",
       input: "Paste content to convert…",
+      result: "Converted result",
       output: "Converted result…",
       run: "Convert",
       copy: "Copy result",
@@ -88,9 +93,11 @@ export default {
       title: "Scoped share links",
       desc: "Create revocable and expiring links restricted to one source or collection and optional output target. Tokens are shown only once.",
       resourceType: "Resource type",
-      resourceId: "Resource ID…",
-      target: "Optional output restriction…",
-      expires: "Lifetime in hours; 0 never expires…",
+      resourceId: "Resource ID",
+      resourceIdPlaceholder: "e.g. daily-mix",
+      target: "Output format",
+      expires: "Lifetime (hours)",
+      expiresHint: "0 means no expiry",
       create: "Create link",
       empty: "No scoped links",
       disable: "Disable",

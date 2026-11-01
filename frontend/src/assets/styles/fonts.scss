@@ -1,6 +1,6 @@
 /*
- * UI font stack prefers Geist when the optional CDN stylesheet loads
- * (see index.html). Local My Roboto + system faces cover blocked CDNs.
+ * UI font stack: Geist when installed on the system, then bundled My Roboto.
+ * Everything is bundled because the Worker CSP is self-only.
  * Mono uses local JetBrains Mono (JB) via --font-mono.
  */
 @font-face {
@@ -27,18 +27,3 @@
   src: url('../fonts/jetbrainsmononl-regular.woff2') format('woff2'),
     url('../fonts/jetbrainsmononl-regular.woff') format('woff');
 }
-
-@font-face {
-  font-family: nutui-iconfont;
-  font-display: block;
-  src: url(../fonts/3x_static_iconfont.woff2) format("woff2"),
-      url(../fonts/3x_static_iconfont.woff) format("woff"),
-      url(../fonts/3x_static_iconfont.ttf) format("truetype")
-}.nutui-iconfont {
-  font-family: nutui-iconfont !important;
-  font-size: 16px;
-  font-style: normal;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-

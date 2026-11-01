@@ -7,6 +7,8 @@ html {
 
 html[data-theme="dark"] {
   color-scheme: dark;
+  /* Backend logos (node.svg) are dark-on-transparent; keep a light plate. */
+  --profile-avatar-bg: #ffffff;
 }
 
 html[data-theme="light"] {
@@ -57,6 +59,106 @@ a {
   transition: color 0.2s ease;
 }
 
+/* Native form affordances shared by editor / settings forms */
+.app-input-text {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--second-text-color);
+  font-family: inherit;
+  font-size: var(--text-base);
+  line-height: 20px;
+  text-align: left;
+
+  &:focus {
+    outline: none;
+  }
+
+  &::placeholder {
+    color: var(--comment-text-color);
+    opacity: 1;
+  }
+
+  &:disabled {
+    color: var(--lowest-text-color);
+    cursor: not-allowed;
+    -webkit-text-fill-color: var(--lowest-text-color);
+  }
+}
+
+.input-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--comment-text-color);
+  font-size: 13px;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--primary-color);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--focus-ring-color);
+  }
+}
+
+.picker-trigger-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.picker-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  min-height: 20px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--second-text-color);
+  font-family: inherit;
+  font-size: var(--text-base);
+  text-align: right;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--focus-ring-color);
+    border-radius: var(--radius-sm);
+  }
+
+  > svg {
+    flex: 0 0 auto;
+    color: var(--comment-text-color);
+    font-size: 11px;
+  }
+}
+
+.picker-trigger__value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 textarea,
 input,
 select,
@@ -100,12 +202,6 @@ button {
   /* Prefer natural text selection on long-press inputs only */
   .page-body {
     -webkit-overflow-scrolling: touch;
-  }
-
-  /* NutUI cells/forms: keep radius & divider language aligned with cards */
-  .nut-cell-group,
-  .nut-cell-group__warp {
-    border-radius: var(--radius-lg, 12px);
   }
 }
 
@@ -252,23 +348,12 @@ img {
   }
 }
 
-//collapse
-.nut-collapse-item {
-  .collapse-item.collapse-item {
-    background-color: var(--card-color);
-
-    &::after {
-      border-color: var(--divider-color);
-    }
-  }
-
-  .collapse-wrapper {
-    background-color: var(--card-color);
-  }
-}
-
 // tab 切换面板
 .tab-panel-wrapper {
+  background-color: var(--popup-color);
+  color: var(--primary-text-color);
+  border: 1px solid var(--divider-color);
+  box-shadow: 0 16px 48px -8px rgba(0, 0, 0, 0.2);
   position: fixed;
   top: 50%;
   left: 50%;
@@ -302,10 +387,6 @@ img {
     width: 800px;
   }
 }
-.nut-button {
-  margin-right: 10px;
-}
-
 // 顶部粘性定位标题样式
 .sticky-title-wrapperse {
   position: sticky;
@@ -315,249 +396,4 @@ img {
   font-size: 16px;
   font-weight: bold;
   line-height: 2;
-}
-// .nut-icon-order:before {
-//   content: "\e697";
-// }
-// .nut-icon-edit:before {
-//   content: "\e667";
-// }
-// .nut-icon-find:before {
-//   content: "\e661";
-// }
-
-.nut-icon-shop:before {
-  content: "\e688";
-  cursor: pointer;
-}
-.nut-icon-tips:before {
-  content: "\e671";
-  cursor: pointer;
-}
-.nut-icon-category:before {
-  font-size: 20px;
-  content: "\e662";
-}
-.nut-icon-issue:before {
-  content: '\e6b1';
-}
-.nut-icon-ask:before {
-  content: '\e670';
-}
-.nut-icon-setting:before {
-  content: '\e681';
-}
-.nut-icon-left:before {
-  content: '\e6c9';
-}
-.nut-icon-rect-left:before {
-  content: '\e6c9';
-}
-
-.nut-icon-right:before {
-  content: '\e6cb';
-  color: #666;
-}
-.nut-icon-rect-right:before {
-  content: '\e6cb'; // \2003 占位符
-}
-.nut-icon-rect-down:before {
-  content: "\e6cc";
-}
-
-.nut-icon-triangle-down:before {
-  content: "\eb6d";
-}
-
-.nut-icon-triangle-up:before {
-  content: "\eb6e";
-}
-.nut-icon-arrow-right2:before {
-  content: '\e6a9';
-}
-.nut-icon-arrow-right:before {
-  content: '\e6a3';
-}
-.nut-icon-link:before {
-  content: '\e67c'; // link
-}
-.nut-icon-refresh2:before {
-  content: '\e682'; // sync
-}
-.nut-icon-refresh:before {
-  content: '\e690';
-}
-.nut-icon-close-little:before {
-  content: '\e6aa';
-}
-.nut-icon-close:before {
-  content: '\e674';
-}
-.nut-icon-mask-close:before {
-  content: '\e6cd';
-}
-.nut-icon-circle-close:before {
-  content: '\e699';
-}
-.nut-icon-checked:before {
-  content: '\e601';
-}
-
-.nut-icon-checklist:before {
-  content: '\e6c8';
-}
-
-.nut-icon-check-disabled:before {
-  content: '\e6c7';
-}
-
-.nut-icon-check-normal:before {
-  content: '\e6c5';
-}
-
-.nut-icon-check-checked:before {
-  content: '\e6c6';
-}
-
-.nut-icon-check-checked:before {
-  content: '\e6c6';
-}
-
-.nut-icon-loading:before {
-  content: '\e6c4';
-}
-
-.nut-icon-loading1:before {
-  content: '\e614';
-}
-
-// keyfrom nutui scss
-.nut-icon {
-  display: inline-block;
-  position: relative;
-  width: $icon-width;
-  height: $icon-height;
-  line-height: $icon-line-height;
-  text-align: right;
-
-  &::before {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-  }
-
-  &__img {
-    width: $icon-width;
-    height: $icon-height;
-    object-fit: contain;
-  }
-  &-loading,
-  &-loading1 {
-    display: inline-block;
-    animation: rotation 1s infinite linear;
-  }
-
-  --animate-duration: 1s;
-  --animate-delay: 0s;
-
-  &-am-infinite {
-    -webkit-animation-iteration-count: infinite;
-    -webkit-animation-direction: alternate;
-    animation-iteration-count: infinite;
-    animation-direction: alternate;
-  }
-  &-am-jump {
-    -webkit-animation-name: nutJumpOne;
-    -webkit-animation-duration: var(--animate-duration);
-    -webkit-animation-timing-function: ease;
-    -webkit-animation-delay: var(--animate-delay);
-
-    animation-name: nutJumpOne;
-    animation-duration: var(--animate-duration);
-    animation-timing-function: ease;
-    animation-delay: var(--animate-delay);
-
-    &.nut-icon-am-infinite {
-      -webkit-animation-name: nutJump;
-      animation-name: nutJump;
-    }
-  }
-
-  &-am-rotate {
-    -webkit-animation-name: rotation;
-    -webkit-animation-duration: var(--animate-duration);
-    -webkit-animation-timing-function: linear;
-    -webkit-animation-delay: var(--animate-delay);
-
-    animation-name: rotation;
-    animation-duration: var(--animate-duration);
-    animation-timing-function: linear;
-    animation-delay: var(--animate-delay);
-
-    &.nut-icon-am-infinite {
-      -webkit-animation-direction: normal;
-      animation-direction: normal;
-    }
-  }
-  &-am-blink {
-    -webkit-animation-name: nutBlink;
-    -webkit-animation-duration: var(--animate-duration);
-    -webkit-animation-timing-function: ease-in-out;
-    -webkit-animation-delay: var(--animate-delay);
-
-    animation-name: nutBlink;
-    animation-duration: var(--animate-duration);
-    animation-timing-function: linear;
-    animation-delay: var(--animate-delay);
-  }
-  &-am-breathe {
-    -webkit-animation-name: nutBreathe;
-    -webkit-animation-duration: var(--animate-duration);
-    -webkit-animation-timing-function: ease-in-out;
-    -webkit-animation-delay: var(--animate-delay);
-
-    animation-name: nutBreathe;
-    animation-duration: var(--animate-duration);
-    animation-timing-function: ease-in-out;
-    animation-delay: var(--animate-delay);
-  }
-  &-am-flash {
-    -webkit-animation-name: nutFlash;
-    -webkit-animation-duration: var(--animate-duration);
-    -webkit-animation-timing-function: ease-in-out;
-    -webkit-animation-delay: var(--animate-delay);
-
-    animation-name: nutFlash;
-    animation-duration: var(--animate-duration);
-    animation-timing-function: ease-in-out;
-    animation-delay: var(--animate-delay);
-  }
-  &-am-bounce {
-    -webkit-animation-name: nutBounce;
-    -webkit-animation-duration: var(--animate-duration);
-    -webkit-animation-timing-function: ease-in-out;
-    -webkit-animation-delay: var(--animate-delay);
-    animation-name: nutBounce;
-    animation-duration: var(--animate-duration);
-    animation-timing-function: ease-in-out;
-    animation-delay: var(--animate-delay);
-
-    &.nut-icon-am-infinite {
-      -webkit-animation-direction: normal;
-      animation-direction: normal;
-    }
-  }
-
-  &-am-shake {
-    -webkit-animation-name: nutShake;
-    -webkit-animation-duration: var(--animate-duration);
-    -webkit-animation-timing-function: ease-in-out;
-    -webkit-animation-delay: var(--animate-delay);
-
-    animation-name: nutShake;
-    animation-duration: var(--animate-duration);
-    animation-timing-function: ease-in-out;
-    animation-delay: var(--animate-delay);
-  }
 }

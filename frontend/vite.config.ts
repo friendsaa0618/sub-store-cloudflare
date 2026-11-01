@@ -3,7 +3,6 @@ import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ConfigEnv, defineConfig, loadEnv } from "vite";
-import { createStyleImportPlugin } from "vite-plugin-style-import";
 import { svgSprite } from "./plugins/svg-sprite";
 
 const projectRoot = dirname(fileURLToPath(import.meta.url));
@@ -32,22 +31,6 @@ const viteConfig = defineConfig((mode: ConfigEnv) => {
     plugins: [
       htmlPlugin(),
       vue(),
-      createStyleImportPlugin({
-        // resolves: [NutuiResolve()],
-        libs: [
-          {
-            libraryName: "@nutui/nutui",
-            esModule: true,
-            resolveStyle: (name) => {
-              name = name.toLowerCase().replace("-", ""); // NutuiResolve官方版目前在linux会造成大小写不一致问题无法加载资源
-              if (name === "icon") {
-                return "";
-              }
-              return `@nutui/nutui/dist/packages/${name}/index.scss`;
-            },
-          },
-        ],
-      }),
       svgSprite({
         iconDir: resolve(projectRoot, "src/assets/icons"),
         srcDir: resolve(projectRoot, "src"),
@@ -86,7 +69,6 @@ const viteConfig = defineConfig((mode: ConfigEnv) => {
           },
           manualChunks(id) {
             if (id.includes('node_modules')) {
-              if (id.includes('@nutui/nutui') || (id.includes('@nutui') && !id.includes('@nutui/icons'))) return 'nutui';
               if (
                 id.includes('/codemirror/') ||
                 id.includes('@codemirror/') ||
@@ -111,9 +93,8 @@ const viteConfig = defineConfig((mode: ConfigEnv) => {
     css: {
       preprocessorOptions: {
         scss: {
-          // 配置 自定义覆盖主题 和 nutui 全局 scss 变量
-          additionalData: `@import "@/assets/styles/custom_variables.scss";@import "@nutui/nutui/dist/styles/variables-jdt.scss";@import '@/assets/styles/mixins.scss';@import '@/assets/styles/tokens.scss';`,
-          // NutUI 3 still ships legacy @import syntax; Vite 6 already uses Sass's modern API.
+          // 配置自定义覆盖主题变量
+          additionalData: `@import "@/assets/styles/custom_variables.scss";@import '@/assets/styles/mixins.scss';@import '@/assets/styles/tokens.scss';`,
           silenceDeprecations: ["import"],
         },
       },

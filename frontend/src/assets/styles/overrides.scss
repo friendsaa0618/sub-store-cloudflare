@@ -1,0 +1,95 @@
+// Global overrides shared across views (kept after dropping the UI kit).
+
+// sticky title 顶部粘性定位标题 — tight rhythm with following fields
+.sticky-title-wrapper {
+  margin-top: var(--space-2);
+  margin-bottom: var(--space-2);
+  color: var(--comment-text-color);
+
+  > p {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+}
+
+// Keep backend logos aligned with the page theme while they reload.
+img.auto-reverse {
+  filter: brightness(var(--img-brightness));
+}
+
+// Placeholders
+input::placeholder,
+textarea::placeholder {
+  color: var(--comment-text-color) !important;
+  opacity: 1;
+}
+input:-moz-placeholder,
+textarea:-moz-placeholder {
+  color: var(--comment-text-color) !important;
+  opacity: 1;
+}
+input::-moz-placeholder,
+textarea::-moz-placeholder {
+  color: var(--comment-text-color) !important;
+  opacity: 1;
+}
+input:-ms-input-placeholder,
+textarea:-ms-input-placeholder {
+  color: var(--comment-text-color) !important;
+}
+input::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder {
+  color: var(--comment-text-color) !important;
+  opacity: 1;
+}
+
+.Toastify__close-button {
+  position: relative;
+  left: -8px;
+  bottom: -8px;
+}
+
+.Toastify__toast-container,
+.Toastify__toast-container--top-center {
+  --toastify-toast-min-height: 48px;
+}
+
+/* Keep toasts clear of the fixed navbar */
+.Toastify__toast-container--top-center {
+  top: 64px !important;
+}
+
+.fa-circle-question,
+.fa-location-arrow {
+  cursor: pointer;
+}
+
+// Skeleton pulse loader utility
+@keyframes skeletonPulse {
+  0% {
+    opacity: 0.55;
+    background-position: 0% 50%;
+  }
+  50% {
+    opacity: 0.9;
+    background-position: 100% 50%;
+  }
+  100% {
+    opacity: 0.55;
+    background-position: 0% 50%;
+  }
+}
+
+.skeleton-pulse {
+  border-radius: var(--radius-md);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--divider-color) 40%, transparent) 25%,
+    color-mix(in srgb, var(--divider-color) 80%, transparent) 50%,
+    color-mix(in srgb, var(--divider-color) 40%, transparent) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeletonPulse 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}

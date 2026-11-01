@@ -2,7 +2,7 @@ import { useSettingsApi } from "@/api/settings";
 import i18n from "@/locales";
 import { useAppNotifyStore } from "@/store/appNotify";
 import { runFrontendRequestTask } from "@/utils/requestConcurrency";
-import { Toast } from "@nutui/nutui";
+import { notifyLoading, dismissNotify } from "@/utils/notify";
 import { defineStore } from "pinia";
 // import { useEnvApi } from '@/api/env';
 // import { useSubsStore } from '@/store/subs';
@@ -227,7 +227,7 @@ export const useSettingsStore = defineStore("settingsStore", {
       }
     },
     async changeTheme(data: SettingsPostData) {
-      Toast.loading(t("myPage.notify.save.themeLoading"), { cover: true, id: "theme__loading" });
+      notifyLoading(t("myPage.notify.save.themeLoading"), "theme__loading");
       const { showNotify } = useAppNotifyStore();
       const res = await settingsApi.setSettings(data);
       if (res?.data?.status === "success" && res?.data?.data) {
@@ -238,7 +238,7 @@ export const useSettingsStore = defineStore("settingsStore", {
           type: "danger",
         });
       }
-      Toast.hide("theme__loading");
+      dismissNotify("theme__loading");
     },
   },
 });

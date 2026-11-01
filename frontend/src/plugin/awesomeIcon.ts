@@ -9,6 +9,10 @@ import {
   faArrowLeft,
   faBan,
   faCheck,
+  faChevronDown,
+  faChevronRight,
+  faMinus,
+  faUser,
   faClock,
   faCircleQuestion,
   faCircleXmark,
@@ -53,7 +57,8 @@ import {
   faCircleHalfStroke,
   faShareNodes,
   faPlay,
-  faSliders
+  faSliders,
+  faGear
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(faSun);
@@ -69,6 +74,10 @@ library.add(faList);
 library.add(faListCheck);
 library.add(faTableColumns);
 library.add(faCheck);
+library.add(faChevronDown);
+library.add(faChevronRight);
+library.add(faMinus);
+library.add(faUser);
 library.add(faClock);
 library.add(faPlus);
 library.add(faReply);
@@ -110,3 +119,4 @@ library.add(faMagnifyingGlass);
 library.add(faShareNodes);
 library.add(faPlay);
 library.add(faSliders);
+library.add(faGear);

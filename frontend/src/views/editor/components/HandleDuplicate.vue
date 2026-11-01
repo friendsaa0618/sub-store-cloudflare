@@ -14,7 +14,7 @@
           }"
         >
         <template #item="{ element, index }">
-            <nut-tag
+            <AppTag
               @click="onClickTag"
               class="tag-item"
               closeable
@@ -24,14 +24,13 @@
                 element.value
               }}
               </span>
-            </nut-tag>
+            </AppTag>
           </template>
       </draggable>
     </div>
     <div class="input-wrapper">
-      <nut-input
+      <AppInput
        class="custom-input"
-        label=""
         :placeholder="
           $t(`editorPage.subConfig.nodeActions['${type}'].field.placeholder`)
         "
@@ -42,21 +41,21 @@
     <p class="des-label">
       {{ $t(`editorPage.subConfig.nodeActions['${type}'].action.des`) }}
     </p>
-    <nut-radiogroup direction="horizontal" v-model="value.action">
-      <nut-radio v-for="(key, index) in actionList" :label="key" :key="index"
+    <AppRadioGroup direction="horizontal" v-model="value.action">
+      <AppRadio v-for="(key, index) in actionList" :label="key" :key="index"
         >{{
           $t(
             `editorPage.subConfig.nodeActions['${type}'].action.options[${index}]`
           )
         }}
-      </nut-radio>
-    </nut-radiogroup>
+      </AppRadio>
+    </AppRadioGroup>
     <template v-if="value.action === 'rename'">
       <p class="des-label">
         {{ $t(`editorPage.subConfig.nodeActions['${type}'].position.des`) }}
       </p>
-      <nut-radiogroup direction="horizontal" v-model="value.position">
-        <nut-radio
+      <AppRadioGroup direction="horizontal" v-model="value.position">
+        <AppRadio
           v-for="(key, index) in positionList"
           :label="key"
           :key="index"
@@ -65,14 +64,13 @@
               `editorPage.subConfig.nodeActions['${type}'].position.options[${index}]`
             )
           }}
-        </nut-radio>
-      </nut-radiogroup>
+        </AppRadio>
+      </AppRadioGroup>
       <p class="des-label">
         {{ $t(`editorPage.subConfig.nodeActions['${type}'].template.des`) }}
       </p>
       <div class="input-wrapper">
-        <nut-input
-          label=""
+        <AppInput
           :placeholder="
             $t(
               `editorPage.subConfig.nodeActions['${type}'].template.placeholder`
@@ -85,8 +83,7 @@
         {{ $t(`editorPage.subConfig.nodeActions['${type}'].link.des`) }}
       </p>
       <div class="input-wrapper">
-        <nut-input
-          label=""
+        <AppInput
           :placeholder="
             $t(`editorPage.subConfig.nodeActions['${type}'].link.placeholder`)
           "
@@ -99,7 +96,7 @@
 
 <script lang="ts" setup>
   import { useI18n } from 'vue-i18n';
-  import { Dialog } from '@nutui/nutui';
+  import { showDialog } from '@/utils/dialog';
   import { inject, onMounted, watch, reactive, toRaw, ref, computed } from 'vue';
   import draggable from "vuedraggable";
   const { t } = useI18n();
@@ -139,15 +136,13 @@ const onClickTag = el => {
       el.currentTarget
     );
     if (input.value ) {
-      Dialog({
+      showDialog({
         title: t('editorPage.subConfig.pop.clickTag.title'),
         content: t('editorPage.subConfig.pop.clickTag.content'),
-        popClass: 'auto-dialog',
         okText: t(`editorPage.subConfig.pop.clickTag.confirm`),
         cancelText: t(`editorPage.subConfig.pop.clickTag.cancel`),
         onOk: () => editTag(index),
         // onCancel: () => resolve(false),
-        // @ts-ignore
         closeOnClickOverlay: true,
       });
     } else {
@@ -203,7 +198,7 @@ const onClickTag = el => {
     }
   }
 
-  .nut-radiogroup {
+  :deep(.app-radio-group) {
     width: 100%;
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -213,8 +208,7 @@ const onClickTag = el => {
     display: flex;
     align-items: center;
 
-    > view.nut-input {
-      background: transparent;
+    > :deep(.app-input) {
       padding: 8px 12px;
       margin-right: 16px;
       border-bottom: 1px solid var(--lowest-text-color);
@@ -265,8 +259,7 @@ const onClickTag = el => {
     display: flex;
     align-items: center;
 
-    > view.nut-input {
-      background: transparent;
+    > :deep(.app-input) {
       padding: 8px 12px;
       margin-right: 16px;
     }

@@ -16,11 +16,9 @@
           >
             <div class="item">
               <div class="input-container">
-                <nut-textarea
+                <AppTextarea
                   v-model="item.key"
-                  :border="false"
                   placeholder="key"
-                  type="text"
                   :rows="1"
                   autosize
                   :class="{ 'duplicate-key-input': isDuplicateKey(item.key) }"
@@ -37,14 +35,11 @@
               </div>
             </div>
             <div class="item">
-              <nut-textarea
+              <AppTextarea
                 v-model="item.value"
-                :border="false"
                 placeholder="value"
-                type="text"
                 :rows="1"
                 autosize
-                
               />
               <!-- @blur="trimValue(item, 'value')" -->
             </div>
@@ -205,22 +200,13 @@ const handleKeyBlur = (item, index) => {
             }
           }
 
-          :deep(.nut-textarea) {
+          :deep(.app-textarea) {
             width: 100%;
-            background: transparent;
             padding: 8px 12px;
             color: var(--second-text-color);
 
             &.duplicate-key-input {
-              // border-bottom: 1px solid var(--danger-color, #ff4444);
               color: var(--danger-color, #ff4444);
-            }
-
-            :deep(.nut-textarea__textarea) {
-              color: inherit;
-              min-height: unset;
-              height: auto;
-              overflow: hidden;
             }
           }
 

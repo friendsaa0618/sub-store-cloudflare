@@ -4,25 +4,25 @@
       <p class="des-label">
         {{ $t(`editorPage.subConfig.nodeActions['${type}'].des[1]`) }}
       </p>
-      <nut-radiogroup direction="horizontal" v-model="mode">
-        <nut-radio v-for="(key, index) in opt[type]" :label="key" :key="index"
+      <AppRadioGroup direction="horizontal" v-model="mode">
+        <AppRadio v-for="(key, index) in opt[type]" :label="key" :key="index"
           >{{
             $t(`editorPage.subConfig.nodeActions['${type}'].options[${index}]`)
           }}
-        </nut-radio>
-      </nut-radiogroup>
+        </AppRadio>
+      </AppRadioGroup>
     </template>
     <template v-if="type === 'Regex Sort Operator'">
       <p class="des-label">
         {{ $t(`editorPage.subConfig.nodeActions['${type}'].des[1]`) }}
       </p>
-      <nut-radiogroup direction="horizontal" v-model="mode">
-        <nut-radio v-for="(key, index) in opt[type]" :label="key" :key="index"
+      <AppRadioGroup direction="horizontal" v-model="mode">
+        <AppRadio v-for="(key, index) in opt[type]" :label="key" :key="index"
           >{{
             $t(`editorPage.subConfig.nodeActions['${type}'].options[${index}]`)
           }}
-        </nut-radio>
-      </nut-radiogroup>
+        </AppRadio>
+      </AppRadioGroup>
     </template>
     <p class="des-label">
       {{ $t(`editorPage.subConfig.nodeActions['${type}'].des[0]`) }}
@@ -38,7 +38,7 @@
           }"
         >
         <template #item="{ element, index }">
-            <nut-tag
+            <AppTag
               @click="onClickTag"
               class="tag-item"
               closeable
@@ -50,22 +50,20 @@
                   : element.value
               }}
               </span>
-            </nut-tag>
+            </AppTag>
           </template>
       </draggable>
     </div>
     <div class="input-wrapper">
-      <nut-input
+      <AppInput
        class="custom-input"
-        label=""
         :placeholder="
           $t(`editorPage.subConfig.nodeActions['${type}'].placeholder[0]`)
         "
         v-model="input1"
       />
-      <nut-input
+      <AppInput
         v-if="type === 'Regex Rename Operator'"
-        label=""
         :placeholder="
           $t(`editorPage.subConfig.nodeActions['${type}'].placeholder[1]`)
         "
@@ -77,7 +75,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { Dialog } from '@nutui/nutui';
+  import { showDialog } from '@/utils/dialog';
   import { inject, onMounted, ref, watch, computed } from 'vue';
   import { useI18n } from 'vue-i18n';
   import { onBeforeRouteLeave, useRouter } from 'vue-router';
@@ -123,15 +121,13 @@
       el.currentTarget
     );
     if (input1.value || input2.value) {
-      Dialog({
+      showDialog({
         title: t('editorPage.subConfig.pop.clickTag.title'),
         content: t('editorPage.subConfig.pop.clickTag.content'),
-        popClass: 'auto-dialog',
         okText: t(`editorPage.subConfig.pop.clickTag.confirm`),
         cancelText: t(`editorPage.subConfig.pop.clickTag.cancel`),
         onOk: () => editTag(index),
         // onCancel: () => resolve(false),
-        // @ts-ignore
         closeOnClickOverlay: true,
       });
     } else {
@@ -210,17 +206,15 @@
 
   const confirmLeave = () => {
     return new Promise(resolve => {
-      Dialog({
+      showDialog({
         title: t('editorPage.subConfig.pop.leaveConfirmTitle'),
         content: t('editorPage.subConfig.pop.leaveContent'),
-        popClass: 'auto-dialog',
         okText: t(`editorPage.subConfig.pop.leaveConfirm`),
         cancelText: t(`editorPage.subConfig.pop.leaveCancel`),
         onOk: () => {
           resolve(true);
         },
         onCancel: () => resolve(false),
-        // @ts-ignore
         closeOnClickOverlay: true,
       });
     });
@@ -246,7 +240,7 @@
     }
   }
 
-  .nut-radiogroup {
+  :deep(.app-radio-group) {
     width: 100%;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
@@ -295,8 +289,7 @@
     display: flex;
     align-items: center;
 
-    > view.nut-input {
-      background: transparent;
+    > :deep(.app-input) {
       padding: 8px 12px;
       margin-right: 16px;
     }

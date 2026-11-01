@@ -15,7 +15,8 @@ const mql = window.matchMedia('(prefers-color-scheme: dark)');
  *
  * --item-card-radios stays as a legacy alias for card radius (= radius-lg).
  * Font stacks: --font-sans for UI; --font-mono only for data/URL/code.
- * Geist is preferred when available; local My Roboto / system faces cover offline / blocked CDNs.
+ * Geist is used when installed locally; bundled My Roboto / system faces
+ * cover every other case.
  */
 export const designTokens: Record<string, string> = {
   // Radius

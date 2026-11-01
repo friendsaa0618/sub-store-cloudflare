@@ -5,32 +5,32 @@
       <p class="script-compatibility">
         {{ metadata.compatibility === 'free' ? $t('editorPage.subConfig.actions.script.freeVerified') : $t('editorPage.subConfig.actions.script.personal') }}
       </p>
-      <nut-form>
-        <nut-form-item v-for="parameter in metadata.parameters" :key="parameter.key">
+      <AppForm>
+        <AppFormItem v-for="parameter in metadata.parameters" :key="parameter.key">
           <p class="options-label">{{ localized(parameter.label, parameter.labelZh) }}</p>
-          <nut-checkbox
+          <AppCheckbox
             v-if="parameter.type === 'boolean'"
             :model-value="Boolean(argumentsValue[parameter.key])"
             @update:model-value="value => setArgument(parameter, value)"
           >
             {{ Boolean(argumentsValue[parameter.key]) ? $t('editorPage.subConfig.actions.enable') : $t('editorPage.subConfig.actions.disable') }}
-          </nut-checkbox>
-          <nut-textarea
+          </AppCheckbox>
+          <AppTextarea
             v-else-if="parameter.type === 'string-list'"
             :model-value="formatList(argumentsValue[parameter.key])"
             :placeholder="parameter.placeholder || ''"
             :autosize="{ minHeight: 48, maxHeight: 120 }"
             @update:model-value="value => setArgument(parameter, value)"
           />
-          <nut-input
+          <AppInput
             v-else
             :model-value="String(argumentsValue[parameter.key] ?? '')"
             :type="parameter.type === 'number' ? 'number' : 'text'"
             :placeholder="parameter.placeholder || ''"
             @update:model-value="value => setArgument(parameter, value)"
           />
-        </nut-form-item>
-      </nut-form>
+        </AppFormItem>
+      </AppForm>
     </template>
     <p v-else class="script-unavailable">{{ $t('editorPage.subConfig.actions.script.unavailable') }}</p>
   </div>

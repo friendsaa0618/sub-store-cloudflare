@@ -24,7 +24,6 @@
     "@fortawesome/free-solid-svg-icons": "^6.1.1",
     "@fortawesome/vue-fontawesome": "^3.0.1",
     "@lezer/highlight": "^1.2.0",
-    "@nutui/nutui": "^3.3.8",
     "@replit/codemirror-indentation-markers": "^6.5.0",
     "@uiw/codemirror-extensions-hyper-link": "^4.25.10",
     "@vueuse/core": "^8.9.2",
@@ -52,7 +51,6 @@
     "terser": "^5.49.0",
     "typescript": "^5.9.3",
     "vite": "^6.4.3",
-    "vite-plugin-style-import": "^2.0.0",
     "vue-tsc": "^2.2.12"
   }
 }

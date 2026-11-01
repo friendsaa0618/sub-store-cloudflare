@@ -1,14 +1,13 @@
 <template>
-  <nut-dialog
-    visible
-    teleport="#app"
-    pop-class="preview-node-names-dialog auto-dialog"
-    :title="title"
-    text-align="left"
-    close-on-popstate
-    @closed="emit('close')"
+  <AppPopup
+    :visible="true"
+    position="center"
+    closeable
+    pop-class="preview-node-names-dialog"
+    @update:visible="emit('close')"
   >
     <div class="preview-node-names-content">
+      <h2 class="preview-node-names-title">{{ title }}</h2>
       <p class="preview-node-names-desc">
         {{ t('comparePage.nodeNames.descriptionBefore') }}
         {{ t('comparePage.nodeNames.aiLink') }}
@@ -18,31 +17,31 @@
         :value="nodeNamesText"
         readonly
       />
+      <div class="preview-node-names-footer">
+        <AppButton
+          size="small"
+          plain
+          type="primary"
+          class="preview-node-names-footer-button"
+          @click="copyNodeNames"
+        >
+          {{ t('comparePage.nodeNames.copyAll') }}
+        </AppButton>
+        <AppButton
+          size="small"
+          type="primary"
+          class="preview-node-names-footer-button"
+          @click="copyPrompt"
+        >
+          {{ t('comparePage.nodeNames.copyPrompt') }}
+        </AppButton>
+      </div>
     </div>
-    <template #footer>
-      <nut-button
-        size="small"
-        plain
-        type="primary"
-        class="preview-node-names-footer-button"
-        @click="copyNodeNames"
-      >
-        {{ t('comparePage.nodeNames.copyAll') }}
-      </nut-button>
-      <nut-button
-        size="small"
-        type="primary"
-        class="preview-node-names-footer-button"
-        @click="copyPrompt"
-      >
-        {{ t('comparePage.nodeNames.copyPrompt') }}
-      </nut-button>
-    </template>
-  </nut-dialog>
+  </AppPopup>
 </template>
 
 <script lang="ts" setup>
-import { Toast } from '@nutui/nutui';
+import { notify } from '@/utils/notify';
 import { useClipboard } from '@vueuse/core';
 import { computed } from 'vue';
 import useV3Clipboard from 'vue-clipboard3';
@@ -90,9 +89,12 @@ const copyText = async (text: string, successText: string) => {
     } else {
       await copyFallback(text);
     }
-    Toast.text(successText);
+    notify({ type: "success", title: successText });
   } catch (e) {
-    Toast.fail(t('comparePage.nodeNames.copyFailed', { e: e?.message ?? e }));
+    notify({
+      type: 'danger',
+      title: t('comparePage.nodeNames.copyFailed', { e: e?.message ?? e }),
+    });
   }
 };
 
@@ -149,6 +151,21 @@ const copyPrompt = async () => {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 2px var(--focus-ring-color);
   }
+}
+
+.preview-node-names-title {
+  margin: 0;
+  padding-right: 28px;
+  color: var(--primary-text-color);
+  font-size: var(--text-md);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.preview-node-names-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .preview-node-names-footer-button {

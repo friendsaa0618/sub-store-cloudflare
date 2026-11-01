@@ -2,7 +2,7 @@
   <div>
     <button type="button" class="desc" :aria-label="desc" @click="tips">
       <span>{{ desc }}</span>
-      <nut-icon name="tips" aria-hidden="true"></nut-icon>
+      <font-awesome-icon icon="fa-solid fa-circle-question" aria-hidden="true" />
     </button>
     <ul class="preview-list">
       <li v-for="platform in platformList" :key="platform.name">

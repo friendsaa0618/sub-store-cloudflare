@@ -1,22 +1,15 @@
 <template>
-  <div
-    style="overflow: hidden"
-    @touchstart="onTouchStart"
-    @touchmove="onTouchMove"
-    @touchend="onTouchEnd"
-  >
+  <div style="overflow: hidden">
     <!-- 添加订阅弹窗 -->
     <!-- lock-scroll -->
     <div>
-      <nut-popup
+      <AppPopup
         v-model:visible="addSubBtnIsVisible"
         :position="addSubPopupPosition"
         :pop-class="addSubPopupClass"
         :round="!isDesktop"
-        close-icon="close-little"
-        z-index="11000"
         closeable
-        :style="addSubPopupStyle"
+        :panel-style="addSubPopupStyle"
       >
         <div class="add-sub-panel">
           <div v-if="!isDesktop" class="preview-sheet-handle" aria-hidden="true" />
@@ -24,7 +17,7 @@
             <p class="add-sub-panel-title">{{ $t(`subPage.addSubTitle`) }}</p>
             <p class="add-sub-panel-title or">{{ $t(`specificWord.or`) }}</p>
             <input ref="fileInput" type="file" accept="application/json,text/json,.json" style="display: none" @change="fileChange">
-            <nut-button
+            <AppButton
               class="upload-btn"
               plain
               type="primary"
@@ -39,7 +32,7 @@
                 aria-hidden="true"
               />
               {{ $t(`subPage.import.label`) }}
-            </nut-button>
+            </AppButton>
             <button
               type="button"
               class="import-tips-btn"
@@ -47,7 +40,7 @@
               :title="$t(`subPage.import.tipsTitle`)"
               @click="importTips"
             >
-              <nut-icon name="tips" aria-hidden="true"></nut-icon>
+              <font-awesome-icon icon="fa-solid fa-circle-question" aria-hidden="true" />
             </button>
           </div>
           <ul class="add-sub-panel-list">
@@ -65,40 +58,26 @@
             </li>
           </ul>
         </div>
-      </nut-popup>
+      </AppPopup>
     </div>
     <!-- 浮动按钮 -->
     <Teleport to="body">
-      <div v-if="hasSubs || hasCollections" class="drag-btn-wrapper">
-        <nut-drag
-          :attract="true"
-          :boundary="{
-            top: 56 + 8,
-            left: 16,
-            bottom: 48 + 12 + 8,
-            right: 16,
-          }"
-          :style="{
-            cursor: 'pointer',
-            left: '15px',
-            bottom: `calc(${
-              48 + 36 +
-              (!isMobile() ? (appearanceSetting.isSimpleMode ? 44 : 48) : 0)
-            }px + env(safe-area-inset-bottom))`,
-          }"
-        >
-          <!-- 刷新 -->
-          <div
-            v-if="appearanceSetting.showFloatingRefreshButton"
-            class="drag-btn refresh"
-            @click="refresh"
-          >
-            <font-awesome-icon icon="fa-solid fa-arrow-rotate-right" />
-          </div>
-
-          <!-- Create lives on section headers; floating + removed to cut duplicate paths -->
-        </nut-drag>
-      </div>
+      <button
+        v-if="(hasSubs || hasCollections) && appearanceSetting.showFloatingRefreshButton"
+        type="button"
+        class="floating-refresh"
+        :aria-label="$t('subPage.actions.refresh')"
+        :title="$t('subPage.actions.refresh')"
+        :style="{
+          bottom: `calc(${
+            48 + 36 +
+            (!isMobile() ? (appearanceSetting.isSimpleMode ? 44 : 48) : 0)
+          }px + env(safe-area-inset-bottom))`,
+        }"
+        @click="refresh"
+      >
+        <font-awesome-icon icon="fa-solid fa-arrow-rotate-right" />
+      </button>
     </Teleport>
 
     <!-- 页面内容 -->
@@ -119,7 +98,7 @@
             <p>{{ $t('subPage.onboarding.collectionDesc') }}</p>
           </div>
           <router-link to="/edit/collections/UNTITLED" class="onboarding-action">
-            <nut-button type="primary" size="small">{{ $t('subPage.onboarding.createCollection') }}</nut-button>
+            <AppButton type="primary" size="small">{{ $t('subPage.onboarding.createCollection') }}</AppButton>
           </router-link>
         </section>
 
@@ -132,10 +111,10 @@
               @click="toggleFold('sub')"
             >
               <span class="section-header__title">{{ $t(`specificWord.singleSub`) }}</span>
-              <nut-icon
+              <font-awesome-icon
                 class="section-header__chevron"
-                :name="isFold('sub') ? 'rect-right' : 'rect-down'"
-                size="12px"
+                :icon="isFold('sub') ? 'fa-solid fa-chevron-right' : 'fa-solid fa-chevron-down'"
+                aria-hidden="true"
               />
             </button>
             <router-link
@@ -175,7 +154,6 @@
                 <SubListItem
                   :sub="element"
                   type="sub"
-                  :disabled="swipeDisabled"
                   :is-dual-column="isDualColumnMode"
                 />
               </div>
@@ -198,10 +176,10 @@
               @click="toggleFold('col')"
             >
               <span class="section-header__title">{{ $t(`specificWord.collectionSub`) }}</span>
-              <nut-icon
+              <font-awesome-icon
                 class="section-header__chevron"
-                :name="isFold('col') ? 'rect-right' : 'rect-down'"
-                size="12px"
+                :icon="isFold('col') ? 'fa-solid fa-chevron-right' : 'fa-solid fa-chevron-down'"
+                aria-hidden="true"
               />
             </button>
             <router-link
@@ -241,7 +219,6 @@
                 <SubListItem
                   :collection="element"
                   type="collection"
-                  :disabled="swipeDisabled"
                   :is-dual-column="isDualColumnMode"
                 />
               </div>
@@ -273,7 +250,7 @@
         </ol>
         <div class="onboarding-buttons">
           <router-link to="/edit/subs/UNTITLED" class="onboarding-action">
-            <nut-button type="primary">{{ $t('subPage.onboarding.createSource') }}</nut-button>
+            <AppButton type="primary">{{ $t('subPage.onboarding.createSource') }}</AppButton>
           </router-link>
           <a href="https://github.com/realchendahuang/sub-store-cloudflare/blob/main/docs/quick-start.md" target="_blank" rel="noreferrer">
             {{ $t('subPage.onboarding.openGuide') }}
@@ -287,7 +264,7 @@
 </template>
 
 <script lang="ts" setup>
-import { Dialog } from '@nutui/nutui';
+import { showDialog } from '@/utils/dialog';
 import { useMediaQuery } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 import { computed, onMounted, ref, toRaw, watch } from "vue";
@@ -362,9 +339,6 @@ const lastRefreshAt = ref<number | null>(null);
 const isDualColumnMode = computed(() => {
   return effectiveListViewMode.value === "dual-column";
 });
-const swipeDisabled = ref(false);
-const touchStartY = ref(null);
-const touchStartX = ref(null);
 const sortFailed = ref(false);
 // Tag filter strip removed from UI — always show full list.
 // Keep a stable "all" key so fold state (localStorage sub-fold) stays compatible.
@@ -468,28 +442,6 @@ watch(
   },
 );
 
-const onTouchStart = (event: TouchEvent) => {
-  touchStartY.value = Math.abs(event.touches[0].clientY);
-  touchStartX.value = Math.abs(event.touches[0].clientX);
-};
-
-const onTouchMove = (event: TouchEvent) => {
-  const deltaY = Math.abs(event.changedTouches[0].clientY - touchStartY.value);
-  const deltaX = Math.abs(event.changedTouches[0].clientX - touchStartX.value);
-
-  const isScrollingUp = deltaX > 2;
-  const isScrollingUps = deltaY < 10;
-
-  if (isScrollingUp && isScrollingUps) {
-    event.preventDefault();
-  }
-};
-
-const onTouchEnd = () => {
-  touchStartY.value = null;
-  touchStartX.value = null;
-};
-
 const refresh = async () => {
   await initStores(true, true, true);
 };
@@ -539,7 +491,6 @@ const changeSort = async (
 };
 
 const handleDragStart = (dataValue: any) => {
-  swipeDisabled.value = true;
   dragData = dataValue.value;
 };
 
@@ -549,7 +500,6 @@ const handleDragEnd = (dataValue: any) => {
   } else {
     dragData = null;
   }
-  swipeDisabled.value = false;
 };
 function getFoldState() {
   let states = {};
@@ -650,64 +600,55 @@ const fileChange = async (event) => {
 };
 const importTips = () => {
   addSubBtnIsVisible.value = false;
-  Dialog({
-      title: t(`subPage.import.tipsTitle`),
-      content: t(`subPage.import.tipsContent`),
-      popClass: 'auto-dialog',
-      okText: 'OK',
-      noCancelBtn: true,
-      closeOnPopstate: true,
-      lockScroll: false,
-    });
+  showDialog({
+    title: t(`subPage.import.tipsTitle`),
+    content: t(`subPage.import.tipsContent`),
+    okText: 'OK',
+    noCancelBtn: true,
+  });
 };
 </script>
 
 <style lang="scss" scoped>
-.drag-btn-wrapper {
-  position: relative;
+.floating-refresh {
+  position: fixed;
+  left: 15px;
   z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--second-color);
+  border-radius: 50%;
+  background: var(--second-color);
+  box-shadow: 0 4px 14px -4px color-mix(in srgb, var(--second-color) 40%, transparent);
+  color: #fff;
+  cursor: pointer;
+  transition:
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
-  .drag-btn {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: var(--primary-color);
-    border: 1px solid var(--primary-color);
-    box-shadow: 0 4px 14px -4px color-mix(in srgb, var(--primary-color) 35%, transparent);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  &:hover {
+    transform: scale(1.08);
+    box-shadow: 0 8px 20px -4px color-mix(in srgb, var(--second-color) 50%, transparent);
+  }
 
-    &:hover {
-      transform: scale(1.08);
-      box-shadow: 0 8px 20px -4px color-mix(in srgb, var(--primary-color) 45%, transparent);
-    }
+  &:active {
+    transform: scale(0.95);
+  }
 
-    &:active {
-      transform: scale(0.95);
-    }
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--focus-ring-color);
+  }
 
-    &.refresh {
-      background: var(--second-color);
-      border-color: var(--second-color);
-      box-shadow: 0 4px 14px -4px color-mix(in srgb, var(--second-color) 40%, transparent);
-      margin-bottom: 12px;
-
-      &:hover {
-        box-shadow: 0 8px 20px -4px color-mix(in srgb, var(--second-color) 50%, transparent);
-      }
-
-      > svg {
-        color: #fff;
-      }
-    }
-
-    > svg {
-      width: 20px;
-      height: 20px;
-      color: var(--background-color);
-    }
+  > svg {
+    width: 20px;
+    height: 20px;
+    color: #fff;
   }
 }
 

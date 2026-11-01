@@ -122,7 +122,9 @@ export const useSubsStore = defineStore('subsStore', {
         }
         if (res?.data?.status === 'success') {
           const index = this[type].findIndex(item => item.name === name);
-          this[type][index] = res.data.data;
+          if (index !== -1) {
+            this[type][index] = res.data.data;
+          }
         } 
       } catch (error) {
         console.error('updateOneData error', error);

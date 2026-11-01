@@ -1,0 +1,36 @@
+import type { App } from "vue";
+import AppAvatar from "@/components/ui/AppAvatar.vue";
+import AppButton from "@/components/ui/AppButton.vue";
+import AppCheckbox from "@/components/ui/AppCheckbox.vue";
+import AppCheckboxGroup from "@/components/ui/AppCheckboxGroup.vue";
+import AppDivider from "@/components/ui/AppDivider.vue";
+import AppEmpty from "@/components/ui/AppEmpty.vue";
+import AppForm from "@/components/ui/AppForm.vue";
+import AppFormItem from "@/components/ui/AppFormItem.vue";
+import AppInput from "@/components/ui/AppInput.vue";
+import AppPicker from "@/components/ui/AppPicker.vue";
+import AppPopup from "@/components/ui/AppPopup.vue";
+import AppRadio from "@/components/ui/AppRadio.vue";
+import AppRadioGroup from "@/components/ui/AppRadioGroup.vue";
+import AppSwitch from "@/components/ui/AppSwitch.vue";
+import AppTag from "@/components/ui/AppTag.vue";
+import AppTextarea from "@/components/ui/AppTextarea.vue";
+
+export default (app: App) => {
+  app.component("AppAvatar", AppAvatar);
+  app.component("AppButton", AppButton);
+  app.component("AppCheckbox", AppCheckbox);
+  app.component("AppCheckboxGroup", AppCheckboxGroup);
+  app.component("AppDivider", AppDivider);
+  app.component("AppEmpty", AppEmpty);
+  app.component("AppForm", AppForm);
+  app.component("AppFormItem", AppFormItem);
+  app.component("AppInput", AppInput);
+  app.component("AppPicker", AppPicker);
+  app.component("AppPopup", AppPopup);
+  app.component("AppRadio", AppRadio);
+  app.component("AppRadioGroup", AppRadioGroup);
+  app.component("AppSwitch", AppSwitch);
+  app.component("AppTag", AppTag);
+  app.component("AppTextarea", AppTextarea);
+};

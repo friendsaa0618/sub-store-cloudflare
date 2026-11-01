@@ -4,17 +4,17 @@
       {{ $t(`editorPage.subConfig.nodeActions['Sort Operator'].des`) }}
     </p>
     <div class="radio-wrapper options-radio">
-      <nut-radiogroup direction="horizontal" v-model="value">
-        <nut-radio label="asc">
+      <AppRadioGroup direction="horizontal" v-model="value">
+        <AppRadio label="asc">
           {{ $t(`editorPage.subConfig.nodeActions['Sort Operator'].options[0]`) }}
-        </nut-radio>
-        <nut-radio label="desc">
+        </AppRadio>
+        <AppRadio label="desc">
           {{ $t(`editorPage.subConfig.nodeActions['Sort Operator'].options[1]`) }}
-        </nut-radio>
-        <nut-radio label="random">
+        </AppRadio>
+        <AppRadio label="random">
           {{ $t(`editorPage.subConfig.nodeActions['Sort Operator'].options[2]`) }}
-        </nut-radio>
-      </nut-radiogroup>
+        </AppRadio>
+      </AppRadioGroup>
     </div>
   </div>
 </template>
@@ -53,7 +53,7 @@
   .radio-wrapper.options-radio {
     justify-content: start;
 
-    .nut-radiogroup {
+    :deep(.app-radio-group) {
       width: 100%;
       display: grid;
       grid-template-columns: repeat(3, 1fr);

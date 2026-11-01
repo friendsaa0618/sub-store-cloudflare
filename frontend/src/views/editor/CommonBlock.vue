@@ -6,13 +6,15 @@
           <p>
             {{ $t(`editorPage.subConfig.commonOptions.label`) }}
           </p>
-          <nut-icon v-if="!isFold" name="rect-down" size="12px" aria-hidden="true"></nut-icon>
-          <nut-icon v-else name="rect-right" size="12px" aria-hidden="true"></nut-icon>
+          <font-awesome-icon
+            :icon="isFold ? 'fa-solid fa-chevron-right' : 'fa-solid fa-chevron-down'"
+            aria-hidden="true"
+          />
         </button>
         <!-- Tips dialog available via long-form docs; remove always-on chrome -->
       </div>
     </div>
-    <nut-form v-if="!isFold" class="form common-options-form">
+    <AppForm v-if="!isFold" class="form common-options-form">
       <div class="quick-option-palette">
         <button
           v-for="option in quickOptions"
@@ -26,7 +28,7 @@
         </button>
       </div>
 
-      <nut-form-item
+      <AppFormItem
         v-for="option in configuredQuickOptions"
         :key="option.key"
         class="configured-option-item"
@@ -35,18 +37,18 @@
           {{ $t(`editorPage.subConfig.commonOptions${option.localePath}.label`) }}
         </p>
         <div class="radio-wrapper options-radio configured-option-control">
-          <nut-radiogroup
+          <AppRadioGroup
             direction="horizontal"
             v-model="quickArgs[option.key]"
           >
-            <nut-radio
+            <AppRadio
               v-for="radioOption in getRadioOptions(option)"
               :key="radioOption.value"
               :label="radioOption.value"
             >
               {{ $t(`editorPage.subConfig.commonOptions${option.localePath}.${radioOption.labelKey}`) }}
-            </nut-radio>
-          </nut-radiogroup>
+            </AppRadio>
+          </AppRadioGroup>
         </div>
         <button
           type="button"
@@ -54,41 +56,12 @@
           :aria-label="$t('editorPage.subConfig.pop.deleteConfirm')"
           @click="removeQuickOption(option.key)"
         >
-          <nut-icon name="mask-close" />
+          <font-awesome-icon icon="fa-solid fa-xmark" aria-hidden="true" />
         </button>
-      </nut-form-item>
-    </nut-form>
+      </AppFormItem>
+    </AppForm>
   </div>
-  <!--<div class="form-block-wrapper">-->
-  <!--  <div class="sticky-title-wrapper">-->
-  <!--    <p>-->
-  <!--      {{ $t(`editorPage.subConfig.surgeOptions.label`) }}-->
-  <!--    </p>-->
-  <!--  </div>-->
-  <!--  <nut-form class="form">-->
-  <!--    <nut-form-item>-->
-  <!--      <p class="options-label">-->
-  <!--        {{ $t(`editorPage.subConfig.surgeOptions.hybrid.label`) }}-->
-  <!--      </p>-->
-  <!--      <div class="radio-wrapper options-radio">-->
-  <!--        <nut-radiogroup-->
-  <!--          direction="horizontal"-->
-  <!--          v-model="options['surge-hybrid']"-->
-  <!--        >-->
-  <!--          <nut-radio label="DEFAULT"-->
-  <!--            >{{ $t(`editorPage.subConfig.surgeOptions.hybrid.default`) }}-->
-  <!--          </nut-radio>-->
-  <!--          <nut-radio label="FORCE_OPEN"-->
-  <!--            >{{ $t(`editorPage.subConfig.surgeOptions.hybrid.open`) }}-->
-  <!--          </nut-radio>-->
-  <!--          <nut-radio label="FORCE_CLOSE"-->
-  <!--            >{{ $t(`editorPage.subConfig.surgeOptions.hybrid.close`) }}-->
-  <!--          </nut-radio>-->
-  <!--        </nut-radiogroup>-->
-  <!--      </div>-->
-  <!--    </nut-form-item>-->
-  <!--  </nut-form>-->
-  <!--</div>-->
+
 </template>
 
 <script lang="ts" setup>
@@ -270,8 +243,7 @@
         p {
           margin-right: 6px;
         }
-        :deep(.nut-icon) {
-          // transform: rotate(270deg);
+        :deep(svg) {
           font-size: 12px;
           height: 12px;
         }
@@ -316,7 +288,7 @@
   }
 
   .configured-option-item {
-    :deep(.nut-form-item__body__slots) {
+    :deep(.app-form-item__body) {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto 22px;
       align-items: center;
@@ -360,20 +332,20 @@
       opacity: 1;
     }
 
-    :deep(.nut-icon) {
+    :deep(svg) {
       font-size: 14px;
     }
   }
 
   .radio-wrapper.options-radio {
-    :deep(.nut-radiogroup) {
+    :deep(.app-radio-group) {
       width: auto;
       display: flex;
       align-items: center;
       gap: 12px;
     }
 
-    :deep(.nut-radio) {
+    :deep(.app-radio) {
       display: inline-flex;
       align-items: center;
       margin: 0;

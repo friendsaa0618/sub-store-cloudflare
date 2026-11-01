@@ -52,6 +52,7 @@ import {
   normalizeLocale,
   type SupportedLocale,
 } from "@/locales/languages";
+import { syncDocumentLang } from "@/locales";
 
 const props = withDefaults(
   defineProps<{
@@ -80,6 +81,7 @@ const toggleMenu = () => {
 const changeLang = (type: SupportedLocale) => {
   locale.value = type;
   localStorage.setItem("locale", type);
+  syncDocumentLang(type);
   isOpen.value = false;
 };
 

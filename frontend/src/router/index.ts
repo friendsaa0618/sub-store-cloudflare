@@ -10,7 +10,7 @@ import { initStores } from '@/utils/initApp';
 
 import Sub from '@/views/Sub.vue';
 
-import { Toast } from '@nutui/nutui';
+import { notifyLoading, dismissNotify } from '@/utils/notify';
 import { toRaw } from 'vue';
 import 'vue-router';
 import { createRouter, createWebHistory } from 'vue-router';
@@ -188,7 +188,6 @@ router.beforeEach((to, from) => {
   return true
 })
 router.beforeResolve(async (to, from) => {
-  // document.body.classList.remove('nut-overflow-hidden');
   if (!globalStore) {
     globalStore = useGlobalStore();
   }
@@ -204,12 +203,9 @@ router.beforeResolve(async (to, from) => {
           const backend = envNow.data.data.backend;
           const version = envNow.data.data.version;
           if (backend !== storeEnv.backend || version !== storeEnv.version) {
-            Toast.loading(i18n_global("globalNotify.refresh.backendChanged"), {
-              cover: true,
-              id: 'fetchLoading',
-            });
+            notifyLoading(i18n_global("globalNotify.refresh.backendChanged"), 'fetchLoading');
             await initStores(false, true, true);
-            Toast.hide('fetchLoading');
+            dismissNotify('fetchLoading');
           }
         }
       });

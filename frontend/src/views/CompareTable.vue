@@ -128,7 +128,7 @@
                 <td class="processed-item">
                   <div class="name-wrapper">
                     <div>
-                      <nut-tag class="type-tag">{{ processed.type }}</nut-tag
+                      <AppTag class="type-tag">{{ processed.type }}</AppTag
                       >{{ processed.name }}
                     </div>
                     <div v-if="formatNodeEndpoint(processed)">{{ formatNodeEndpoint(processed) }}</div>
@@ -219,16 +219,15 @@
           </table>
         </div>
 
-        <nut-divider
+        <AppDivider
           v-if="filteredOriginalData.length > 0"
           class="divider"
           dashed
-          hairline
           :style="{
             padding: '0 16px',
           }"
           >{{ $t(`comparePage.divider`) }}
-        </nut-divider>
+        </AppDivider>
 
         <div ref="filterRef" class="block-wrapper" v-if="filteredOriginalData.length > 0">
           <!--块标题-->
@@ -253,7 +252,7 @@
                 <td class="original-item">
                   <div class="name-wrapper">
                     <div>
-                      <nut-tag class="type-tag">{{ node.type }} </nut-tag
+                      <AppTag class="type-tag">{{ node.type }} </AppTag
                       >{{ node.name }}
                     </div>
                     <div v-if="formatNodeEndpoint(node)">{{ formatNodeEndpoint(node) }}</div>

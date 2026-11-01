@@ -1,6 +1,6 @@
 <template>
   <div class="admin-token-panel empty-state-wrapper">
-    <nut-empty style="padding: 32px 30px">
+    <AppEmpty style="padding: 32px 30px">
       <template #image>
         <img class="empty-state-image" :src="logoRedIcon" alt="" />
       </template>
@@ -8,7 +8,7 @@
         <h3>{{ $t(`subPage.loadFailed.title`) }}</h3>
         <p>{{ $t(`subPage.loadFailed.desc`) }}</p>
       </template>
-    </nut-empty>
+    </AppEmpty>
 
     <form class="load-failed-form" @submit.prevent="saveTokenAndRetry">
       <label for="admin-token-input">{{ $t(`subPage.loadFailed.tokenLabel`) }}</label>
@@ -21,21 +21,21 @@
         spellcheck="false"
         :disabled="isSubmitting"
       />
-      <nut-button
+      <AppButton
         native-type="submit"
         type="primary"
         :disabled="!adminToken.trim() || isSubmitting"
         :loading="isSubmitting"
-        @click="saveTokenAndRetry"
       >
         {{ $t(`subPage.loadFailed.saveAndRetry`) }}
-      </nut-button>
+      </AppButton>
     </form>
 
     <div class="load-failed-actions">
-      <nut-button plain icon="refresh" :disabled="isSubmitting" @click="retry">
+      <AppButton plain :disabled="isSubmitting" @click="retry">
+        <font-awesome-icon icon="fa-solid fa-arrow-rotate-right" aria-hidden="true" />
         {{ $t(`subPage.loadFailed.btn`) }}
-      </nut-button>
+      </AppButton>
       <a
         href="https://github.com/realchendahuang/sub-store-cloudflare/blob/main/docs/deployment.md"
         target="_blank"

@@ -7,5 +7,4 @@ type NotifySettings = {
   content?: string;
   type?: 'primary' | 'success' | 'danger' | 'warning';
   duration?: number;
-  navBartop?: number;
 };

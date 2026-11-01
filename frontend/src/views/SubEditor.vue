@@ -3,10 +3,10 @@
   <div class="page-wrapper" @click="handleEditGlobalClick">
     <!-- Single scroll page: display + content + actions (no section tabs, no top icon) -->
     <div class="form-block-wrapper">
-      <nut-form class="form" :model-value="form" ref="ruleForm">
+      <AppForm class="form" :model-value="form" ref="ruleForm">
         <div class="editor-tab-content">
         <!-- name -->
-        <nut-form-item
+        <AppFormItem
           required
           :label="$t(`editorPage.subConfig.basic.name.label`)"
           prop="name"
@@ -22,7 +22,7 @@
           ]"
         >
           <input
-            class="nut-input-text"
+            class="app-input-text"
             data-1p-ignore
             @blur="customerBlurValidate('name')"
             v-model.trim="form.name"
@@ -31,45 +31,39 @@
             maxlength="64"
             autocapitalize="none"
             spellcheck="false"
-            type="text"
           />
-        </nut-form-item>
+        </AppFormItem>
         <!-- displayName -->
-        <nut-form-item
+        <AppFormItem
           :label="$t(`editorPage.subConfig.basic.displayName.label`)"
           prop="displayName"
         >
           <input
-            class="nut-input-text"
+            class="app-input-text"
             data-1p-ignore
             v-model.trim="form.displayName"
             :placeholder="
               $t(`editorPage.subConfig.basic.displayName.placeholder`)
             "
-            type="text"
           />
-        </nut-form-item>
+        </AppFormItem>
         <!-- remark -->
-        <nut-form-item
+        <AppFormItem
           :label="$t(`editorPage.subConfig.basic.remark.label`)"
           prop="remark"
         >
-          <nut-textarea
-            class="nut-input-text"
-            :border="false"
+          <AppTextarea
             v-model="form.remark"
             :placeholder="
               $t(`editorPage.subConfig.basic.remark.placeholder`)
             "
-            type="text"
-            input-align="right"
             rows="1"
             :autosize="{ maxHeight: 140 }"
-            max-length="100"
+            maxlength="100"
           />
-        </nut-form-item>
+        </AppFormItem>
         <!-- tag: inline input + confirm (no side drawer) -->
-        <nut-form-item
+        <AppFormItem
           :label="$t(`editorPage.subConfig.basic.tag.label`)"
           prop="tag"
           class="tag-form-item"
@@ -90,12 +84,11 @@
             </div>
             <div class="inline-tag-editor__row">
               <input
-                class="nut-input-text inline-tag-editor__input"
+                class="app-input-text inline-tag-editor__input"
                 v-model.trim="tagDraft"
                 data-1p-ignore
                 :placeholder="$t(`editorPage.subConfig.basic.tag.placeholder`)"
-                type="text"
-                maxlength="30"
+                    maxlength="30"
                 autocapitalize="none"
                 spellcheck="false"
                 @keydown.enter.prevent="commitTagDraft"
@@ -124,30 +117,30 @@
               </button>
             </div>
           </div>
-        </nut-form-item>
+        </AppFormItem>
         </div>
         <div class="editor-tab-content">
         <template v-if="editType === 'subs'">
           <!-- source -->
-          <nut-form-item
+          <AppFormItem
             required
             :label="$t(`editorPage.subConfig.basic.source.label`)"
             prop="source"
           >
             <div class="radio-wrapper">
-              <nut-radiogroup direction="horizontal" v-model="form.source">
-                <nut-radio shape="button" label="remote">
+              <AppRadioGroup direction="horizontal" v-model="form.source">
+                <AppRadio shape="button" label="remote">
                   {{ $t(`editorPage.subConfig.basic.source.remote`) }}
-                </nut-radio>
-                <nut-radio shape="button" label="local">
+                </AppRadio>
+                <AppRadio shape="button" label="local">
                   {{ $t(`editorPage.subConfig.basic.source.local`) }}
-                </nut-radio>
-              </nut-radiogroup>
+                </AppRadio>
+              </AppRadioGroup>
             </div>
-          </nut-form-item>
+          </AppFormItem>
           <!-- url / content -->
           <!-- :label="$t(`editorPage.subConfig.basic.url.label`)" -->
-          <nut-form-item
+          <AppFormItem
             required
             
             v-if="form.source === 'remote'"
@@ -169,22 +162,21 @@
                 <font-awesome-icon class="label-tip-icon" icon="fa-solid fa-circle-question" />
               </span>
             </template>
-            <nut-textarea
+            <AppTextarea
               class="textarea-wrapper"
               @blur="customerBlurValidate('url')"
               @change="strTrim('url')"
               v-model="form.url"
               :autosize="{ maxHeight: 110, minHeight: 50 }"
               :placeholder="$t(`editorPage.subConfig.basic.url.placeholder`)"
-              type="text"
-            />
-          </nut-form-item>
-          <nut-form-item
+              />
+          </AppFormItem>
+          <AppFormItem
             v-else-if="form.source === 'local'"
             :label="undefined"
             prop="content"
           >
-            <!-- <nut-textarea
+            <!-- <AppTextarea
               class="textarea-wrapper"
               v-model="form.content"
               text-align="left"
@@ -192,8 +184,7 @@
               :placeholder="
                 $t(`editorPage.subConfig.basic.content.placeholder`)
               "
-              type="text"
-            /> -->
+              /> -->
             <div class="local-content-toolbar">
               <button type="button" class="toolbar-btn" @click="isDis = false">
                 <font-awesome-icon icon="fa-solid fa-maximize" />
@@ -235,102 +226,106 @@
                 {{ localPreviewSummary.detail }}
               </div>
               <div v-if="localPreviewTypeBadges.length > 0" class="summary-types">
-                <nut-tag v-for="item in localPreviewTypeBadges" :key="item">
+                <AppTag v-for="item in localPreviewTypeBadges" :key="item">
                   {{ item }}
-                </nut-tag>
+                </AppTag>
               </div>
             </div>
             <div style="margin-left: -15px; margin-right: -15px;max-height: 60vh;overflow: auto;">
               <cmView :isReadOnly="false" id="SubEditer"/>
             </div>
-          </nut-form-item>
+          </AppFormItem>
           <!-- ua -->
-          <nut-form-item
+          <AppFormItem
             :label="$t(`editorPage.subConfig.basic.passThroughUA.label`)"
             prop="passThroughUA"
             class="ignore-failed-wrapper"
             v-if="form.source === 'remote'"
           >
             <div class="switch-wrapper">
-              <nut-switch v-model="form.passThroughUA" @change="handlePassThroughUAChange"/>
+              <AppSwitch v-model="form.passThroughUA" @change="handlePassThroughUAChange"/>
             </div>
-          </nut-form-item>
-          <nut-form-item
+          </AppFormItem>
+          <AppFormItem
             :label="$t(`editorPage.subConfig.basic.ua.label`)"
             prop="ua"
             v-if="form.source === 'remote'"
           >
-            <nut-input
-              :border="false"
-              class="nut-input-text"
+            <AppInput
               v-model.trim="form.ua"
               :placeholder="userAgentPlaceholder"
-              type="text"
-              input-align="right"
-              left-icon="tips"
               :readonly="passThroughUAOn"
-              @click-left-icon="uaTips"
-            />
-          </nut-form-item>
+            >
+              <template #left>
+                <button
+                  type="button"
+                  class="input-icon-button"
+                  :aria-label="$t('editorPage.subConfig.basic.ua.label')"
+                  @click.stop="uaTips"
+                >
+                  <font-awesome-icon icon="fa-solid fa-circle-question" />
+                </button>
+              </template>
+            </AppInput>
+          </AppFormItem>
 
-          <nut-form-item
+          <AppFormItem
             :label="$t(`editorPage.subConfig.basic.subUserinfo.label`)"
             prop="subUserinfo"
           >
-            <nut-input
-              :border="false"
-              class="nut-input-text"
+            <AppInput
               v-model.trim="form.subUserinfo"
               :placeholder="
                 $t(`editorPage.subConfig.basic.subUserinfo.placeholder`)
               "
-              type="text"
-              input-align="right"
-              left-icon="tips"
-              @click-left-icon="subUserinfoTips"
-            />
-          </nut-form-item>
+            >
+              <template #left>
+                <button
+                  type="button"
+                  class="input-icon-button"
+                  :aria-label="$t('editorPage.subConfig.basic.subUserinfo.label')"
+                  @click.stop="subUserinfoTips"
+                >
+                  <font-awesome-icon icon="fa-solid fa-circle-question" />
+                </button>
+              </template>
+            </AppInput>
+          </AppFormItem>
 
         </template>
 
         <template v-else-if="editType === 'collections'">
-          <nut-cell class="nut-form-item line template-trigger" @click.stop="openTemplatePicker">
-            <view class="nut-cell__title nut-form-item__label">
-              {{ $t(`editorPage.subConfig.basic.template.label`) }}
-            </view>
-            <view class="nut-cell__value nut-form-item__body">
-              <view class="nut-form-item__body__slots">
-                <nut-input
-                  :model-value="selectedTemplateLabel"
-                  :border="false"
-                  class="nut-input-text template-trigger-input"
-                  readonly
-                  input-align="right"
-                  left-icon="tips"
-                  right-icon="rect-right"
-                  @click-left-icon.stop="templateTips"
-                  @click-right-icon.stop="openTemplatePicker"
-                />
-              </view>
-            </view>
-          </nut-cell>
-          <nut-cell class="nut-form-item line include-subs-trigger" @click.stop="toggleManualSubscriptionsFold">
-            <view class="nut-cell__title nut-form-item__label">
-              {{ $t(`editorPage.subConfig.basic.subscriptions.label`) }}
-            </view>
-            <view class="nut-cell__value nut-form-item__body">
-              <view class="nut-form-item__body__slots">
-                <nut-input
-                  :model-value="selectedSubsDisplay"
-                  :border="false"
-                  class="nut-input-text include-subs-trigger-input"
-                  readonly
-                  input-align="right"
-                  :right-icon="manualSubscriptionsIsFold ? 'rect-right' : 'rect-down'"
-                />
-              </view>
-            </view>
-          </nut-cell>
+          <AppFormItem
+            :label="$t(`editorPage.subConfig.basic.template.label`)"
+            class="template-trigger"
+          >
+            <div class="picker-trigger-row">
+              <button
+                type="button"
+                class="input-icon-button"
+                :aria-label="$t(`editorPage.subConfig.basic.template.label`)"
+                @click.stop="templateTips"
+              >
+                <font-awesome-icon icon="fa-solid fa-circle-question" />
+              </button>
+              <button type="button" class="picker-trigger" @click.stop="openTemplatePicker">
+                <span class="picker-trigger__value">{{ selectedTemplateLabel }}</span>
+                <font-awesome-icon icon="fa-solid fa-chevron-right" aria-hidden="true" />
+              </button>
+            </div>
+          </AppFormItem>
+          <AppFormItem
+            :label="$t(`editorPage.subConfig.basic.subscriptions.label`)"
+            class="include-subs-trigger"
+          >
+            <button type="button" class="picker-trigger" @click.stop="toggleManualSubscriptionsFold">
+              <span class="picker-trigger__value">{{ selectedSubsDisplay }}</span>
+              <font-awesome-icon
+                :icon="manualSubscriptionsIsFold ? 'fa-solid fa-chevron-right' : 'fa-solid fa-chevron-down'"
+                aria-hidden="true"
+              />
+            </button>
+          </AppFormItem>
           <div v-show="!manualSubscriptionsIsFold" class="include-subs-wrapper">
             <div v-show="!manualSubscriptionsIsFold && tags && tags.length > 0" class="tag-check">
               <div class="radio-wrapper">
@@ -342,9 +337,9 @@
                   {{ i.label }}
                 </span>
               </div>
-              <nut-checkbox v-model="subCheckbox" :indeterminate="subCheckboxIndeterminate" @click="subCheckboxClick"></nut-checkbox>
+              <AppCheckbox v-model="subCheckbox" :indeterminate="subCheckboxIndeterminate" @click="subCheckboxClick"></AppCheckbox>
             </div>
-            <nut-checkboxgroup
+            <AppCheckboxGroup
               v-show="!manualSubscriptionsIsFold"
               v-model="visibleSelectedSubscriptions"
               :class="[
@@ -368,71 +363,70 @@
                 @end="onEndDrag"
               >
                 <template #item="{ element }">
-                  <nut-checkbox
+                  <AppCheckbox
                     :key="element[0]"
                     :label="element[0]"
                     text-position="left"
                     class="subs-checkbox"
                   >
                     <div class="sub-img-wrapper">
-                      <nut-avatar
+                      <AppAvatar
                         :class="{ 'sub-item-customer-icon': !element[4], 'icon': true  }"
                         v-if="element[2]"
                         :size="chooserAvatarSize"
                         :url="element[2]"
                         bg-color=""
-                      ></nut-avatar>
+                      ></AppAvatar>
                       <span class="sub-item">
                         <span class="name">{{ element[1] }}</span>
                         <span class="tag" v-for="i in element[3]" :key="i">
-                          <nut-tag>{{ i }}</nut-tag>
+                          <AppTag>{{ i }}</AppTag>
                         </span>
                       </span>
                       <font-awesome-icon icon="fa-solid fa-bars" class="drag-handle"/>
                     </div>
-                  </nut-checkbox>
+                  </AppCheckbox>
                 </template>
               </draggable>
-            </nut-checkboxgroup>
+            </AppCheckboxGroup>
           </div>
-            <nut-form-item
+            <AppFormItem
               :label="$t(`editorPage.subConfig.basic.subUserinfo.label`)"
               prop="subUserinfo"
             >
-              <nut-input
-                :border="false"
-                class="nut-input-text"
+              <AppInput
                 v-model.trim="form.subUserinfo"
                 :placeholder="
                   $t(`editorPage.subConfig.basic.subUserinfo.placeholder`)
                 "
-                type="text"
-                input-align="right"
-                left-icon="tips"
-                @click-left-icon="subUserinfoTips"
-              />
-            </nut-form-item>
+              >
+                <template #left>
+                  <button
+                    type="button"
+                    class="input-icon-button"
+                    :aria-label="$t('editorPage.subConfig.basic.subUserinfo.label')"
+                    @click.stop="subUserinfoTips"
+                  >
+                    <font-awesome-icon icon="fa-solid fa-circle-question" />
+                  </button>
+                </template>
+              </AppInput>
+            </AppFormItem>
         </template>
 
-        <nut-form-item
+        <AppFormItem
           v-if="editType === 'collections'"
           :label="$t(`editorPage.subConfig.basic.ignoreFailedRemoteSub.label`)"
           class="failure-mode-trigger"
           prop="ignoreFailedRemoteSub"
         >
-          <nut-input
-            :model-value="subFailureModeLabel"
-            :border="false"
-            class="nut-input-text failure-mode-input"
-            readonly
-            input-align="right"
-            right-icon="rect-right"
-            @click="openSubFailureModePicker"
-            @click-right-icon="openSubFailureModePicker"
-          />
-        </nut-form-item>
+          <button type="button" class="picker-trigger" @click="openSubFailureModePicker">
+            <span class="picker-trigger__value">{{ subFailureModeLabel }}</span>
+            <font-awesome-icon icon="fa-solid fa-chevron-right" aria-hidden="true" />
+          </button>
+        </AppFormItem>
         </div>
-      </nut-form>
+      </AppForm>
     </div>
 
     <!-- 节点操作 — same page, continuous scroll -->
@@ -461,7 +455,7 @@
       <font-awesome-icon icon="fa-solid fa-eye" />
       <span>{{ $t("editorPage.subConfig.btn.compare") }}</span>
     </button>
-    <nut-button
+    <AppButton
       @click="submit"
       class="submit-btn btn"
       type="primary"
@@ -469,7 +463,7 @@
     >
       <font-awesome-icon icon="fa-solid fa-floppy-disk" />
       {{ $t("editorPage.subConfig.btn.save") }}
-    </nut-button>
+    </AppButton>
   </div>
 </div>
 <div v-else style="width: 100%;max-height: 95vh;">
@@ -487,7 +481,7 @@
     @closeCompare="closeCompare"
     @refresh="refreshCompare"
   />
-  <DesktopPicker
+  <AppPicker
     v-if="editType === 'collections'"
     v-model="selectedSubFailureMode"
     v-model:visible="showSubFailureModePicker"
@@ -497,7 +491,7 @@
     :ok-text="$t(`editorPage.subConfig.sourceNamePicker.confirm`)"
     @confirm="handleSubFailureModeConfirm"
   />
-  <DesktopPicker
+  <AppPicker
     v-model="selectedTemplateValue"
     v-model:visible="showTemplatePicker"
     :columns="templateColumns"
@@ -542,8 +536,8 @@ import FilterSelect from "@/views/editor/components/FilterSelect.vue";
 import HandleDuplicate from "@/views/editor/components/HandleDuplicate.vue";
 import Regex from "@/views/editor/components/Regex.vue";
 import Sort from "@/views/editor/components/Sort.vue";
-import DesktopPicker from "@/components/DesktopPicker.vue";
-import { Dialog, Toast } from "@nutui/nutui";
+import { showDialog } from "@/utils/dialog";
+import { notifyLoading, dismissNotify } from "@/utils/notify";
 import { storeToRefs } from "pinia";
 import {
   computed,
@@ -856,7 +850,7 @@ watch(
 onBeforeRouteLeave(() => {
   if (!isDirty.value) return true;
   return new Promise<boolean>((resolve) => {
-    Dialog({
+    showDialog({
       title: t("editorPage.subConfig.pop.leaveConfirmTitle"),
       content: t("editorPage.subConfig.pop.leaveContent"),
       okText: t("editorPage.subConfig.pop.leaveConfirm"),
@@ -1179,11 +1173,7 @@ const fileChange = async (event) => {
   }
 };
 const fetchCompareData = async () => {
-  Toast.loading(t("editorPage.subConfig.basic.content.validation.compareLoading"), {
-    id: "compare",
-    cover: true,
-    duration: 1500,
-  });
+  notifyLoading(t("editorPage.subConfig.basic.content.validation.compareLoading"), "compare");
   try {
     const data: any = JSON.parse(JSON.stringify(toRaw(form)));
     data.process = actionsToProcess(data.process, actionsList, ignoreList);
@@ -1216,7 +1206,7 @@ const fetchCompareData = async () => {
     console.error(e);
     compareData.value = null;
   }
-  Toast.hide("compare");
+  dismissNotify("compare");
 };
 
 const openComparePanel = () => {
@@ -1237,13 +1227,11 @@ const compare = () => {
   ruleForm.value.validate().then(async ({ valid, errors }: any) => {
     if (!valid) {
       focusValidationErrorTab(errors);
-      Dialog({
+      showDialog({
         title: t(`editorPage.subConfig.pop.errorTitle`),
         content: errors[0].message,
-        popClass: "auto-dialog",
         noCancelBtn: true,
         okText: t(`editorPage.subConfig.pop.errorBtn`),
-        // @ts-ignore
         closeOnClickOverlay: true,
       });
       return;
@@ -1287,28 +1275,21 @@ const submit = () => {
     });
     return;
   }
+  isget.value = true;
   ruleForm.value.validate().then(async ({ valid, errors }: any) => {
-    isget.value = true;
     // 如果验证失败
     if (!valid) {
-      isget.value = false;
       focusValidationErrorTab(errors);
-      Dialog({
+      showDialog({
         title: t(`editorPage.subConfig.pop.errorTitle`),
         content: errors[0].message,
-        popClass: "auto-dialog",
         noCancelBtn: true,
         okText: t(`editorPage.subConfig.pop.errorBtn`),
-        // @ts-ignore
         closeOnClickOverlay: true,
       });
       return;
     }
-    Toast.loading(t("editorPage.subConfig.basic.content.validation.submitLoading"), {
-      id: "submits",
-      cover: true,
-      duration: 1500,
-    });
+    notifyLoading(t("editorPage.subConfig.basic.content.validation.submitLoading"), "submits");
     // 如果验证成功，开始保存/修改
     const data: any = JSON.parse(JSON.stringify(toRaw(form)));
     // Auto icon from public library — no user upload
@@ -1323,8 +1304,6 @@ const submit = () => {
     if (editType === "subs" && data.source === "local") {
       const isValidLocalContent = await validateLocalContent(localContentText.value, { notify: true });
       if (!isValidLocalContent) {
-        isget.value = false;
-        Toast.hide("submits");
         focusValidationErrorTab([{ prop: "content" }]);
         return;
       }
@@ -1373,8 +1352,12 @@ const submit = () => {
           });
       });
     }
+  }).catch(() => {
+    // The shared axios interceptor already reported the failure. Swallow it
+    // here so `finally` can release the save guard and the user can retry.
+  }).finally(() => {
     isget.value = false;
-    Toast.hide("submits");
+    dismissNotify("submits");
   });
 };
 
@@ -1419,30 +1402,24 @@ const urlValidator = (val: string): Promise<boolean> => {
     }
   }
   const uaTips = () => {
-    Dialog({
+    showDialog({
         title: t("editorPage.subConfig.basic.ua.tips.title"),
         content: t("editorPage.subConfig.basic.ua.tips.content"),
-        popClass: 'auto-dialog',
         okText: 'OK',
         noCancelBtn: true,
-        closeOnPopstate: true,
-        lockScroll: false,
       });
   };
   const subUserinfoTips = () => {
-    Dialog({
+    showDialog({
         title: t("editorPage.subConfig.basic.subUserinfo.tips.title"),
         content: t("editorPage.subConfig.basic.subUserinfo.tips.content"),
-        popClass: 'auto-dialog',
         okText: 'OK',
         noCancelBtn: true,
-        closeOnPopstate: true,
-        lockScroll: false,
       });
   };
   const templateTips = () => {
     const template = selectedTemplate.value;
-    Dialog({
+    showDialog({
         title: selectedTemplateLabel.value,
         content: t("editorPage.subConfig.basic.template.tips", {
           type: template?.readonly
@@ -1450,36 +1427,24 @@ const urlValidator = (val: string): Promise<boolean> => {
             : t("editorPage.subConfig.basic.template.custom"),
           target: template?.target || "mihomo",
         }),
-        popClass: 'auto-dialog',
-        textAlign: 'left',
         okText: 'OK',
         noCancelBtn: true,
-        closeOnPopstate: true,
-        lockScroll: false,
       });
   };
   const urlTips = () => {
-    Dialog({
+    showDialog({
         title: t('editorPage.subConfig.basic.url.tips.title'),
         content: t('editorPage.subConfig.basic.url.tips.content'),
-        popClass: 'auto-dialog',
-        textAlign: 'left',
         okText: 'OK',
         noCancelBtn: true,
-        closeOnPopstate: true,
-        lockScroll: false,
       });
   };
   const contentTips = () => {
-    Dialog({
+    showDialog({
         title: t('editorPage.subConfig.basic.content.tips.title'),
         content: t('editorPage.subConfig.basic.content.tips.content'),
-        popClass: 'auto-dialog',
-        textAlign: 'left',
         okText: 'OK',
         noCancelBtn: true,
-        closeOnPopstate: true,
-        lockScroll: false,
       });
   };
   const getMatchingCollectionGroup = () => {
@@ -1750,29 +1715,18 @@ const handleEditGlobalClick = () => {
   margin: 0;
   box-sizing: border-box;
 
-  :deep(.nut-cell-group__warp) {
-    border-radius: var(--radius-lg, var(--item-card-radios));
-    border: 1px solid var(--divider-color);
-    overflow: hidden;
-    box-shadow: var(--card-shadow, none);
-  }
-  :deep(.nut-icon-tips:before), :deep(.nut-icon-shop:before) {
-    cursor: pointer;
-  }
-
   // Tighter field stack in editor
-  :deep(.nut-form-item) {
+  :deep(.app-form-item) {
     align-items: center;
-    padding: 10px 12px !important;
-    margin-bottom: 8px !important;
+    padding: 10px 12px;
+    margin-bottom: 8px;
   }
 
-  :deep(.nut-form-item__label) {
-    width: auto !important;
+  :deep(.app-form-item__label) {
     min-width: 4.5em;
     max-width: 7.5em;
-    margin-right: 8px !important;
-    padding: 0 !important;
+    margin-right: 8px;
+    padding: 0;
     line-height: 1.35;
     font-size: 13px;
   }
@@ -1780,23 +1734,13 @@ const handleEditGlobalClick = () => {
 .tag-check {
   display: flex;
   justify-content: space-between;
-  :deep(.nut-checkbox__label) {
-    margin-left: 0;
-    margin-right: 0;
-  }
 }
 .radio-wrapper {
   display: flex;
-  // justify-content: start;
   flex-wrap: wrap;
   justify-content: flex-end;
 
-  :deep(.nut-radio__button.false) {
-    background: var(--divider-color);
-    border-color: transparent;
-    color: var(--second-text-color);
-  }
-  :deep(.nut-radio__button) {
+  :deep(.app-radio.is-button) {
     padding: 5px 10px;
   }
 }
@@ -1838,6 +1782,12 @@ const handleEditGlobalClick = () => {
     outline: none;
     color: var(--primary-text-color);
     font-size: 14px;
+    border-radius: 6px;
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--focus-ring-color);
+    }
 
     &::placeholder {
       color: var(--lowest-text-color);
@@ -1927,8 +1877,8 @@ const handleEditGlobalClick = () => {
 :deep(.tag-form-item) {
   align-items: flex-start !important;
 
-  .nut-form-item__label {
-    padding-top: 6px !important;
+  .app-form-item__label {
+    padding-top: 6px;
   }
 }
 
@@ -2050,15 +2000,11 @@ const handleEditGlobalClick = () => {
     }
   }
 
-  :deep(.nut-form-item__label) {
+  :deep(.app-form-item__label) {
     width: auto;
   }
-  :deep(.nut-input-text){
-    .nut-input-inner {
-      .nut-input-right-icon {
-        margin-left: 8px;
-      }
-    }
+  :deep(.picker-trigger__value) {
+    margin-left: 8px;
   }
 }
 
@@ -2154,13 +2100,19 @@ const handleEditGlobalClick = () => {
     flex: 1 1 auto;
     min-width: 0;
     width: auto !important;
+
+    /* Desktop: a toolbar action, not a page-wide banner */
+    @media screen and (min-width: $breakpoint-md) {
+      flex: 0 0 280px;
+      width: 280px !important;
+    }
   }
 }
 
 .ignore-failed-wrapper {
   flex-direction: row;
   justify-content: space-between;
-  :deep(.nut-form-item__label) {
+  :deep(.app-form-item__label) {
     width: auto;
   }
   .switch-wrapper {
@@ -2169,44 +2121,12 @@ const handleEditGlobalClick = () => {
   }
 }
 
-.failure-mode-input {
-  cursor: pointer;
-
-  :deep(.nut-input),
-  :deep(.nut-input-value),
-  :deep(.nut-input-inner),
-  :deep(.nut-input-box),
-  :deep(.input-text),
-  :deep(.nut-input__text--readonly),
-  :deep(.nut-input-right-icon) {
-    cursor: pointer;
-  }
-}
-
-.failure-mode-trigger {
-  :deep(.nut-form-item__body),
-  :deep(.nut-cell__value) {
-    cursor: pointer;
-  }
-}
-
+.failure-mode-trigger,
 .include-subs-trigger {
   cursor: pointer;
 
-  :deep(.nut-form-item__label),
-  :deep(.nut-form-item__body),
-  :deep(.nut-cell__title),
-  :deep(.nut-cell__value),
-  :deep(.nut-input),
-  :deep(.nut-input-value),
-  :deep(.nut-input-inner),
-  :deep(.nut-input-right-icon),
-  :deep(input) {
+  :deep(.app-form-item__body) {
     cursor: pointer;
-  }
-
-  :deep(.include-subs-trigger-input .nut-input-inner .nut-input-right-icon) {
-    margin-left: 14px;
   }
 }
 
@@ -2232,11 +2152,6 @@ const handleEditGlobalClick = () => {
     display: flex;
     justify-content: flex-start;
 
-    // :deep(.nut-radio__button.false) {
-    //   background: var(--divider-color);
-    //   border-color: transparent;
-    //   color: var(--second-text-color);
-    // }
     .tag {
       font-size: 12px;
       color: var(--second-text-color);
@@ -2253,10 +2168,9 @@ const handleEditGlobalClick = () => {
     }
   }
 
-  :deep(.nut-form-item__label) {
+  :deep(.app-form-item__label) {
     width: 100%;
     font-size: 12px;
-    // margin-bottom: 12px;
   }
 
   .subs-checkbox-wrapper {
@@ -2360,10 +2274,7 @@ const handleEditGlobalClick = () => {
 
           :deep(img) {
             object-fit: contain;
-
-            &:not(.nut-icon__img) {
-              filter: brightness(var(--img-brightness));
-            }
+            filter: brightness(var(--img-brightness));
           }
         }
         .drag-handle {

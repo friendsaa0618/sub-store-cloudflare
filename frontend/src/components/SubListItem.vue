@@ -1,14 +1,7 @@
 <template>
-  <component
-    :is="isDesktop ? 'div' : 'nut-swipe'"
-    ref="swipe"
-    class="sub-item-swipe"
+  <div
+    class="sub-item-shell"
     :class="{ 'is-dual-column': props.isDualColumn, 'is-desktop': isDesktop }"
-    v-bind="isDesktop ? {} : {
-      disabled: props.disabled,
-      onClose: setIsMoveClose,
-      onOpen: setIsMoveOpen
-    }"
   >
     <div
       class="sub-item-wrapper"
@@ -38,11 +31,10 @@
       >
         <!-- icon: stored URL or deterministic public avatar from name -->
         <div v-if="appearanceSetting.isShowIcon">
-          <nut-avatar
+          <AppAvatar
             :class="{ 'sub-item-customer-icon': !isIconColor }"
             :size="avatarSize"
             :url="resolvedIcon"
-            bg-color=""
           />
         </div>
       </div>
@@ -56,7 +48,7 @@
             <span class="status-pulse-dot" :class="statusDotClass"></span>
             <span class="sub-item-name">{{ displayName }}</span>
             <span v-for="i in tag" :key="i" class="tag">
-              <nut-tag>{{ i }}</nut-tag>
+              <AppTag>{{ i }}</AppTag>
             </span>
           </h3>
           <h3
@@ -68,7 +60,7 @@
             <span class="status-pulse-dot" :class="statusDotClass"></span>
             <span class="sub-item-name">{{ displayName }}</span>
             <span v-for="i in tag" :key="i" class="tag">
-              <nut-tag>{{ i }}</nut-tag>
+              <AppTag>{{ i }}</AppTag>
             </span>
           </h3>
 
@@ -163,6 +155,15 @@
                     <span>{{ t('subPage.actions.cloneConfig') }}</span>
                   </button>
                   <button
+                    type="button"
+                    class="sub-item-overflow__item"
+                    role="menuitem"
+                    @click.stop="runOverflowAction(onClickOpenDownload)"
+                  >
+                    <font-awesome-icon icon="fa-solid fa-file-export" />
+                    <span>{{ t('subPage.actions.openDownload') }}</span>
+                  </button>
+                  <button
                     v-if="props.type === 'sub'"
                     type="button"
                     class="sub-item-overflow__item"
@@ -251,86 +252,8 @@
         </template>
       </div>
     </div>
-    <!-- 加入判断 开启拖动不显示 -->
-    <template #left v-if="!isDesktop && appearanceSetting.isLeftRight">
-      <!-- Copy -->
-      <div class="sub-item-swipe-btn-wrapper">
-        <nut-button
-          shape="square"
-          type="primary"
-          class="sub-item-swipe-btn"
-          :aria-label="t('subPage.actions.cloneConfig')"
-          :title="t('subPage.actions.cloneConfig')"
-          @click="onClickCopyConfig"
-        >
-          <font-awesome-icon icon="fa-solid fa-paste" />
-        </nut-button>
-      </div>
-      <div class="sub-item-swipe-btn-wrapper">
-        <nut-button
-          shape="square"
-          type="success"
-          class="sub-item-swipe-btn"
-          :aria-label="t('subPage.actions.openDownload')"
-          :title="t('subPage.actions.openDownload')"
-          @click.stop="onClickOpenDownload"
-        >
-          <font-awesome-icon icon="fa-solid fa-file-export" />
-        </nut-button>
-      </div>
-      <div class="sub-item-swipe-btn-wrapper">
-        <nut-button
-          shape="square"
-          type="danger"
-          class="sub-item-swipe-btn"
-          :aria-label="t('subPage.actions.delete')"
-          :title="t('subPage.actions.delete')"
-          @click="onClickDelete"
-        >
-          <font-awesome-icon icon="fa-solid fa-trash-can" />
-        </nut-button>
-      </div>
-    </template>
+  </div>
 
-    <template #right v-else-if="!isDesktop">
-      <div class="sub-item-swipe-btn-wrapper">
-        <nut-button
-          shape="square"
-          type="primary"
-          class="sub-item-swipe-btn"
-          :aria-label="t('subPage.actions.cloneConfig')"
-          :title="t('subPage.actions.cloneConfig')"
-          @click.stop="onClickCopyConfig"
-        >
-          <font-awesome-icon icon="fa-solid fa-paste" />
-        </nut-button>
-      </div>
-      <div class="sub-item-swipe-btn-wrapper">
-        <nut-button
-          shape="square"
-          type="success"
-          class="sub-item-swipe-btn"
-          :aria-label="t('subPage.actions.openDownload')"
-          :title="t('subPage.actions.openDownload')"
-          @click.stop="onClickOpenDownload"
-        >
-          <font-awesome-icon icon="fa-solid fa-file-export" />
-        </nut-button>
-      </div>
-      <div class="sub-item-swipe-btn-wrapper">
-        <nut-button
-          shape="square"
-          type="danger"
-          class="sub-item-swipe-btn"
-          :aria-label="t('subPage.actions.delete')"
-          :title="t('subPage.actions.delete')"
-          @click.stop="onClickDelete"
-        >
-          <font-awesome-icon icon="fa-solid fa-trash-can" />
-        </nut-button>
-      </div>
-    </template>
-  </component>
 
   <CompareTable
     v-if="compareTableIsVisible"
@@ -341,15 +264,13 @@
     @refresh="refreshCompare"
   />
   <!-- Desktop: centered modal · Mobile: bottom sheet (no right drawer) -->
-  <nut-popup
+  <AppPopup
     v-model:visible="previewPanelVisible"
     :position="previewPopupPosition"
     :pop-class="previewPopupClass"
     :round="!isDesktop"
     closeable
-    close-icon-position="top-right"
-    :style="previewPopupStyle"
-    @opened="swipe?.close()"
+    :panel-style="previewPopupStyle"
   >
     <div class="preview-panel-shell">
       <div v-if="!isDesktop" class="preview-sheet-handle" aria-hidden="true" />
@@ -371,11 +292,12 @@
         />
       </div>
     </div>
-  </nut-popup>
+  </AppPopup>
 </template>
 
 <script lang="ts" setup>
-import { Dialog, Toast } from "@nutui/nutui";
+import { notifyLoading, dismissNotify } from "@/utils/notify";
+import { showDialog } from "@/utils/dialog";
 import { useClipboard, useMediaQuery } from "@vueuse/core";
 import dayjs from "dayjs";
 import { storeToRefs } from "pinia";
@@ -402,7 +324,6 @@ const props = defineProps<{
   type: "sub" | "collection";
   sub?: Sub;
   collection?: Collection;
-  disabled?: boolean;
   isDualColumn?: boolean;
 }>();
 const { copy, isSupported } = useClipboard();
@@ -509,9 +430,6 @@ const compareTableIsVisible = ref(false);
 usePopupRoute(compareTableIsVisible);
 const previewPanelVisible = ref(false);
 
-const moreAction = ref();
-const swipe = ref();
-const swipeIsOpen = ref(false);
 const compareData = ref();
 const router = useRouter();
 const route = useRoute();
@@ -620,6 +538,8 @@ const simpleCollectionDetailLine = computed(() => {
 });
 
 const statusDotClass = computed(() => {
+  const item = props[props.type] as { enabled?: boolean } | undefined;
+  if (item?.enabled === false) return 'is-disabled';
   if (isFlowFetching.value && typeof flow.value === 'string') return 'is-fetching';
   if (typeof flow.value === 'object') {
     if (flow.value.progress !== undefined && flow.value.progress < 0.1) return 'is-warning';
@@ -868,11 +788,7 @@ const openAppUrl = () => {
 };
 
 const fetchCompareData = async (data?: any) => {
-  Toast.loading(t("comparePage.loading"), {
-    id: "compare",
-    cover: true,
-    duration: 1500,
-  });
+  notifyLoading(t("comparePage.loading"), "compare");
   try {
     const res = await cloudflareApi.previewItem(
       props.type,
@@ -889,7 +805,7 @@ const fetchCompareData = async (data?: any) => {
   }
   await refreshSubFlowsIfNeeded()
   
-  Toast.hide("compare");
+  dismissNotify("compare");
 };
 
 const openComparePanel = () => {
@@ -923,121 +839,28 @@ const refreshCompare = async () => {
   } catch (e) {
     console.error(e);
     compareData.value = null;
-    Toast.hide("compare");
+    dismissNotify("compare");
   }
 };
-const swipeClose = () => {
-  swipe.value?.close?.();
-};
-const swipeController = () => {
-  if (isDesktop.value) return;
-  if (swipeIsOpen.value) {
-    swipe.value?.close?.();
-    swipeIsOpen.value = false;
-    if (moreAction.value) moreAction.value.style.transform = "rotate(0deg)";
-
-    document.removeEventListener('click', handleGlobalClick);
-  } else {
-    if (appearanceSetting.value.isLeftRight) {
-      swipe.value?.open?.("right");
-      setTimeout(() => {
-        swipeIsOpen.value = true;
-        setTimeout(() => {
-          document.addEventListener('click', handleGlobalClick);
-        }, 10);
-      }, 100);
-    } else {
-      swipe.value?.open?.("left");
-      setTimeout(() => {
-        swipeIsOpen.value = true;
-        if (moreAction.value) moreAction.value.style.transform = "rotate(180deg)";
-
-        setTimeout(() => {
-          document.addEventListener('click', handleGlobalClick);
-        }, 10);
-      }, 100);
-    }
-  }
-};
-
-const handleGlobalClick = (event: MouseEvent) => {
-  const swipeRightEl = document.querySelector('.nut-swipe__right');
-  const swipeLeftEl = document.querySelector('.nut-swipe__left');
-
-  if ((swipeRightEl && swipeRightEl.contains(event.target as Node)) ||
-      (swipeLeftEl && swipeLeftEl.contains(event.target as Node))) {
-    return;
-  }
-
-  swipe.value?.close?.();
-  swipeIsOpen.value = false;
-  if (moreAction.value) moreAction.value.style.transform = "rotate(0deg)";
-
-  document.removeEventListener('click', handleGlobalClick);
-};
-
 const onDeleteConfirm = async () => {
   await subsStore.deleteItem(props.type, name, "permanent");
   // Notify.danger(t('subPage.deleteItem.succeedNotify'), { duration: 1500 });
 };
 
-const ismove = ref(false);
-
-const setIsMoveOpen = () => {
-  ismove.value = true;
-
-  setTimeout(() => {
-    swipeIsOpen.value = true;
-    if (moreAction.value) moreAction.value.style.transform = "rotate(180deg)";
-  }, 100);
-
-  setTimeoutTF();
-};
-
-const setIsMoveClose = () => {
-  ismove.value = true;
-  swipeIsOpen.value = false;
-  setTimeoutTF();
-};
-
-// 增加延迟防止打开时 触发不了
-const setTimeoutTF = () => {
-  setTimeout(() => {
-    ismove.value = false;
-  }, 200);
-};
-
-
-
 const handleContentClick = (event: MouseEvent) => {
   event.stopPropagation();
-
-  if (swipeIsOpen.value) {
-    swipe.value?.close?.();
-    swipeIsOpen.value = false;
-    if (moreAction.value) moreAction.value.style.transform = "rotate(0deg)";
-    return;
-  }
-
-  if (!ismove.value) {
-    openPreviewPanel();
-  }
+  openPreviewPanel();
 };
 
 const openPreviewPanel = () => {
-  if (ismove.value) return;
   previewPanelVisible.value = true;
 };
+
 const closeExpandedMenu = () => {
-  swipe.value?.close?.();
-  swipeIsOpen.value = false;
   closeItemMenu();
-  if (moreAction.value) moreAction.value.style.transform = "rotate(0deg)";
-  document.removeEventListener("click", handleGlobalClick);
 };
 
 const onClickCopyConfig = async () => {
-  // 移除 swipeController() 调用，保持左滑状态
   let data: Sub | Collection;
   switch (props.type) {
     case "sub":
@@ -1049,46 +872,23 @@ const onClickCopyConfig = async () => {
   }
   data.name += `-copy-${crypto.randomUUID().slice(0, 8)}`;
 
-  Toast.loading(t("subPage.copyConfigNotify.loading"), { id: "copyConfig" });
+  notifyLoading(t("subPage.copyConfigNotify.loading"), "copyConfig");
   await cloudflareApi.createItem(`${props.type}s`, data);
   await subsStore.fetchSubsData();
-  Toast.hide("copyConfig");
+  dismissNotify("copyConfig");
   showNotify({ title: t("subPage.copyConfigNotify.succeed") });
   closeExpandedMenu();
 };
-// const onClickExport = async () => {
-//   swipeController()
-//   let data: Sub | Collection;
-//   switch (props.type) {
-//     case "sub":
-//       data = JSON.parse(JSON.stringify(toRaw(props.sub)));
-//       break;
-//     case "collection":
-//       data = JSON.parse(JSON.stringify(toRaw(props.collection)));
-//       break;
-//   }
-//   data.name += `-exportedAt${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`;
-
-//   Toast.loading(t("subPage.copyConfigNotify.loading"), { id: "exportConfig" });
-//   // await cloudflareApi.createItem(props.type + "s", data);
-//   // await subsStore.fetchSubsData();
-//   Toast.hide("exportConfig");
-//   showNotify({ title: t("subPage.copyConfigNotify.succeed") });
-//   swipe.value.close();
-// };
-
 const onClickEdit = () => {
   router.push(`/edit/${props.type}s/${encodeURIComponent(name)}`);
 };
 
 const onClickDelete = () => {
-  Dialog({
+  showDialog({
     title: t("subPage.deleteItem.title"),
     content: t("subPage.deleteItem.desc", { displayName }),
     cancelText: t("subPage.deleteItem.btn.cancel"),
     okText: t("subPage.deleteItem.btn.confirm"),
-    closeOnPopstate: true,
-    lockScroll: false,
     onOk: () => onDeleteConfirm(),
   });
 };
@@ -1121,17 +921,14 @@ const onClickOpenDownload = async () => {
 };
 
 const onClickRefresh = async () => {
-  Toast.loading(t("globalNotify.refresh.loading"), {
-    cover: true,
-    id: "refresh",
-  });
+  notifyLoading(t("globalNotify.refresh.loading"), "refresh");
   try {
     await cloudflareApi.downloadSource(name, { noCache: true });
   } catch (e) {
     console.error(e);
   }
   await refreshSubFlowsIfNeeded()
-  Toast.hide("refresh");
+  dismissNotify("refresh");
   showNotify({ title: t("globalNotify.refresh.succeed") });
 };
 
@@ -1146,7 +943,7 @@ const refreshSubFlowsIfNeeded = async () => {
 </script>
 
 <style lang="scss" scoped>
-.sub-item-swipe {
+.sub-item-shell {
   position: relative;
   display: block;
   min-width: 0;
@@ -1197,7 +994,7 @@ const refreshSubFlowsIfNeeded = async () => {
     transform: scale(0.995);
   }
 
-  :deep(.nut-avatar) {
+  :deep(.app-avatar) {
     flex-shrink: 0;
     width: 48px;
     height: 48px;
@@ -1247,6 +1044,14 @@ const refreshSubFlowsIfNeeded = async () => {
         @media screen and (min-width: $breakpoint-md) {
           font-size: 16px;
         }
+
+        /* Phones: tag pills squeeze the name into an early ellipsis, so keep
+           them on desktop and let the card stay a clean two-line row. */
+        @media screen and (max-width: 767px) {
+          .tag {
+            display: none;
+          }
+        }
       }
       .sub-item-name {
         min-width: 0;
@@ -1263,7 +1068,7 @@ const refreshSubFlowsIfNeeded = async () => {
         flex: 0 0 auto;
         margin: 0 1px;
 
-        :deep(.nut-tag) {
+        :deep(.app-tag) {
           padding: 2px 3px;
         }
       }
@@ -1447,9 +1252,9 @@ const refreshSubFlowsIfNeeded = async () => {
   }
 }
 
-.sub-item-swipe.is-dual-column {
+.sub-item-shell.is-dual-column {
   .sub-item-wrapper {
-    :deep(.nut-avatar) {
+    :deep(.app-avatar) {
       margin-right: 12px;
     }
 
@@ -1479,38 +1284,6 @@ const refreshSubFlowsIfNeeded = async () => {
 
       .sub-item-detail-isSimple {
         max-width: 100%;
-      }
-    }
-  }
-}
-
-.sub-item-swipe {
-  -webkit-user-select: none;
-  user-select: none;
-  :deep(.nut-swipe__left) {
-    .sub-item-swipe-btn-wrapper {
-      padding-left: 24px;
-    }
-  }
-
-  :deep(.nut-swipe__right),
-  :deep(.nut-swipe__left) {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    z-index: 10;
-
-    .sub-item-swipe-btn-wrapper {
-      padding-left: 14px;
-
-      &:last-child {
-        padding-right: 14px;
-      }
-
-      .sub-item-swipe-btn {
-        border-radius: 50%;
-        height: 46px;
-        width: 44px;
       }
     }
   }
@@ -1693,6 +1466,11 @@ const refreshSubFlowsIfNeeded = async () => {
     background-color: #3b82f6;
     box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
     animation: statusPulse 1.2s infinite;
+  }
+
+  &.is-disabled {
+    background-color: var(--lowest-text-color);
+    opacity: 0.7;
   }
 }
 
