@@ -15,6 +15,13 @@ let flowRequestSequence = 0;
 
 const canFetchFlowsForCurrentPage = () => window.location.pathname === '/subs';
 
+const withTagArray = <T extends { tag?: unknown }>(item: T): T => {
+  if (!Array.isArray(item.tag)) {
+    item.tag = [];
+  }
+  return item;
+};
+
 const createFlowRequestState = (flowKey: string, parentSignal: AbortSignal) => {
   fetchFlowAbortControllers.get(flowKey)?.abort();
 
@@ -85,26 +92,21 @@ export const useSubsStore = defineStore('subsStore', {
         runFrontendRequestTask(async () => {
           const res = await cloudflareApi.getSources();
           if ('data' in res.data) {
-            this.subs = res.data.data.map(i => {
-              if (!Array.isArray(i.tag)) {
-                i.tag = []
-              }
-              return i
-            });
+            this.applySubsData(res.data.data, undefined);
           }
         }, 'subs.getSubs'),
         runFrontendRequestTask(async () => {
           const res = await cloudflareApi.getCollections();
           if ('data' in res.data) {
-            this.collections = res.data.data.map(i => {
-              if (!Array.isArray(i.tag)) {
-                i.tag = []
-              }
-              return i
-            });
+            this.applySubsData(undefined, res.data.data);
           }
         }, 'subs.getCollections'),
       ]);
+    },
+    /** Apply sources/collections that were already fetched (bootstrap). */
+    applySubsData(sources: any[] | undefined, collections: any[] | undefined) {
+      if (Array.isArray(sources)) this.subs = sources.map(withTagArray);
+      if (Array.isArray(collections)) this.collections = collections.map(withTagArray);
     },
     setOneData(type: string, name: string, data: any) {
       const index = this[type].findIndex(item => item.name === name);

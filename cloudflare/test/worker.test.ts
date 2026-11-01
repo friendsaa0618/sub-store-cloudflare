@@ -38,6 +38,52 @@ describe("Worker and D1 integration", () => {
     expect(getPath(await jsonObject(authorized), "status")).toBe("success");
   });
 
+  it("serves the boot payload in one request and matches the individual endpoints", async () => {
+    const unauthorized = await workerRequest("/api/bootstrap", {}, false);
+    expect(unauthorized.status).toBe(401);
+
+    const createSource = await workerRequest("/api/sources", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        id: "boot-source",
+        name: "Boot Source",
+        type: "local",
+        content: "trojan://password@example.com:443#Boot%20Node",
+      }),
+    });
+    expect(createSource.status).toBe(200);
+
+    const bootstrap = await workerRequest("/api/bootstrap");
+    expect(bootstrap.status).toBe(200);
+    const body = await jsonObject(bootstrap);
+    expect(getPath(body, "status")).toBe("success");
+    expect(getPath(body, "data", "env", "backend")).toBe("Cloudflare");
+    // Settings come back merged with the defaults, not as a raw D1 row.
+    expect(getPath(body, "data", "settings", "defaultUserAgent")).toBeTruthy();
+    expect(getPath(body, "data", "settings", "theme")).toBeTruthy();
+
+    const sources = getPath(body, "data", "sources") as Array<Record<string, unknown>>;
+    const collections = getPath(body, "data", "collections") as Array<Record<string, unknown>>;
+    const bootSource = sources.find((item) => item.id === "boot-source");
+    expect(bootSource).toMatchObject({ id: "boot-source", name: "Boot Source", type: "local" });
+    expect(collections.map((item) => item.id)).toContain("daily");
+
+    // The payload has to stay byte-for-byte equivalent to the separate reads,
+    // otherwise the UI would render differently depending on how it booted.
+    const sourcesResponse = await workerRequest("/api/sources");
+    const sourcesPayload = await jsonObject(sourcesResponse);
+    expect(getPath(sourcesPayload, "data")).toEqual(sources);
+
+    const collectionsResponse = await workerRequest("/api/collections");
+    const collectionsPayload = await jsonObject(collectionsResponse);
+    expect(getPath(collectionsPayload, "data")).toEqual(collections);
+
+    const settingsResponse = await workerRequest("/api/settings");
+    const settingsPayload = await jsonObject(settingsResponse);
+    expect(getPath(settingsPayload, "data")).toEqual(getPath(body, "data", "settings"));
+  });
+
   it("publishes build-time script metadata and executes saved script actions", async () => {
     const scriptsResponse = await workerRequest("/api/scripts");
     expect(scriptsResponse.status).toBe(200);

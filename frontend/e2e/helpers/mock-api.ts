@@ -58,6 +58,15 @@ export async function installVisualMocks(page: Page, scenario: VisualScenario) {
       await route.fulfill(json(ok(ENV_PAYLOAD)));
       return;
     }
+    if (path === "/api/bootstrap") {
+      await route.fulfill(json(ok({
+        env: ENV_PAYLOAD,
+        settings: SETTINGS_PAYLOAD,
+        sources: empty ? [] : POPULATED_SOURCES,
+        collections: empty ? [] : POPULATED_COLLECTIONS,
+      })));
+      return;
+    }
     if (path === "/api/settings") {
       await route.fulfill(json(ok(SETTINGS_PAYLOAD)));
       return;

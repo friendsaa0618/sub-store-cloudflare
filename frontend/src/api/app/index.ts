@@ -546,6 +546,17 @@ const fromApiPayload = (type: string, data: any) => {
 
 export function useCloudflareApi() {
   return {
+    getBootstrap: (): AxiosPromise<MyAxiosRes> => {
+      return request({
+        url: '/api/bootstrap',
+        method: 'get',
+      }).then(response => adaptResponseData(response, data => ({
+        env: data?.env,
+        settings: data?.settings,
+        sources: fromApiPayload('subs', data?.sources ?? []),
+        collections: fromApiPayload('collections', data?.collections ?? []),
+      })));
+    },
     getSources: (): AxiosPromise<MyAxiosRes> => {
       return request({
         url: '/api/sources',

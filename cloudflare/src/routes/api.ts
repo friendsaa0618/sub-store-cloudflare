@@ -69,6 +69,22 @@ apiRoutes.use(
 );
 
 apiRoutes.get("/env", async (c) => success(c, envPayload(c.env)));
+// Everything the admin UI needs for its first paint in one round trip. The UI
+// used to call /env, /sources, /collections and /settings in sequence, which
+// cost three extra round trips before it could render anything.
+apiRoutes.get("/bootstrap", async (c) => {
+  const [sources, collections, settings] = await Promise.all([
+    listSources(c.env),
+    listCollections(c.env),
+    getSettings(c.env),
+  ]);
+  return success(c, {
+    env: envPayload(c.env),
+    settings: mergeSettings(defaultSettings(c.env), settings),
+    sources: sources.map(toApiSource),
+    collections: collections.map(toApiCollection),
+  });
+});
 apiRoutes.get("/scripts", async (c) => success(c, listScriptMetadata()));
 apiRoutes.post("/proxy/parse", async (c) => {
   const input: JsonMap = await c.req.json<JsonMap>().catch(() => ({}));
@@ -449,7 +465,7 @@ function defaultSettings(env: SubStoreEnv) {
     defaultTimeout: "30000",
     backendRequestConcurrency: "3",
     backendRequestConcurrencyWaitTime: "100",
-    remoteCacheTtl: "300",
+    remoteCacheTtl: "900",
     remoteCacheStaleOnError: true,
     rulesetCdn: DEFAULT_RULESET_CDN,
     nodeInfoApiUrl: "https://ipwho.is/{ip}",

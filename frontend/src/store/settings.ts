@@ -177,24 +177,7 @@ export const useSettingsStore = defineStore("settingsStore", {
       const { showNotify } = useAppNotifyStore();
       const res = await runFrontendRequestTask(() => settingsApi.getSettings(), "settings.getSettings");
       if (res?.data?.status === "success" && res?.data?.data) {
-        this.defaultUserAgent = res.data.data.defaultUserAgent || "";
-        this.defaultFlowUserAgent = res.data.data.defaultFlowUserAgent || "";
-        this.defaultTimeout = res.data.data.defaultTimeout || "";
-        this.backendRequestConcurrency = normalizeSettingInputValue(res.data.data.backendRequestConcurrency);
-        this.backendRequestConcurrencyWaitTime = normalizeSettingInputValue(res.data.data.backendRequestConcurrencyWaitTime);
-        this.remoteCacheTtl = normalizeSettingInputValue(res.data.data.remoteCacheTtl);
-        this.remoteCacheStaleOnError = res.data.data.remoteCacheStaleOnError !== false;
-        this.nodeInfoApiUrl = normalizeSettingInputValue(res.data.data.nodeInfoApiUrl);
-        this.syncTime = res.data.data.syncTime || 0;
-        this.avatarUrl = res.data.data.avatarUrl || "";
-
-        this.theme.auto = res.data.data.theme?.auto ?? true;
-        this.theme.name = res.data.data.theme?.name ?? "light";
-        this.theme.dark = res.data.data.theme?.dark ?? "dark";
-        this.theme.light = res.data.data.theme?.light ?? "light";
-
-        this.hasFetchedSettings = true;
-        this.applyAppearanceSetting(res.data.data.appearanceSetting);
+        this.applySettings(res.data.data);
       } else {
         this.hasFetchedSettings = false;
         showNotify({
@@ -202,6 +185,32 @@ export const useSettingsStore = defineStore("settingsStore", {
           type: "danger",
         });
       }
+    },
+    /** Apply a settings payload that was already fetched (bootstrap). */
+    applySettings(data: Record<string, any> | null | undefined) {
+      if (!data) {
+        this.hasFetchedSettings = false;
+        return;
+      }
+
+      this.defaultUserAgent = data.defaultUserAgent || "";
+      this.defaultFlowUserAgent = data.defaultFlowUserAgent || "";
+      this.defaultTimeout = data.defaultTimeout || "";
+      this.backendRequestConcurrency = normalizeSettingInputValue(data.backendRequestConcurrency);
+      this.backendRequestConcurrencyWaitTime = normalizeSettingInputValue(data.backendRequestConcurrencyWaitTime);
+      this.remoteCacheTtl = normalizeSettingInputValue(data.remoteCacheTtl);
+      this.remoteCacheStaleOnError = data.remoteCacheStaleOnError !== false;
+      this.nodeInfoApiUrl = normalizeSettingInputValue(data.nodeInfoApiUrl);
+      this.syncTime = data.syncTime || 0;
+      this.avatarUrl = data.avatarUrl || "";
+
+      this.theme.auto = data.theme?.auto ?? true;
+      this.theme.name = data.theme?.name ?? "light";
+      this.theme.dark = data.theme?.dark ?? "dark";
+      this.theme.light = data.theme?.light ?? "light";
+
+      this.hasFetchedSettings = true;
+      this.applyAppearanceSetting(data.appearanceSetting);
     },
     async changeSettings(data: SettingsPostData) {
       const { showNotify } = useAppNotifyStore();

@@ -717,6 +717,49 @@ describe("subscription parsing and limits", () => {
     expect(cached.metadata.cacheStatus).toBe("hit");
   });
 
+  it("serves a stale remote source while refreshing it in the background", async () => {
+    let fetchCount = 0;
+    // A fresh Response per call: a Response body can only be read once.
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async () => {
+      fetchCount += 1;
+      return new Response(
+        fetchCount === 1
+          ? "trojan://password@swr.example.com:443#SWR%20Node"
+          : "trojan://password@swr.example.com:443#Fresh%20Node",
+        { headers: { etag: `"swr-v${fetchCount}"` } },
+      );
+    });
+    const options = {
+      source: { id: "remote-swr", name: "Remote SWR", type: "remote" as const, url: "https://swr.example/sub?token=secret", content: "" },
+      sources: [],
+      requestUrl: new URL("https://example.com/download/source/remote-swr/json"),
+      target: "json" as const,
+      settings: { remoteCacheTtl: 300 },
+    };
+    const pending: Promise<unknown>[] = [];
+    const first = await buildSubscriptionResult({ ...options, waitUntil: (promise) => pending.push(promise) });
+    expect(first.body).toContain("SWR Node");
+    await Promise.all(pending);
+
+    const clock = vi.spyOn(Date, "now").mockReturnValue(Date.now() + 301_000);
+    try {
+      const stale = await buildSubscriptionResult({ ...options, waitUntil: (promise) => pending.push(promise) });
+      // The expired copy is served even though the provider now returns other nodes.
+      expect(stale.metadata.cacheStatus).toBe("stale");
+      expect(stale.body).toContain("SWR Node");
+      expect(stale.body).not.toContain("Fresh Node");
+
+      await Promise.all(pending);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+
+      const refreshed = await buildSubscriptionResult({ ...options, waitUntil: (promise) => pending.push(promise) });
+      expect(refreshed.metadata.cacheStatus).toBe("hit");
+      expect(refreshed.body).toContain("Fresh Node");
+    } finally {
+      clock.mockRestore();
+    }
+  });
+
   it("renders a JSON target from a local source", async () => {
     const output = await buildSubscription({
       source: {

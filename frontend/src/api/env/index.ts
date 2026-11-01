@@ -1,36 +1,56 @@
 import request from '@/api';
-import { AxiosPromise } from 'axios';
+import { AxiosPromise, AxiosResponse } from 'axios';
+
+const ENV_CACHE_KEY = 'envCache';
+const ENV_CACHE_TTL_MS = 60 * 60 * 1000;
+
+type EnvPayload = Record<string, any>;
+
+/**
+ * Last successful env read, so the UI can paint before the network answers.
+ * Written by both the boot bootstrap call and `getEnv`.
+ */
+export const readCachedEnv = (): EnvPayload | null => {
+  const raw = localStorage.getItem(ENV_CACHE_KEY);
+  if (!raw) return null;
+
+  try {
+    const parsed = JSON.parse(raw);
+    if (!(parsed?.expiry > Date.now())) return null;
+    return parsed?.data?.data?.data ?? null;
+  } catch {
+    return null;
+  }
+};
+
+export const writeCachedEnv = (env: EnvPayload) => {
+  localStorage.setItem(ENV_CACHE_KEY, JSON.stringify({
+    data: { data: { status: 'success', data: env } },
+    expiry: Date.now() + ENV_CACHE_TTL_MS,
+  }));
+};
 
 export function useEnvApi() {
-  const localStorageKey = 'envCache'; // env 读取加入缓存 重启会自动清理
-
   return {
     getEnv: (options?: { bypassCache?: boolean }): AxiosPromise<MyAxiosRes> => {
       const bypassCache = options?.bypassCache === true;
-      const cachedData = bypassCache ? null : localStorage.getItem(localStorageKey);
 
-      if (cachedData && !bypassCache) {
-        try {
-          const parsedCachedData = JSON.parse(cachedData);
-
-          if (parsedCachedData.expiry > Date.now()) {
-            return Promise.resolve(parsedCachedData.data);
-          }
-        } catch (error) {
-          console.error('Failed to parse env cache', error);
+      if (!bypassCache) {
+        const cachedEnv = readCachedEnv();
+        if (cachedEnv) {
+          const cachedResponse = { data: { status: 'success', data: cachedEnv } } as unknown as AxiosResponse<MyAxiosRes>;
+          return Promise.resolve(cachedResponse);
         }
       }
 
-      const promise = request({
+      return request({
         url: '/api/env',
         method: 'get',
-      }).then(async response => {
-        const expiry = Date.now() + 60 * 60 * 1000;
-        const dataToCache = { data: response, expiry };
-        localStorage.setItem(localStorageKey, JSON.stringify(dataToCache));
+      }).then(response => {
+        const env = response?.data?.status === 'success' ? response.data.data : null;
+        if (env) writeCachedEnv(env);
         return response;
       });
-      return promise;
     },
     refreshCache: (): Promise<{ data: SucceedResponse }> => {
       return Promise.resolve({ data: { status: 'success', data: { refreshed: true } } });

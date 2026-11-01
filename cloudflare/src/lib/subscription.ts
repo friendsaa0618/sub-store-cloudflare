@@ -243,15 +243,52 @@ async function fetchSubscriptionUrl(
   requestUserAgent?: string,
   runtime?: Pick<InternalBuildOptions, "forceRefresh" | "waitUntil">,
 ) {
-  const cacheTtl = numberSetting(sub.meta?.cacheTtl ?? settings?.remoteCacheTtl, 300, 0, 3600);
+  const cacheTtl = numberSetting(sub.meta?.cacheTtl ?? settings?.remoteCacheTtl, REMOTE_CACHE_DEFAULT_TTL, 0, REMOTE_CACHE_MAX_TTL);
   const cacheKey = cacheTtl > 0 ? await remoteCacheKey(url, getSourceUserAgent(sub, settings, requestUserAgent)) : undefined;
   const cached = cacheKey ? await safeCacheMatch(cacheKey) : undefined;
+
   if (cached && !runtime?.forceRefresh) {
-    return {
-      content: await readResponseText(cached, MAX_REMOTE_SOURCE_RESPONSE_BYTES, `Cached remote source ${sub.name}`),
-      metadata: metadataFromResponse(cached, "hit"),
-    };
+    if (remoteCacheAgeMs(cached) <= cacheTtl * 1000) {
+      return {
+        content: await readResponseText(cached, MAX_REMOTE_SOURCE_RESPONSE_BYTES, `Cached remote source ${sub.name}`),
+        metadata: metadataFromResponse(cached, "hit"),
+      };
+    }
+    // Stale-while-revalidate: a download must not wait for a provider that is
+    // slow to answer. Serve the expired copy now and refresh it in the
+    // background, so the next request sees fresh content.
+    if (runtime?.waitUntil) {
+      const stale = {
+        content: await readResponseText(cached, MAX_REMOTE_SOURCE_RESPONSE_BYTES, `Stale remote source ${sub.name}`),
+        metadata: metadataFromResponse(cached, "stale"),
+      };
+      runtime.waitUntil(
+        refreshRemoteSource(url, sub, settings, requestUserAgent, cacheKey, cacheTtl, cached, false).catch(() => undefined),
+      );
+      return stale;
+    }
   }
+
+  return refreshRemoteSource(url, sub, settings, requestUserAgent, cacheKey, cacheTtl, cached, runtime?.forceRefresh === true, runtime);
+}
+
+async function refreshRemoteSource(
+  url: string,
+  sub: SubscriptionSource,
+  settings: AppSettings | undefined,
+  requestUserAgent: string | undefined,
+  cacheKey: Request | undefined,
+  cacheTtl: number,
+  cached: Response | undefined,
+  forceRefresh: boolean,
+  runtime?: Pick<InternalBuildOptions, "waitUntil">,
+) {
+  const writeCache = async (content: string, metadata: SubscriptionResponseMetadata) => {
+    if (!cacheKey || cacheTtl <= 0) return;
+    const put = safeCachePut(cacheKey, content, metadata, cacheTtl);
+    if (runtime?.waitUntil) runtime.waitUntil(put);
+    else await put;
+  };
   const controller = new AbortController();
   const timeout = getRequestTimeout(settings);
   const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -264,19 +301,18 @@ async function fetchSubscriptionUrl(
       signal: controller.signal,
     });
     if (response.status === 304 && cached) {
-      return {
+      const refreshed = {
         content: await readResponseText(cached, MAX_REMOTE_SOURCE_RESPONSE_BYTES, `Cached remote source ${sub.name}`),
         metadata: metadataFromResponse(cached, "refresh"),
       };
+      // A 304 still means the cached copy is fresh again.
+      await writeCache(refreshed.content, refreshed.metadata);
+      return refreshed;
     }
     if (!response.ok) throw new Error(`Remote source ${sub.name} failed: ${response.status}`);
     const content = await readResponseText(response, MAX_REMOTE_SOURCE_RESPONSE_BYTES, `Remote source ${sub.name}`);
-    const metadata = metadataFromResponse(response, runtime?.forceRefresh ? "refresh" : "miss");
-    if (cacheKey && cacheTtl > 0) {
-      const put = safeCachePut(cacheKey, content, metadata, cacheTtl);
-      if (runtime?.waitUntil) runtime.waitUntil(put);
-      else await put;
-    }
+    const metadata = metadataFromResponse(response, forceRefresh ? "refresh" : "miss");
+    await writeCache(content, metadata);
     return { content, metadata };
   } catch (error) {
     if (cached && settings?.remoteCacheStaleOnError !== false) {
@@ -1937,6 +1973,15 @@ function metadataFromResponse(response: Response, cacheStatus: SubscriptionRespo
   };
 }
 
+const REMOTE_CACHE_DEFAULT_TTL = 900;
+const REMOTE_CACHE_MAX_TTL = 3600;
+const REMOTE_CACHE_STALE_MULTIPLIER = 4;
+
+function remoteCacheAgeMs(response: Response) {
+  const fetchedAt = Number(response.headers.get("x-sub-store-fetched-at"));
+  return Number.isFinite(fetchedAt) && fetchedAt > 0 ? Math.max(0, Date.now() - fetchedAt) : Number.POSITIVE_INFINITY;
+}
+
 async function remoteCacheKey(url: string, userAgent: string) {
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`${url}\n${userAgent}`));
   const hash = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
@@ -1960,7 +2005,10 @@ async function safeCachePut(
   try {
     const headers = new Headers({
       "content-type": "text/plain; charset=utf-8",
-      "cache-control": `public, s-maxage=${ttl}`,
+      // Keep the entry around after it goes stale so a download can be served
+      // from it while the refresh runs in the background.
+      "cache-control": `public, s-maxage=${ttl * REMOTE_CACHE_STALE_MULTIPLIER}`,
+      "x-sub-store-fetched-at": String(Date.now()),
     });
     setInternalMetadataHeader(headers, "x-sub-store-subscription-userinfo", metadata.subscriptionUserinfo);
     setInternalMetadataHeader(headers, "x-sub-store-profile-web-page-url", metadata.profileWebPageUrl);

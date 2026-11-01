@@ -108,22 +108,26 @@ export const useGlobalStore = defineStore('globalStore', {
         bypassCache: options?.bypassCache === true,
       });
       const nextEnv = res?.data?.status === 'success' ? res.data.data : null;
+      const applied = this.applyEnv(nextEnv);
 
-      if (!nextEnv?.backend) {
-        if (options?.strict) {
-          throw new Error('ENV_LOAD_FAILED');
-        }
-        return null;
+      if (!applied && options?.strict) {
+        throw new Error('ENV_LOAD_FAILED');
       }
 
-      this.env = nextEnv;
+      return applied;
+    },
+    /** Apply an env payload that was already fetched (bootstrap / cached boot read). */
+    applyEnv(env: Record<string, any> | null | undefined) {
+      if (!env?.backend) return null;
+
+      this.env = env;
 
       // 检测是否是Docker部署
       if (this.env?.meta?.node?.env?.SUB_STORE_DOCKER === 'true') {
         this.isDockerDeployment = true;
       }
 
-      return nextEnv;
+      return env;
     },
     setDockerDeployment(isDockerDeployment: boolean) {
       this.isDockerDeployment = isDockerDeployment;
