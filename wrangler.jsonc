@@ -13,12 +13,25 @@
       "/api/*",
       "/download/*",
       "/sw.js",
-      "/registerSW.js"
+      "/registerSW.js",
+      "/",
+      "/index.html",
+      "/subs",
+      "/subs/*",
+      "/my",
+      "/my/*",
+      "/tools",
+      "/tools/*",
+      "/preview",
+      "/preview/*",
+      "/edit/*",
+      "/404"
     ]
   },
   "observability": {
     "enabled": true,
-    "head_sampling_rate": 1
+    "head_sampling_rate": 1,
+    "redact_query_string": true
   },
   "secrets": {
     "required": [
@@ -36,8 +49,8 @@
   ],
   "vars": {
     "SUB_STORE_APP_NAME": "Sub-Store Cloudflare",
-    "SUB_STORE_PUBLIC_DOWNLOAD_HOSTS": "",
+    "SUB_STORE_PUBLIC_DOWNLOAD_HOSTS": "sub-store.9081233.xyz",
     "SUB_STORE_ACCESS_TEAM_DOMAIN": "proxy-00f.cloudflareaccess.com",
-    "SUB_STORE_ACCESS_AUD": "35f9511e9006d940e708d6e126b44501386e4e1def9b12bc5cc74b875ae1230a"
+    "SUB_STORE_ACCESS_AUD": "d70797db339a5242764b00892488d3ee8c6818ae7bb5168b102321190df58e59"
   }
 }

@@ -55,6 +55,11 @@ type JsonMap = Record<string, unknown>;
 type ApiContext = Context<{ Bindings: SubStoreEnv }>;
 
 const FRONTEND_VERSION = "1.1.0";
+// Runs first so even an auth failure comes back uncacheable.
+apiRoutes.use("*", async (c, next) => {
+  await next();
+  c.header("Cache-Control", "no-store");
+});
 apiRoutes.use("*", async (c, next) => {
   const invalid = await requireAdmin(c);
   if (invalid) return invalid;

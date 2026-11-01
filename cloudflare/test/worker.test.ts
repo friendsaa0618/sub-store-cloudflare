@@ -38,6 +38,51 @@ describe("Worker and D1 integration", () => {
     expect(getPath(await jsonObject(authorized), "status")).toBe("success");
   });
 
+  it("keeps a download-only host to downloads", async () => {
+    const create = await workerRequest("/api/sources", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        id: "host-source",
+        name: "Host Source",
+        type: "local",
+        content: "trojan://password@example.com:443#Host%20Node",
+      }),
+    });
+    expect(create.status).toBe(200);
+
+    const downloadHost = (path: string) =>
+      workerExports.default.fetch(new Request(`https://downloads.example.com${path}`));
+
+    // The admin surface does not exist on this host, even with a valid token.
+    const api = await workerExports.default.fetch(new Request("https://downloads.example.com/api/env", {
+      headers: { authorization: `Bearer ${ADMIN_TOKEN}` },
+    }));
+    expect(api.status).toBe(404);
+    expect((await downloadHost("/")).status).toBe(404);
+
+    // Downloads still work with the download token.
+    const download = await downloadHost(`/download/source/host-source/json/${DOWNLOAD_TOKEN}`);
+    expect(download.status).toBe(200);
+
+    // ...but the ad-hoc source override is refused: it would let the token
+    // holder use the Worker as a generic fetch proxy.
+    const override = await downloadHost(`/download/source/host-source/json/${DOWNLOAD_TOKEN}?url=https%3A%2F%2Fexample.com%2Fsub`);
+    expect(override.status).toBe(400);
+    expect(getPath(await jsonObject(override), "error", "message")).toContain("not available on this host");
+  });
+
+  it("keeps the admin token out of URLs and never caches admin responses", async () => {
+    const queryToken = await workerRequest(`/api/env?token=${ADMIN_TOKEN}`, {}, false);
+    expect(queryToken.status).toBe(401);
+    expect(queryToken.headers.get("cache-control")).toBe("no-store");
+    expect(queryToken.headers.get("x-robots-tag")).toBe("noindex, nofollow");
+
+    const headerToken = await workerRequest("/api/env");
+    expect(headerToken.status).toBe(200);
+    expect(headerToken.headers.get("cache-control")).toBe("no-store");
+  });
+
   describe("Cloudflare Access", () => {
     const TEAM_DOMAIN = "team.cloudflareaccess.com";
     const AUDIENCE = "test-access-aud";

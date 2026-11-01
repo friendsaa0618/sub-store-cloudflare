@@ -85,6 +85,12 @@ async function renderDownload(
     templateId?: string;
   },
 ) {
+  // `?url=` / `?content=` exist for ad-hoc links handed out by the admin. On a
+  // host that only serves downloads they would turn the Worker into a generic
+  // fetch proxy, so they are refused there.
+  if (hasTemporarySourceOverride(c) && isDownloadOnlyHost(c)) {
+    return failed(c, "Source overrides are not available on this host", 400);
+  }
   const sourceOverride = getTemporarySourceOverride(c);
   const sources = sourceOverride ? applyTemporarySourceOverride(options.sources, sourceOverride, options.collection) : options.sources;
   const source = sourceOverride && options.source ? applyTemporarySourceOverride([options.source], sourceOverride)[0] : options.source;
@@ -141,6 +147,19 @@ type TemporarySourceOverride = {
   content?: string;
   ua?: string;
 };
+
+function isDownloadOnlyHost(c: DownloadContext) {
+  const hostname = new URL(c.req.url).hostname.toLowerCase();
+  return (c.env.SUB_STORE_PUBLIC_DOWNLOAD_HOSTS || "")
+    .split(",")
+    .map((host) => host.trim().toLowerCase())
+    .filter(Boolean)
+    .includes(hostname);
+}
+
+function hasTemporarySourceOverride(c: DownloadContext) {
+  return ["url", "content", "ua", "userAgent", "user-agent"].some((key) => stringQuery(c, key));
+}
 
 function getTemporarySourceOverride(c: DownloadContext): TemporarySourceOverride | undefined {
   const url = stringQuery(c, "url");

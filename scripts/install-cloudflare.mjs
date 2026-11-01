@@ -1,6 +1,8 @@
 import { spawnSync } from "node:child_process";
 import { copyFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
+
+const MIN_TOKEN_LENGTH = 24;
 import { createInterface } from "node:readline/promises";
 
 import { createQuickSetup, parseRemoteSourceUrls } from "./lib/install-setup.mjs";
@@ -62,6 +64,17 @@ async function main() {
   const configuredDownloadToken = stringValue(options.downloadToken) || stringValue(process.env.SUB_STORE_PUBLIC_DOWNLOAD_TOKEN) || stringValue(deployment.downloadToken);
   const adminToken = configuredAdminToken || generateToken();
   const downloadToken = configuredDownloadToken || generateToken();
+
+  // Both tokens are the only thing standing between the internet and the
+  // subscription data, so refuse to deploy a guessable one.
+  for (const [label, token] of [["Admin token", adminToken], ["Download token", downloadToken]]) {
+    if (token.length < MIN_TOKEN_LENGTH) {
+      fail(`${label} is too short (${token.length} characters). Use at least ${MIN_TOKEN_LENGTH}; "pnpm run tokens:generate" prints one.`);
+    }
+  }
+  if (adminToken === downloadToken) {
+    fail("Admin token and download token must be different values.");
+  }
 
   if (!configuredAdminToken || !configuredDownloadToken) {
     if (!configuredAdminToken) deployment.adminToken = adminToken;

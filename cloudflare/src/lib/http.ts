@@ -30,7 +30,9 @@ export async function isTokenValid(secret: string | undefined, input: string | u
 
 export function getBearerToken(c: Context<{ Bindings: SubStoreEnv }>) {
   const authorization = c.req.header("authorization") || "";
-  return authorization.match(/^Bearer\s+(.+)$/i)?.[1] || c.req.query("token") || c.req.header("x-sub-store-token");
+  // Deliberately no `?token=`: a credential in the URL ends up in logs, browser
+  // history and referrers. The SPA sends both headers on every request.
+  return authorization.match(/^Bearer\s+(.+)$/i)?.[1] || c.req.header("x-sub-store-token");
 }
 
 /**
@@ -173,6 +175,7 @@ export function applySecurityHeaders(response: Response) {
   headers.set("X-Content-Type-Options", "nosniff");
   headers.set("X-Frame-Options", "DENY");
   headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=(), usb=()");
+  headers.set("X-Robots-Tag", "noindex, nofollow");
 
   return new Response(response.body, {
     status: response.status,
