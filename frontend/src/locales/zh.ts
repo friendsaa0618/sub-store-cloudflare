@@ -19,8 +19,8 @@ export default {
       succeed: "数据刷新完成",
       flowFailed: "刷新 {name} 失败！",
       failed: "数据刷新失败\n",
-      loading: "刷新数据中...",
-      backendChanged: "检测到后端变化，更新数据中..."
+      loading: "刷新数据中…",
+      backendChanged: "检测到后端变化，更新数据中…"
     },
     request: {
       failedWithStatus: "请求失败: {status} {statusText}",
@@ -213,7 +213,7 @@ export default {
     },
     subItem: {
       local: "本地订阅",
-      loading: "加载中...",
+      loading: "加载中…",
       flow: "已用/总流量",
       showRemainingFlow: "剩余/总流量",
       expires: "到期",
@@ -239,12 +239,12 @@ export default {
       failed: "复制订阅链接失败\n{e}"
     },
     copyConfigNotify: {
-      loading: "克隆配置中...",
+      loading: "克隆配置中…",
       succeed: "配置克隆成功！",
       failed: "配置克隆失败！\n{e}"
     },
     exportConfigNotify: {
-      loading: "导出配置中...",
+      loading: "导出配置中…",
       succeed: "导出成功！",
       failed: "导出失败！\n{e}"
     },
@@ -278,6 +278,12 @@ export default {
       cancel: "取消"
     },
     subConfig: {
+      groups: {
+        basic: "基本信息",
+        source: "订阅来源",
+        collection: "组合配置",
+        actions: "节点处理"
+      },
       btn: {
         compare: "即时预览",
         save: "保存"
@@ -346,7 +352,7 @@ export default {
         },
         tag: {
           label: "标签",
-          placeholder: "输入标签后按回车或点确认添加…",
+          placeholder: "添加标签，回车确认…",
           confirm: "确认",
           remove: "移除标签"
         },
@@ -398,9 +404,9 @@ export default {
             failed: "未解析到有效节点",
             noNodes: "未解析到有效节点",
             importFailed: "文件导入失败",
-            compareLoading: "生成节点对比中...",
-            submitLoading: "拉取订阅中...",
-            submitBusy: "拉取订阅中，请勿重复点击..."
+            compareLoading: "生成节点对比中…",
+            submitLoading: "拉取订阅中…",
+            submitBusy: "拉取订阅中，请勿重复点击…"
           },
           tips: {
             title: "本地订阅节点",
@@ -821,7 +827,7 @@ export default {
         failed: "保存失败",
         configLoadFailed: "获取配置失败",
         configUpdateFailed: "更新配置失败",
-        themeLoading: "切换主题中...",
+        themeLoading: "切换主题中…",
         themeFailed: "切换主题失败"
       },
       restore: {
@@ -833,7 +839,7 @@ export default {
   },
   comparePage: {
     title: "即时预览",
-    loading: "生成节点对比中...",
+    loading: "生成节点对比中…",
     subscriptionPreviewCopyLabel: "点击复制订阅链接:",
     subscriptionPreviewLoadFailed: "加载失败: {e}",
     subscriptionPreviewCopied: "已复制链接: {url}",
@@ -866,11 +872,11 @@ export default {
       aead: "AEAD"
     },
     nodeInfo: {
-      loading: "获取节点信息中...",
+      loading: "获取节点信息中…",
       loadFailed: "获取节点信息失败",
       ipApi: {
         title: "IP API",
-        loading: "正在获取 IP API 信息...",
+        loading: "正在获取 IP API 信息…",
         loadFailed: "IP API 获取失败",
         retry: "重试"
       },

@@ -24,7 +24,7 @@
           {{ dialogState.options.cancelText || t("specificWord.cancel") }}
         </AppButton>
         <AppButton
-          type="primary"
+          :type="dialogState.options.okType || 'primary'"
           :loading="dialogState.loading"
           @click="confirmDialog"
         >

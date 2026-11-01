@@ -876,7 +876,7 @@ const onClickCopyConfig = async () => {
   await cloudflareApi.createItem(`${props.type}s`, data);
   await subsStore.fetchSubsData();
   dismissNotify("copyConfig");
-  showNotify({ title: t("subPage.copyConfigNotify.succeed") });
+  showNotify({ type: "success", title: t("subPage.copyConfigNotify.succeed") });
   closeExpandedMenu();
 };
 const onClickEdit = () => {
@@ -889,6 +889,7 @@ const onClickDelete = () => {
     content: t("subPage.deleteItem.desc", { displayName }),
     cancelText: t("subPage.deleteItem.btn.cancel"),
     okText: t("subPage.deleteItem.btn.confirm"),
+    okType: "danger",
     onOk: () => onDeleteConfirm(),
   });
 };
@@ -906,7 +907,7 @@ const onClickCopyLink = async () => {
   } else {
     await copyFallback(url);
   }
-  showNotify({ title: t("subPage.copyNotify.succeed") });
+  showNotify({ type: "success", title: t("subPage.copyNotify.succeed") });
 };
 
 const onClickOpenDownload = async () => {
@@ -929,7 +930,7 @@ const onClickRefresh = async () => {
   }
   await refreshSubFlowsIfNeeded()
   dismissNotify("refresh");
-  showNotify({ title: t("globalNotify.refresh.succeed") });
+  showNotify({ type: "success", title: t("globalNotify.refresh.succeed") });
 };
 
 const refreshSubFlowsIfNeeded = async () => {
@@ -973,18 +974,17 @@ const refreshSubFlowsIfNeeded = async () => {
   min-width: 0;
   background: var(--card-color);
   border: 1px solid var(--divider-color);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--card-shadow);
   cursor: pointer;
   position: relative;
   overflow: visible;
-  transition: border-color 0.2s ease, box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 
-  /* Lift only on true hover devices — avoids sticky hover on mobile */
+  /* Hover tint only on true hover devices — no lift, no sticky hover on touch */
   @media (hover: hover) and (pointer: fine) {
     &:hover {
-      border-color: color-mix(in srgb, var(--primary-color) 40%, var(--divider-color));
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-      transform: translateY(-2px);
+      border-color: color-mix(in srgb, var(--primary-color) 22%, var(--divider-color));
+      box-shadow: var(--card-shadow-hover);
     }
   }
 
@@ -1104,7 +1104,7 @@ const refreshSubFlowsIfNeeded = async () => {
         border: 1px solid transparent;
         border-radius: 8px;
         background: transparent;
-        color: var(--second-text-color);
+        color: var(--comment-text-color);
         cursor: pointer;
         display: inline-flex;
         justify-content: center;
@@ -1127,21 +1127,22 @@ const refreshSubFlowsIfNeeded = async () => {
           transform: scale(0.94);
         }
 
+        /* Copy link: a quiet chip, not a filled button — the only emphasised action */
         &.sub-item-action--primary {
-          background: color-mix(in srgb, var(--primary-color) 12%, transparent);
-          color: var(--primary-color);
-          border-color: color-mix(in srgb, var(--primary-color) 25%, transparent);
+          background: color-mix(in srgb, var(--primary-color) 6%, transparent);
+          color: var(--primary-text-color);
+          border-color: color-mix(in srgb, var(--primary-color) 16%, transparent);
         }
 
         @media (hover: hover) and (pointer: fine) {
           &.sub-item-action--primary:hover {
-            background: color-mix(in srgb, var(--primary-color) 22%, transparent);
-            border-color: color-mix(in srgb, var(--primary-color) 40%, transparent);
+            background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+            border-color: color-mix(in srgb, var(--primary-color) 28%, transparent);
           }
         }
 
         &.sub-item-action--danger {
-          color: var(--second-text-color);
+          color: var(--comment-text-color);
         }
 
         @media (hover: hover) and (pointer: fine) {

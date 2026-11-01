@@ -9,6 +9,18 @@ const MOBILE = { width: 390, height: 844 };
 const screenshot = async (page: Page, name: string) => {
   await page.evaluate(async () => {
     await document.fonts.ready;
+    // Icons are lazy images; decode what is in view, but never block on
+    // off-screen images that will not fire load events.
+    const images = Promise.all(
+      [...document.images].map((img) =>
+        img.complete
+          ? img.decode().catch(() => undefined)
+          : new Promise((resolve) => {
+              img.onload = img.onerror = () => resolve(null);
+            }),
+      ),
+    );
+    await Promise.race([images, new Promise((resolve) => setTimeout(resolve, 1200))]);
   });
   await expect(page).toHaveScreenshot(`${name}.png`, { fullPage: true });
 };
@@ -59,32 +71,44 @@ test.describe("visual snapshots", () => {
 
   test("tools populated desktop light", async ({ page }) => {
     await openReady(page, "/tools", "populated", ".tools-page");
-    await expect(page.locator(".feature-card").first()).toBeVisible();
+    await expect(page.locator(".tools-page .list-row").first()).toBeVisible();
     await screenshot(page, "tools-populated-desktop-light");
   });
 
   test("tools populated mobile light", async ({ page }) => {
     await openReady(page, "/tools", "populated", ".tools-page", { viewport: MOBILE });
-    await expect(page.locator(".feature-card").first()).toBeVisible();
+    await expect(page.locator(".tools-page .list-row").first()).toBeVisible();
     await screenshot(page, "tools-populated-mobile-light");
   });
 
   test("settings populated desktop light", async ({ page }) => {
     await openReady(page, "/my", "populated", ".my-page-wrapper");
-    await expect(page.locator(".template-card").first()).toBeVisible();
+    await expect(page.locator(".list-row").first()).toBeVisible();
     await screenshot(page, "settings-populated-desktop-light");
   });
 
   test("settings populated mobile light", async ({ page }) => {
     await openReady(page, "/my", "populated", ".my-page-wrapper", { viewport: MOBILE });
-    await expect(page.locator(".template-card").first()).toBeVisible();
+    await expect(page.locator(".list-row").first()).toBeVisible();
     await screenshot(page, "settings-populated-mobile-light");
+  });
+
+  test("settings populated desktop dark", async ({ page }) => {
+    await openReady(page, "/my", "populated", ".my-page-wrapper", { colorScheme: "dark" });
+    await expect(page.locator(".list-row").first()).toBeVisible();
+    await screenshot(page, "settings-populated-desktop-dark");
   });
 
   test("editor new source desktop light", async ({ page }) => {
     await openReady(page, "/edit/subs/UNTITLED", "populated", ".page-wrapper");
     await expect(page.locator(".app-form-item input").first()).toBeVisible();
     await screenshot(page, "editor-new-source-desktop-light");
+  });
+
+  test("editor new source desktop dark", async ({ page }) => {
+    await openReady(page, "/edit/subs/UNTITLED", "populated", ".page-wrapper", { colorScheme: "dark" });
+    await expect(page.locator(".editor-group").first()).toBeVisible();
+    await screenshot(page, "editor-new-source-desktop-dark");
   });
 
   test("copy modal desktop light", async ({ page }) => {

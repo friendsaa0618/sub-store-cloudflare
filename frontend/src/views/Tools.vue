@@ -1,15 +1,15 @@
 <template>
-  <div class="tools-page">
+  <div class="tools-page page-stack">
     <!-- Converter -->
-    <section class="tool-section">
-      <header class="section-header">
-        <div class="section-header__text">
-          <h2 class="section-header__title">{{ t('toolsPage.converter.title') }}</h2>
-          <p class="section-header__desc">{{ t('toolsPage.converter.desc') }}</p>
+    <section class="section">
+      <header class="section-head">
+        <div class="section-head__text">
+          <h2 class="section-head__title">{{ t('toolsPage.converter.title') }}</h2>
+          <p class="section-head__desc">{{ t('toolsPage.converter.desc') }}</p>
         </div>
       </header>
 
-      <div class="tool-card">
+      <div class="tool-card surface surface--pad">
         <div class="row">
           <div class="form-field">
             <label class="field-label" for="tools-conversion-kind">{{ t('toolsPage.converter.proxy') }} / {{ t('toolsPage.converter.rule') }}</label>
@@ -58,15 +58,15 @@
     </section>
 
     <!-- Shares -->
-    <section class="tool-section">
-      <header class="section-header">
-        <div class="section-header__text">
-          <h2 class="section-header__title">{{ t('toolsPage.shares.title') }}</h2>
-          <p class="section-header__desc">{{ t('toolsPage.shares.desc') }}</p>
+    <section class="section">
+      <header class="section-head">
+        <div class="section-head__text">
+          <h2 class="section-head__title">{{ t('toolsPage.shares.title') }}</h2>
+          <p class="section-head__desc">{{ t('toolsPage.shares.desc') }}</p>
         </div>
       </header>
 
-      <div class="tool-card">
+      <div class="tool-card surface surface--pad">
         <div class="row share-form">
           <div class="form-field">
             <label class="field-label" for="tools-share-type">{{ t('toolsPage.shares.resourceType') }}</label>
@@ -123,14 +123,14 @@
         {{ createdShareUrl }}
       </button>
 
-      <div v-if="loadingShares" class="feature-card-list">
-        <div class="feature-card skeleton-card skeleton-pulse">
+      <div v-if="loadingShares" class="surface list-rows">
+        <div class="list-row skeleton-card skeleton-pulse">
           <div class="skeleton-content">
             <div class="skeleton-line title"></div>
             <div class="skeleton-line sub"></div>
           </div>
         </div>
-        <div class="feature-card skeleton-card skeleton-pulse">
+        <div class="list-row skeleton-card skeleton-pulse">
           <div class="skeleton-content">
             <div class="skeleton-line title"></div>
             <div class="skeleton-line sub"></div>
@@ -138,24 +138,24 @@
         </div>
       </div>
 
-      <div v-else-if="shares.length === 0" class="empty">
+      <div v-else-if="shares.length === 0" class="section-empty">
         <font-awesome-icon icon="fa-solid fa-share-nodes" aria-hidden="true" />
         <span>{{ t('toolsPage.shares.empty') }}</span>
       </div>
 
-      <div v-else class="feature-card-list">
-        <div v-for="share in shares" :key="share.id" class="feature-card">
-          <div class="feature-card__main">
-            <strong class="feature-card__title">{{ resourceTypeLabel(share.resourceType) }}/{{ share.resourceId }}</strong>
-            <div class="feature-card__meta">
+      <div v-else class="surface list-rows">
+        <div v-for="share in shares" :key="share.id" class="list-row">
+          <div class="list-row__main">
+            <strong class="list-row__title">{{ resourceTypeLabel(share.resourceType) }}/{{ share.resourceId }}</strong>
+            <div class="list-row__meta">
               <span>{{ shareMeta(share) }}</span>
               <span
-                class="status-pill"
-                :class="share.enabled ? 'is-on' : 'is-off'"
+                class="pill"
+                :class="share.enabled ? 'is-accent' : 'is-muted'"
               >{{ share.enabled ? t('toolsPage.shares.enabled') : t('toolsPage.shares.disabled') }}</span>
             </div>
           </div>
-          <div class="feature-card__actions">
+          <div class="list-row__actions">
             <AppButton plain size="mini" @click="toggleShare(share)">
               {{ share.enabled ? t('toolsPage.shares.disable') : t('toolsPage.shares.enable') }}
             </AppButton>
@@ -168,22 +168,22 @@
     </section>
 
     <!-- Recycle Bin -->
-    <section class="tool-section">
-      <header class="section-header">
-        <div class="section-header__text">
-          <h2 class="section-header__title">{{ t('toolsPage.recycle.title') }}</h2>
-          <p class="section-header__desc">{{ t('toolsPage.recycle.desc') }}</p>
+    <section class="section">
+      <header class="section-head">
+        <div class="section-head__text">
+          <h2 class="section-head__title">{{ t('toolsPage.recycle.title') }}</h2>
+          <p class="section-head__desc">{{ t('toolsPage.recycle.desc') }}</p>
         </div>
       </header>
 
-      <div v-if="loadingRecycle" class="feature-card-list">
-        <div class="feature-card skeleton-card skeleton-pulse">
+      <div v-if="loadingRecycle" class="surface list-rows">
+        <div class="list-row skeleton-card skeleton-pulse">
           <div class="skeleton-content">
             <div class="skeleton-line title"></div>
             <div class="skeleton-line sub"></div>
           </div>
         </div>
-        <div class="feature-card skeleton-card skeleton-pulse">
+        <div class="list-row skeleton-card skeleton-pulse">
           <div class="skeleton-content">
             <div class="skeleton-line title"></div>
             <div class="skeleton-line sub"></div>
@@ -191,18 +191,18 @@
         </div>
       </div>
 
-      <div v-else-if="recycleEntries.length === 0" class="empty">
+      <div v-else-if="recycleEntries.length === 0" class="section-empty">
         <font-awesome-icon icon="fa-solid fa-trash-can" aria-hidden="true" />
         <span>{{ t('toolsPage.recycle.empty') }}</span>
       </div>
 
-      <div v-else class="feature-card-list">
-        <div v-for="entry in recycleEntries" :key="entry.id" class="feature-card">
-          <div class="feature-card__main">
-            <strong class="feature-card__title">{{ resourceTypeLabel(entry.resourceType) }}/{{ entry.resourceId }}</strong>
-            <div class="feature-card__meta mono-time">{{ formatDateTime(entry.deletedAt) }}</div>
+      <div v-else class="surface list-rows">
+        <div v-for="entry in recycleEntries" :key="entry.id" class="list-row">
+          <div class="list-row__main">
+            <strong class="list-row__title">{{ resourceTypeLabel(entry.resourceType) }}/{{ entry.resourceId }}</strong>
+            <div class="list-row__meta mono-time">{{ formatDateTime(entry.deletedAt) }}</div>
           </div>
-          <div class="feature-card__actions">
+          <div class="list-row__actions">
             <AppButton plain type="primary" size="mini" @click="restoreEntry(entry.id)">
               {{ t('toolsPage.recycle.restore') }}
             </AppButton>
@@ -341,6 +341,7 @@ const removeShare = (id: string) => {
     content: t('toolsPage.shares.title'),
     cancelText: t('myPage.btn.cancel'),
     okText: t('myPage.btn.delete'),
+    okType: 'danger',
     onOk: async () => {
       await api.deleteShare(id);
       await Promise.all([loadShares(), loadRecycle()]);
@@ -354,6 +355,7 @@ const purgeEntry = (id: string) => {
     content: t('toolsPage.recycle.desc'),
     cancelText: t('myPage.btn.cancel'),
     okText: t('toolsPage.recycle.purge'),
+    okType: 'danger',
     onOk: async () => {
       await api.deleteRecycleEntry(id);
       await loadRecycle();
@@ -371,11 +373,9 @@ onMounted(() => Promise.all([loadShares(), loadRecycle()]));
   min-height: 100%;
   /* page-body already provides horizontal padding — avoid double inset */
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-5);
   animation: fadeIn 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 
+  /* Desktop: two columns, the converter spans both */
   @media screen and (min-width: 900px) {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -383,55 +383,28 @@ onMounted(() => Promise.all([loadShares(), loadRecycle()]));
     column-gap: var(--space-4);
     row-gap: var(--space-5);
 
-    & .tool-section:first-child {
+    & .section:first-child {
       grid-column: 1 / -1;
     }
+
+    /* Side-by-side sections: keep both content blocks on the same top line
+       even when one description wraps to two lines. */
+    & > .section:not(:first-child) .section-head__desc {
+      min-height: calc(2 * 1.45em);
+    }
   }
-}
-
-/* Match home section rhythm: quiet title + short desc above content */
-.tool-section {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.section-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 0 2px 0 4px;
-  color: var(--comment-text-color);
-}
-
-.section-header__title {
-  margin: 0;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: var(--comment-text-color);
-  line-height: 1.2;
-}
-
-.section-header__desc {
-  margin: 4px 0 0;
-  font-size: 12px;
-  line-height: 1.45;
-  color: var(--lowest-text-color, var(--comment-text-color));
 }
 
 .tool-card {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-4);
-  border-radius: var(--radius-lg, var(--item-card-radios));
-  background: var(--card-color);
+  gap: var(--space-3);
   color: var(--second-text-color);
-  border: 1px solid var(--divider-color);
-  box-shadow: var(--card-shadow, none);
+}
+
+/* List sits under its form card: a little more air than the section gap */
+.tool-card + .surface {
+  margin-top: var(--space-1);
 }
 
 .row {
@@ -532,6 +505,11 @@ select.field-control {
   margin-top: var(--space-1);
 }
 
+/* Give the result group a little air after the action row */
+.actions + .field-label {
+  margin-top: var(--space-1);
+}
+
 .created-link {
   margin-bottom: var(--space-3);
   padding: var(--space-3) 14px;
@@ -564,71 +542,6 @@ select.field-control {
   &:focus-visible {
     box-shadow: 0 0 0 2px var(--focus-ring-color);
   }
-}
-
-/* Feature Cards & Micro-interactions */
-.feature-card-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  margin-top: var(--space-2);
-}
-
-.feature-card {
-  min-height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  padding: 12px 14px;
-  border-radius: var(--radius-lg, var(--item-card-radios));
-  background: var(--card-color);
-  content-visibility: auto;
-  contain-intrinsic-size: auto 56px;
-  border: 1px solid var(--divider-color);
-  transition: transform 140ms ease-out, border-color 160ms ease, background-color 160ms ease;
-
-  @media (hover: hover) and (pointer: fine) {
-    &:hover {
-      border-color: color-mix(in srgb, var(--primary-color) 22%, transparent);
-      background: color-mix(in srgb, var(--primary-color) 4%, var(--card-color));
-    }
-  }
-
-  &:active {
-    transform: scale(0.99);
-  }
-}
-
-.feature-card__main {
-  min-width: 0;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.feature-card__title {
-  color: var(--primary-text-color);
-  font-size: var(--text-base);
-  font-weight: 600;
-  overflow-wrap: anywhere;
-}
-
-.feature-card__meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-  color: var(--comment-text-color);
-  font-size: var(--text-xs);
-}
-
-.feature-card__actions {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  gap: var(--space-2);
 }
 
 /* Skeleton Loaders */
@@ -665,28 +578,6 @@ select.field-control {
   font-feature-settings: "tnum";
 }
 
-.status-pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 1px var(--space-2);
-  border-radius: var(--radius-full);
-  font-size: 11px;
-  font-weight: 500;
-  line-height: 1.4;
-
-  &.is-on {
-    color: var(--succeed-color);
-    background: color-mix(in srgb, var(--succeed-color) 12%, transparent);
-    border: 1px solid color-mix(in srgb, var(--succeed-color) 22%, transparent);
-  }
-
-  &.is-off {
-    color: var(--comment-text-color);
-    background: color-mix(in srgb, var(--comment-text-color) 10%, transparent);
-    border: 1px solid var(--divider-color);
-  }
-}
-
 .stats {
   color: var(--comment-text-color);
   font-size: var(--text-sm);
@@ -721,15 +612,15 @@ select.field-control {
   .row {
     flex-direction: column;
   }
-  .feature-card {
+
+  .list-row {
     align-items: flex-start;
     flex-direction: column;
   }
 
-  .feature-card__actions {
+  .list-row__actions {
     width: 100%;
     justify-content: flex-start;
-    margin-top: var(--space-1);
   }
 }
 </style>

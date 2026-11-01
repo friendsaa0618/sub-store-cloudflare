@@ -87,7 +87,7 @@
       class="subs-list-wrapper"
       :class="{ 'dual-column-mode': isDualColumnMode }"
     >
-      <div class="subs-list-container">
+      <div class="subs-list-container page-stack">
         <section
           v-if="hasSubs && !hasCollections"
           class="onboarding-card onboarding-inline"
@@ -103,22 +103,22 @@
         </section>
 
         <!-- 订阅源 -->
-        <div class="subs-list-content">
-          <div class="section-header">
+        <div class="subs-list-content section">
+          <div class="section-head">
             <button
               type="button"
-              class="section-header__toggle"
+              class="section-head__toggle"
               @click="toggleFold('sub')"
             >
-              <span class="section-header__title">{{ $t(`specificWord.singleSub`) }}</span>
+              <span class="section-head__title">{{ $t(`specificWord.singleSub`) }}</span>
               <font-awesome-icon
-                class="section-header__chevron"
+                class="section-head__chevron"
                 :icon="isFold('sub') ? 'fa-solid fa-chevron-right' : 'fa-solid fa-chevron-down'"
                 aria-hidden="true"
               />
             </button>
             <router-link
-              class="section-header__add"
+              class="icon-action"
               to="/edit/subs/UNTITLED"
               :aria-label="$t('subPage.actions.createSource')"
               :title="$t('subPage.actions.createSource')"
@@ -168,22 +168,22 @@
         </div>
 
         <!-- 组合订阅 -->
-        <div class="subs-list-content">
-          <div class="section-header">
+        <div class="subs-list-content section">
+          <div class="section-head">
             <button
               type="button"
-              class="section-header__toggle"
+              class="section-head__toggle"
               @click="toggleFold('col')"
             >
-              <span class="section-header__title">{{ $t(`specificWord.collectionSub`) }}</span>
+              <span class="section-head__title">{{ $t(`specificWord.collectionSub`) }}</span>
               <font-awesome-icon
-                class="section-header__chevron"
+                class="section-head__chevron"
                 :icon="isFold('col') ? 'fa-solid fa-chevron-right' : 'fa-solid fa-chevron-down'"
                 aria-hidden="true"
               />
             </button>
             <router-link
-              class="section-header__add"
+              class="icon-action"
               to="/edit/collections/UNTITLED"
               :aria-label="$t('subPage.actions.createCollection')"
               :title="$t('subPage.actions.createCollection')"
@@ -653,22 +653,26 @@ const importTips = () => {
 }
 
 .empty-state-image {
-  width: 96px;
-  height: 96px;
+  display: block;
+  width: 88px;
+  height: 88px;
+  margin: 0 auto;
   object-fit: contain;
 }
 
 .onboarding-card {
   box-sizing: border-box;
-  border: 1px solid color-mix(in srgb, var(--primary-color) 24%, var(--divider-color));
-  border-radius: var(--item-card-radios);
-  background: linear-gradient(135deg, color-mix(in srgb, var(--primary-color) 8%, var(--card-color)), var(--card-color));
+  border: 1px solid var(--divider-color);
+  border-radius: var(--radius-lg);
+  background: var(--card-color);
+  box-shadow: var(--card-shadow);
   color: var(--second-text-color);
 
   & h3 {
-    margin: 4px 0 6px;
+    margin: 6px 0 6px;
     color: var(--primary-text-color);
     font-size: 18px;
+    font-weight: 600;
   }
 
   & p {
@@ -680,8 +684,8 @@ const importTips = () => {
 }
 
 .onboarding-empty {
-  width: min(calc(100% - 32px), 560px);
-  padding: 24px;
+  width: min(calc(100% - 32px), 600px);
+  padding: 28px 24px;
   text-align: center;
 }
 
@@ -709,34 +713,34 @@ const importTips = () => {
 }
 
 .onboarding-steps {
-  margin: 18px 0;
+  margin: 20px 0 18px;
   padding: 0;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  gap: 16px;
   list-style: none;
 
   & li {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 8px;
-    padding: 10px;
-    border-radius: 10px;
-    background: var(--background-color);
     color: var(--second-text-color);
     font-size: 12px;
+    line-height: 1.5;
     text-align: left;
   }
 
   & strong {
-    width: 24px;
-    height: 24px;
-    flex: 0 0 24px;
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
     display: grid;
     place-items: center;
     border-radius: 50%;
-    background: var(--primary-color);
-    color: white;
+    background: color-mix(in srgb, var(--primary-color) 8%, transparent);
+    color: var(--primary-color);
+    font-size: 11px;
+    font-weight: 600;
   }
 }
 
@@ -851,25 +855,14 @@ const importTips = () => {
   }
 }
 
-/* Section header: title + fold chevron + create action */
-.section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  min-height: 36px;
-  margin: 4px 0 4px;
-  padding: 0 2px 0 4px;
-  color: var(--comment-text-color);
-}
-
-.section-header__toggle {
+/* Section caption row: fold toggle + create action (shared .section-head) */
+.section-head__toggle {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   min-width: 0;
   margin: 0;
-  padding: 4px 0;
+  padding: 2px 0;
   border: 0;
   background: transparent;
   color: inherit;
@@ -877,75 +870,22 @@ const importTips = () => {
   -webkit-user-select: none;
   user-select: none;
   text-align: left;
+  border-radius: var(--radius-sm);
 
   &:focus {
     outline: none;
   }
 
   &:focus-visible {
-    border-radius: 6px;
     box-shadow: 0 0 0 2px var(--focus-ring-color);
   }
 }
 
-.section-header__title {
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: var(--comment-text-color);
-  line-height: 1.2;
-}
-
-.section-header__chevron {
+.section-head__chevron {
   flex-shrink: 0;
   opacity: 0.55;
   font-size: 12px;
   height: 12px;
-}
-
-.section-header__add {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  color: var(--second-text-color);
-  background: transparent;
-  border: 1px solid transparent;
-  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
-    background-color 200ms ease, color 200ms ease, border-color 200ms ease;
-
-  & svg {
-    width: 13px;
-    height: 13px;
-    font-size: 13px;
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    &:hover {
-      color: var(--primary-color);
-      background: color-mix(in srgb, var(--primary-color) 10%, transparent);
-      border-color: color-mix(in srgb, var(--primary-color) 18%, transparent);
-    }
-  }
-
-  &:active {
-    transform: scale(0.94);
-  }
-}
-
-.section-empty {
-  margin: 4px 0 12px;
-  padding: 14px 12px;
-  border-radius: var(--radius-lg, var(--item-card-radios));
-  border: 1px dashed var(--divider-color);
-  background: color-mix(in srgb, var(--background-color) 40%, var(--card-color));
-  color: var(--comment-text-color);
-  font-size: 13px;
-  line-height: 1.45;
-  text-align: center;
 }
 
 .desc-about {
@@ -997,9 +937,8 @@ const importTips = () => {
   & .list-draggable.dual-column {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
+    gap: 12px;
     align-items: start;
-    padding-top: 12px;
 
     & > .draggable-item {
       min-width: 0;
@@ -1016,9 +955,6 @@ const importTips = () => {
     box-sizing: border-box;
   }
 
-  & .subs-list-content + .subs-list-content {
-    margin-top: 8px;
-  }
 }
 
 /* Compact real-data overview: one strip, not stacked marketing cards */

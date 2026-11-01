@@ -56,9 +56,111 @@ textarea::-webkit-input-placeholder {
   --toastify-toast-min-height: 48px;
 }
 
-/* Keep toasts clear of the fixed navbar */
+/*
+ * Toasts use the app surfaces, not the library's colored theme.
+ * notify.ts asks for theme="light" (neutral palette); these rules repaint it
+ * with the theme tokens, so light/dark follow html[data-theme] with no JS path.
+ */
+.Toastify__toast-container {
+  --toastify-color-light: var(--popup-color);
+  --toastify-text-color-light: var(--primary-text-color);
+  --toastify-font-family: var(--font-sans);
+  /* Icons: info stays neutral, the rest carry the app status colors. */
+  --toastify-icon-color-info: var(--comment-text-color);
+  --toastify-icon-color-success: var(--succeed-color);
+  --toastify-icon-color-error: var(--danger-color);
+  --toastify-icon-color-warning: #d97706;
+  --toastify-spinner-color: var(--primary-color);
+  --toastify-spinner-color-empty-area: color-mix(
+    in srgb,
+    var(--primary-color) 18%,
+    transparent
+  );
+}
+
+.Toastify__toast-container .Toastify__toast-theme--light {
+  padding: 10px 12px;
+  border: 1px solid var(--divider-color);
+  border-radius: var(--radius-lg);
+  background: var(--popup-color);
+  color: var(--primary-text-color);
+  box-shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.28);
+}
+
+.Toastify__toast-container .Toastify__toast-body {
+  padding: 4px;
+  color: var(--second-text-color);
+  font-size: var(--text-sm);
+  line-height: 1.45;
+}
+
+.Toastify__toast-container .Toastify__toast-body strong {
+  display: inline-block;
+  margin-bottom: 2px;
+  color: var(--primary-text-color);
+  font-weight: 600;
+}
+
+.Toastify__toast-container .Toastify__toast-icon {
+  width: 20px;
+}
+
+/* Thin, type-colored progress line on the neutral surface */
+.Toastify__toast-container .Toastify__progress-bar {
+  height: 3px;
+  opacity: 0.55;
+}
+
+.Toastify__toast-container .Toastify__progress-bar-theme--light {
+  background: var(--primary-color);
+}
+
+.Toastify__toast-container
+  .Toastify__progress-bar-theme--light.Toastify__progress-bar--success {
+  background: var(--succeed-color);
+}
+
+.Toastify__toast-container
+  .Toastify__progress-bar-theme--light.Toastify__progress-bar--error {
+  background: var(--danger-color);
+}
+
+.Toastify__toast-container
+  .Toastify__progress-bar-theme--light.Toastify__progress-bar--warning {
+  background: var(--toastify-icon-color-warning);
+}
+
+.Toastify__toast-container .Toastify__close-button--light {
+  color: var(--comment-text-color);
+  opacity: 0.6;
+}
+
+.Toastify__toast-container .Toastify__close-button--light:hover,
+.Toastify__toast-container .Toastify__close-button--light:focus-visible {
+  color: var(--primary-text-color);
+  opacity: 1;
+}
+
+html[data-theme="dark"] .Toastify__toast-container {
+  --toastify-icon-color-warning: #f59e0b;
+}
+
+/* Full-bleed container on phones: keep the card inset and rounded */
+@media screen and (max-width: 480px) {
+  .Toastify__toast-container {
+    width: 100vw;
+    padding: 0 12px;
+  }
+
+  .Toastify__toast-container .Toastify__toast {
+    margin-bottom: 8px;
+    border-radius: var(--radius-lg);
+  }
+}
+
+/* Keep toasts clear of the fixed navbar (56px row + notch) */
 .Toastify__toast-container--top-center {
-  top: 64px !important;
+  top: calc(64px + env(safe-area-inset-top, 0px)) !important;
 }
 
 .fa-circle-question,

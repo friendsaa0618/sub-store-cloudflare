@@ -16,10 +16,23 @@
         </template>
         <template v-else>
           <div class="btn-groups preview-leading">
-            <button type="button" class="btn close" @click="clickClose">
+            <button
+              type="button"
+              class="btn close"
+              :aria-label="t('specificWord.close')"
+              :title="t('specificWord.close')"
+              @click="clickClose"
+            >
               <font-awesome-icon icon="fa-solid fa-xmark" />
             </button>
-            <button v-if="showRefresh" type="button" class="btn refresh" @click="emit('refresh')">
+            <button
+              v-if="showRefresh"
+              type="button"
+              class="btn refresh"
+              :aria-label="t('subPage.actions.refresh')"
+              :title="t('subPage.actions.refresh')"
+              @click="emit('refresh')"
+            >
               <font-awesome-icon icon="fa-solid fa-arrows-rotate" />
             </button>
           </div>
@@ -75,7 +88,7 @@ watchEffect(async () => {
       cmStore.setEditCode('subscriptionPreview', `Error: ${
       error.response ? `${error.response.status} ${error.response.statusText}\n\n${data}` : error.message
       }`)
-      showNotify({ title: t("comparePage.subscriptionPreviewLoadFailed", { e: error.message }) })
+      showNotify({ type: "danger", title: t("comparePage.subscriptionPreviewLoadFailed", { e: error.message }) })
     }
   }
   if (route.query.name) {
@@ -114,7 +127,7 @@ const copyUrl = async () => {
   } else {
     await copyFallback(url);
   }
-  showNotify({ title: t("comparePage.subscriptionPreviewCopied", { url }) });
+  showNotify({ type: "success", title: t("comparePage.subscriptionPreviewCopied", { url }) });
 };
 </script>
 

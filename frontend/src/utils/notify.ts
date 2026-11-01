@@ -55,7 +55,9 @@ export const notify = (settings: NotifySettings) => {
     warning: "WARNING",
   };
   toast(html, {
-    theme: "colored",
+    // "light" only selects the library's neutral palette; the app tokens in
+    // overrides.css repaint the surface and text for both app themes.
+    theme: "light",
     type: toast.TYPE[types[notifyType] || "DEFAULT"],
     position: "top-center",
     transition: "slide",
@@ -74,7 +76,7 @@ export const notifyLoading = (title: string, id?: string) => {
   return toast.loading(formatNotifyHtml(title), {
     toastId: id,
     position: "top-center",
-    theme: "colored",
+    theme: "light",
     type: toast.TYPE.INFO,
     dangerouslyHTMLString: true,
     closeOnClick: false,

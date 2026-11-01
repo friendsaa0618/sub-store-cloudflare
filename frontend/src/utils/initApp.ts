@@ -5,6 +5,7 @@ import { useAppNotifyStore } from "@/store/appNotify";
 import { useGlobalStore } from "@/store/global";
 import { useSettingsStore } from "@/store/settings";
 import { useSubsStore } from "@/store/subs";
+import { dismissNotify, notifyLoading } from "@/utils/notify";
 
 export const initStores = async (
   needNotify: boolean,
@@ -21,7 +22,9 @@ export const initStores = async (
   // Only toast when the caller asks for notify (explicit refresh / token retry).
   // Silent boot uses needNotify=false so page entry stays quiet.
   if (needNotify) {
-    showNotify({ title: t("globalNotify.refresh.loading"), type: "primary" });
+    // One persistent loading toast, replaced by the result — a plain toast would
+    // sit next to "refresh complete" for its full duration.
+    notifyLoading(t("globalNotify.refresh.loading"), "global-refresh");
   }
   globalStore.setLoading(true);
   globalStore.setFetchResult(true);
@@ -86,8 +89,11 @@ export const initStores = async (
   }
 
   // 发送通知
+  if (needNotify) {
+    dismissNotify("global-refresh");
+  }
   if (isSucceed && needNotify) {
-    showNotify({ title: t("globalNotify.refresh.succeed"), type: "primary" });
+    showNotify({ title: t("globalNotify.refresh.succeed"), type: "success" });
   }
 
   globalStore.setLoading(false);

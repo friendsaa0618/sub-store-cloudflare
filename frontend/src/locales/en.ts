@@ -19,8 +19,8 @@ export default {
       succeed: "Refresh Completed",
       flowFailed: "Refresh of {name} failed!",
       failed: "Refresh Failed\n",
-      loading: "Refreshing Data...",
-      backendChanged: "Backend changed. Refreshing data..."
+      loading: "Refreshing Data…",
+      backendChanged: "Backend changed. Refreshing data…"
     },
     request: {
       failedWithStatus: "Request failed: {status} {statusText}",
@@ -213,7 +213,7 @@ export default {
     },
     subItem: {
       local: "Local subscription",
-      loading: "Loading...",
+      loading: "Loading…",
       flow: "Usage / Total",
       showRemainingFlow: "Remaining / Total",
       expires: "Expires",
@@ -239,12 +239,12 @@ export default {
       failed: "Failed to copy subscription link!\n{e}"
     },
     copyConfigNotify: {
-      loading: "Cloning...",
+      loading: "Cloning…",
       succeed: "Successfully cloned config!",
       failed: "Failed to clone config!\n{e}"
     },
     exportConfigNotify: {
-      loading: "Exporting...",
+      loading: "Exporting…",
       succeed: "Successfully exported config!",
       failed: "Failed to exporte config!\n{e}"
     },
@@ -278,6 +278,12 @@ export default {
       cancel: "Cancel"
     },
     subConfig: {
+      groups: {
+        basic: "Basics",
+        source: "Subscription",
+        collection: "Collection",
+        actions: "Node processing"
+      },
       btn: {
         compare: "Preview",
         save: "Save"
@@ -346,7 +352,7 @@ export default {
         },
         tag: {
           label: "Tag(s)",
-          placeholder: "Type a tag, then press Enter or Confirm…",
+          placeholder: "Add a tag, press Enter…",
           confirm: "Add",
           remove: "Remove tag"
         },
@@ -398,8 +404,8 @@ export default {
             failed: "No valid nodes parsed",
             noNodes: "No valid nodes parsed",
             importFailed: "File import failed",
-            compareLoading: "Generating node comparison...",
-            submitLoading: "Fetching subscription...",
+            compareLoading: "Generating node comparison…",
+            submitLoading: "Fetching subscription…",
             submitBusy: "Subscription is being fetched. Do not submit again."
           },
           tips: {
@@ -821,7 +827,7 @@ export default {
         failed: "Save failed",
         configLoadFailed: "Failed to load settings",
         configUpdateFailed: "Failed to update settings",
-        themeLoading: "Switching theme...",
+        themeLoading: "Switching theme…",
         themeFailed: "Failed to switch theme"
       },
       restore: {
@@ -833,7 +839,7 @@ export default {
   },
   comparePage: {
     title: "Instant Preview",
-    loading: "Generating node comparison...",
+    loading: "Generating node comparison…",
     subscriptionPreviewCopyLabel: "Click to copy the subscription link:",
     subscriptionPreviewLoadFailed: "Load failed: {e}",
     subscriptionPreviewCopied: "Copied link: {url}",
@@ -866,11 +872,11 @@ export default {
       aead: "AEAD"
     },
     nodeInfo: {
-      loading: "Getting Node Info...",
+      loading: "Getting Node Info…",
       loadFailed: "Get Node Info Failed",
       ipApi: {
         title: "IP-API",
-        loading: "Loading IP API details...",
+        loading: "Loading IP API details…",
         loadFailed: "Failed to load IP API details",
         retry: "Retry"
       },

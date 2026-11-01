@@ -1,10 +1,7 @@
 <template>
-  <div class="my-page-wrapper">
+  <div class="my-page-wrapper page-stack">
     <!-- Profile + backup actions (merged; no redundant backup-only card) -->
-    <section class="profile-block">
-      <div class="profile-top">
-        <span class="runtime-pill">{{ env.runtime || env.backend || "Cloudflare" }}</span>
-      </div>
+    <section class="profile-block surface">
       <div class="info">
         <div class="avatar-wrapper">
           <AppAvatar
@@ -17,7 +14,10 @@
             <p class="title">{{ appName }}</p>
             <p class="des">
               <span class="des-line1">{{ t("myPage.profile.desc") }}</span>
-              <span class="des-line2">{{ env.storage || "D1" }} · v{{ env.version || "-" }}</span>
+              <span class="des-line2">
+                {{ env.storage || "D1" }} · v{{ env.version || "-" }}
+                <span class="pill is-muted">{{ env.runtime || env.backend || "Cloudflare" }}</span>
+              </span>
             </p>
           </div>
         </div>
@@ -37,17 +37,18 @@
     </section>
 
     <!-- Templates -->
-    <section class="settings-section">
-      <header class="section-header">
-        <div class="section-header__text">
-          <h2 class="section-header__title">{{ t("myPage.templates.title") }}</h2>
+    <section class="section">
+      <header class="section-head">
+        <div class="section-head__text">
+          <h2 class="section-head__title">{{ t("myPage.templates.title") }}</h2>
         </div>
-        <div class="section-header__actions">
+        <div class="section-head__actions">
           <input ref="templateFileInput" type="file" accept="application/json,.json,.yaml,.yml,text/yaml" @change="importTemplateFromFile" />
           <button
             type="button"
-            class="section-action-btn"
+            class="icon-action"
             :disabled="templateImporting"
+            :aria-label="t('myPage.templates.importFile')"
             :title="t('myPage.templates.importFile')"
             @click="selectTemplateFile"
           >
@@ -55,8 +56,9 @@
           </button>
           <button
             type="button"
-            class="section-action-btn is-primary"
+            class="icon-action is-primary"
             :disabled="templateImporting"
+            :aria-label="t('myPage.templates.create')"
             :title="t('myPage.templates.create')"
             @click="openTemplateImport"
           >
@@ -65,14 +67,14 @@
         </div>
       </header>
 
-      <div v-if="loadingTemplates" class="template-card-list">
-        <div class="template-card skeleton-card skeleton-pulse">
+      <div v-if="loadingTemplates" class="surface list-rows">
+        <div class="list-row skeleton-card skeleton-pulse">
           <div class="skeleton-content">
             <div class="skeleton-line title"></div>
             <div class="skeleton-line sub"></div>
           </div>
         </div>
-        <div class="template-card skeleton-card skeleton-pulse">
+        <div class="list-row skeleton-card skeleton-pulse">
           <div class="skeleton-content">
             <div class="skeleton-line title"></div>
             <div class="skeleton-line sub"></div>
@@ -80,27 +82,22 @@
         </div>
       </div>
 
-      <div v-else class="template-card-list">
-        <div v-for="template in templates" :key="template.name" class="template-card">
-          <div class="template-info">
-            <div class="template-header-line">
-              <span class="template-title">{{ template.displayName || template.name }}</span>
-              <span
-                class="template-kind-pill"
-                :class="template.readonly ? 'is-builtin' : 'is-custom'"
-              >
+      <div v-else class="surface list-rows">
+        <div v-for="template in templates" :key="template.name" class="list-row">
+          <div class="list-row__main">
+            <div class="list-row__title-line">
+              <span class="list-row__title">{{ template.displayName || template.name }}</span>
+              <span class="pill" :class="template.readonly ? 'is-muted' : 'is-accent'">
                 {{ template.readonly ? t("myPage.templates.builtIn") : t("myPage.templates.custom") }}
               </span>
             </div>
-            <span class="template-target-pill">
-              {{ getTargetLabel(template.target || "mihomo") }}
-            </span>
+            <span class="list-row__meta">{{ getTargetLabel(template.target || "mihomo") }}</span>
           </div>
-          <div class="template-actions">
-            <AppButton v-if="!template.readonly" plain type="primary" size="mini" @click="openTemplateEdit(template)">
+          <div v-if="!template.readonly" class="list-row__actions">
+            <AppButton plain type="primary" size="mini" @click="openTemplateEdit(template)">
               {{ t("myPage.btn.edit") }}
             </AppButton>
-            <AppButton v-if="!template.readonly" plain type="danger" size="mini" @click="deleteCustomTemplate(template.name)">
+            <AppButton plain type="danger" size="mini" @click="deleteCustomTemplate(template.name)">
               {{ t("myPage.btn.delete") }}
             </AppButton>
           </div>
@@ -109,9 +106,9 @@
     </section>
 
     <!-- Request Settings -->
-    <section class="settings-section">
+    <section class="section">
       <header
-        class="section-header section-header--clickable"
+        class="section-head section-head--clickable"
         role="button"
         tabindex="0"
         :aria-expanded="requestEditing"
@@ -119,11 +116,11 @@
         @keydown.enter.prevent="toggleRequestEdit"
         @keydown.space.prevent="toggleRequestEdit"
       >
-        <div class="section-header__text">
-          <h2 class="section-header__title">{{ t("myPage.request.title") }}</h2>
-          <p v-if="!requestEditing" class="section-header__desc">{{ requestSummary }}</p>
+        <div class="section-head__text">
+          <h2 class="section-head__title">{{ t("myPage.request.title") }}</h2>
+          <p v-if="!requestEditing" class="section-head__desc">{{ requestSummary }}</p>
         </div>
-        <div class="section-header__actions" @click.stop>
+        <div class="section-head__actions" @click.stop>
           <template v-if="requestEditing">
             <AppButton class="cancel-btn" plain type="info" size="mini" :disabled="requestSaving" @click="cancelRequestEdit">
               <font-awesome-icon icon="fa-solid fa-ban" />
@@ -142,7 +139,7 @@
         </div>
       </header>
 
-      <div v-if="requestEditing" class="settings-form-card">
+      <div v-if="requestEditing" class="surface settings-form-card">
         <div class="settings-form-grid">
           <div class="form-field-group">
             <label class="form-field-label">{{ t("myPage.request.defaultUserAgent") }}</label>
@@ -515,6 +512,7 @@ const deleteCustomTemplate = (name: string) => {
     content: t("myPage.templates.deleteContent", { name }),
     okText: t("myPage.btn.delete"),
     cancelText: t("myPage.btn.cancel"),
+    okType: "danger",
     closeOnClickOverlay: true,
     onOk: async () => {
       const res = await cloudflareApi.deleteTemplate(name);
@@ -564,102 +562,28 @@ onMounted(fetchTemplates);
 .my-page-wrapper {
   min-height: 100%;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: var(--space-5);
   animation: fadeIn 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Quiet section headers — same language as home / tools */
-.section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  min-height: 36px;
-  padding: 0 2px 0 4px;
-  color: var(--comment-text-color);
-}
-
-.section-header--clickable {
+/* Collapsible caption row (request settings) */
+.section-head--clickable {
   cursor: pointer;
+  border-radius: var(--radius-md);
   -webkit-user-select: none;
   user-select: none;
-  border-radius: var(--radius-md);
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--focus-ring-color);
-  }
-}
-
-.section-header__title {
-  margin: 0;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: var(--comment-text-color);
-  line-height: 1.2;
-}
-
-.section-header__desc {
-  margin: 4px 0 0;
-  font-size: 12px;
-  line-height: 1.45;
-  color: var(--lowest-text-color, var(--comment-text-color));
-}
-
-.section-header__actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-
-  & input {
-    display: none;
-  }
-}
-
-.section-action-btn {
-  width: 28px;
-  height: 28px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid transparent;
-  border-radius: 50%;
-  background: transparent;
-  color: var(--second-text-color);
-  cursor: pointer;
-  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
-    background-color 200ms ease, color 200ms ease, border-color 200ms ease;
-
-  & svg {
-    width: 13px;
-    height: 13px;
-    font-size: 13px;
-  }
 
   @media (hover: hover) and (pointer: fine) {
-    &:hover:not(:disabled) {
-      color: var(--primary-color);
-      background: color-mix(in srgb, var(--primary-color) 10%, transparent);
-      border-color: color-mix(in srgb, var(--primary-color) 18%, transparent);
+    &:hover .section-head__title {
+      color: var(--primary-text-color);
     }
   }
 
-  &:active:not(:disabled) {
-    transform: scale(0.94);
+  &:focus {
+    outline: none;
   }
 
-  &:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-  }
-
-  &.is-primary {
-    color: var(--primary-color);
+  &:focus-visible {
+    box-shadow: 0 0 0 2px var(--focus-ring-color);
   }
 }
 
@@ -671,44 +595,14 @@ onMounted(fetchTemplates);
   color: var(--comment-text-color);
 }
 
-.settings-section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-width: 0;
-}
-
 .profile-block {
   width: 100%;
   box-sizing: border-box;
-  padding: 14px 16px 12px;
-  border-radius: var(--radius-lg, var(--item-card-radios));
-  background: var(--card-color);
-  border: 1px solid var(--divider-color);
-
-  & .profile-top {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  & .runtime-pill {
-    margin: 0;
-    padding: 3px 10px;
-    flex-shrink: 0;
-    font-size: 12px;
-    font-weight: 500;
-    user-select: none;
-    border-radius: 9999px;
-    background: color-mix(in srgb, var(--primary-color) 8%, transparent);
-    border: 1px solid color-mix(in srgb, var(--primary-color) 18%, transparent);
-    color: var(--primary-color);
-  }
+  padding: var(--space-4);
 
   & .info {
     width: 100%;
     margin: 0;
-    padding: 12px 0 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -749,10 +643,18 @@ onMounted(fetchTemplates);
     margin-top: 4px;
     display: flex;
     flex-direction: column;
+    gap: 4px;
     color: var(--comment-text-color);
     font-size: 12px;
     font-weight: normal;
     line-height: 1.45;
+  }
+
+  & .des-line2 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
   }
 
   & .actions {
@@ -787,98 +689,11 @@ onMounted(fetchTemplates);
   }
 }
 
-.template-card-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-
-  /* Desktop: pair the templates so six built-ins do not become a long scroll */
-  @media screen and (min-width: 900px) {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-  }
-}
-
-.template-card {
-  min-height: 48px;
-  padding: 12px 14px;
+.list-row__title-line {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  border-radius: var(--radius-lg, var(--item-card-radios));
-  background: var(--card-color);
-  border: 1px solid var(--divider-color);
-  transition: transform 140ms ease-out, border-color 160ms ease, background-color 160ms ease;
-
-  @media (hover: hover) and (pointer: fine) {
-    &:hover {
-      border-color: color-mix(in srgb, var(--primary-color) 22%, transparent);
-      background: color-mix(in srgb, var(--primary-color) 4%, var(--card-color));
-    }
-  }
-
-  &:active {
-    transform: scale(0.99);
-  }
-
-  & .template-info {
-    min-width: 0;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  & .template-header-line {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-width: 0;
-  }
-
-  & .template-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--primary-text-color);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  & .template-kind-pill {
-    flex-shrink: 0;
-    padding: 1px 8px;
-    border-radius: 9999px;
-    font-size: 11px;
-    font-weight: 500;
-    line-height: 1.4;
-
-    &.is-custom {
-      color: var(--primary-color);
-      background: color-mix(in srgb, var(--primary-color) 10%, transparent);
-      border: 1px solid color-mix(in srgb, var(--primary-color) 20%, transparent);
-    }
-
-    &.is-builtin {
-      color: var(--comment-text-color);
-      background: color-mix(in srgb, var(--comment-text-color) 8%, transparent);
-      border: 1px solid var(--divider-color);
-    }
-  }
-
-  & .template-target-pill {
-    font-size: 12px;
-    color: var(--comment-text-color);
-  }
-
-  & .template-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
-  }
+  gap: var(--space-2);
+  min-width: 0;
 }
 
 .skeleton-card {
@@ -997,9 +812,6 @@ onMounted(fetchTemplates);
 }
 
 .settings-form-card {
-  border-radius: var(--radius-lg, var(--item-card-radios));
-  background: var(--card-color);
-  border: 1px solid var(--divider-color);
   overflow: hidden;
 }
 
@@ -1095,14 +907,8 @@ onMounted(fetchTemplates);
 }
 
 @media screen and (max-width: 430px) {
-  .template-card {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .template-actions {
-    width: 100%;
-    justify-content: flex-end;
+  .profile-block .actions .app-button {
+    flex: 1;
   }
 }
 </style>

@@ -81,10 +81,14 @@ const saveTokenAndRetry = async () => {
 .admin-token-panel {
   width: 100%;
   min-height: 50vh;
+  padding: 12px 0 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  /* `safe center` keeps the mark clear of the fixed nav when the form is taller
+     than the min-height; browsers without it keep plain centering. */
   justify-content: center;
+  justify-content: safe center;
   box-sizing: border-box;
 }
 

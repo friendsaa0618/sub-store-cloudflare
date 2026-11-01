@@ -876,6 +876,8 @@ defineExpose({ exitAllEditName });
   color: var(--primary-text-color);
 
   & .list-group-item-titlesa {
+    display: flex;
+    align-items: center;
     color: var(--comment-text-color);
     border-bottom: 1px solid var(--divider-color);
     padding: 1px 0 12px 12px;
@@ -886,6 +888,17 @@ defineExpose({ exitAllEditName });
 
     & svg {
       color: var(--unimportant-icon-color);
+    }
+
+    & .icon-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--comment-text-color);
+      cursor: pointer;
     }
   }
 }

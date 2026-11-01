@@ -1,6 +1,6 @@
 <template>
   <div class="wrapper">
-    <div class="not-found-card">
+    <div class="not-found-card surface">
       <h3 v-if="isBackend">
         <p>{{ $t('notFoundPage.backendDesc') }}</p>
       </h3>
@@ -23,10 +23,11 @@ const isBackend = /\/(api|download)\/.+/.test(route.fullPath)
     min-height: 50vh;
     display: flex;
     justify-content: center;
+    justify-content: safe center;
     align-items: center;
     flex-direction: column;
     color: var(--primary-text-color);
-    padding: var(--space-4);
+    padding: var(--space-4) 0;
     box-sizing: border-box;
   }
 
@@ -34,10 +35,6 @@ const isBackend = /\/(api|download)\/.+/.test(route.fullPath)
     width: min(100%, 420px);
     padding: var(--space-5);
     text-align: center;
-    border-radius: var(--radius-lg, var(--item-card-radios));
-    background: var(--card-color);
-    border: 1px solid var(--divider-color);
-    box-shadow: var(--card-shadow, 0 2px 12px -2px rgba(0, 0, 0, 0.06));
 
     & h3 {
       margin: 0 0 var(--space-4);

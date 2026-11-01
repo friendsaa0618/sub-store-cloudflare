@@ -5,6 +5,8 @@ export type DialogOptions = {
   content?: string;
   okText?: string;
   cancelText?: string;
+  /** Confirm button tone. Destructive confirmations use "danger". */
+  okType?: "primary" | "danger";
   noCancelBtn?: boolean;
   closeOnClickOverlay?: boolean;
   onOk?: () => void | Promise<void>;

@@ -137,6 +137,13 @@ withDefaults(
   --app-button-border: var(--danger-color);
 }
 
+/* Dark themes use a light red fill, so a solid danger button needs dark text
+   (same inversion the primary button already uses). The whole selector must sit
+   inside :global() — Vue drops anything after it in a scoped block. */
+:global(html[data-theme="dark"] .app-button--danger) {
+  --app-button-color: #18181b;
+}
+
 .app-button--warning {
   --app-button-color: #fff;
   --app-button-bg: var(--warning-color, #d97706);

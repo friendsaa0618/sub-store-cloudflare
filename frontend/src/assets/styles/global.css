@@ -7,8 +7,6 @@ html {
 
 html[data-theme="dark"] {
   color-scheme: dark;
-  /* Backend logos (node.svg) are dark-on-transparent; keep a light plate. */
-  --profile-avatar-bg: #ffffff;
 }
 
 html[data-theme="light"] {

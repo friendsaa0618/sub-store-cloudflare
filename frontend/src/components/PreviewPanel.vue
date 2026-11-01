@@ -162,7 +162,7 @@
     } else {
       await copyFallback(url);
     }
-    showNotify({ title: notify });
+    showNotify({ type: "success", title: notify });
   };
   const platformList = [
     {
@@ -208,7 +208,6 @@
   .preview-list {
     display: flex;
     flex-direction: column;
-    gap: 6px;
     padding: 0;
     margin: 0;
     list-style: none;
@@ -218,21 +217,21 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 12px;
-      background: color-mix(in srgb, var(--background-color) 45%, var(--card-color));
-      border: 1px solid var(--divider-color);
-      border-radius: 12px;
-      transition: transform 140ms ease-out, border-color 160ms ease, background-color 160ms ease;
+      gap: 12px;
+      padding: 8px 6px;
+      border-radius: var(--radius-md);
+      transition: background-color 160ms ease;
+
+      & + li {
+        border-top: 1px solid var(--divider-color);
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+      }
 
       @media (hover: hover) and (pointer: fine) {
         &:hover {
-          border-color: color-mix(in srgb, var(--primary-color) 28%, transparent);
-          background: color-mix(in srgb, var(--primary-color) 5%, var(--card-color));
+          background: color-mix(in srgb, var(--primary-color) 4%, transparent);
         }
-      }
-
-      &:active {
-        transform: scale(0.99);
       }
 
       & .infos {
@@ -267,22 +266,28 @@
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          width: 34px;
-          height: 34px;
-          border-radius: 10px;
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid var(--divider-color);
+          width: 32px;
+          height: 32px;
+          border-radius: var(--radius-md);
+          background: transparent;
+          border: 1px solid transparent;
+          color: var(--comment-text-color);
           cursor: pointer;
           transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 
           &:hover {
-            background: color-mix(in srgb, var(--primary-color) 15%, transparent);
-            border-color: color-mix(in srgb, var(--primary-color) 40%, transparent);
-            transform: scale(1.05);
+            background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+            border-color: color-mix(in srgb, var(--primary-color) 22%, transparent);
+            color: var(--primary-color);
 
             & .action-icon {
               color: var(--primary-color) !important;
             }
+          }
+
+          &:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 2px var(--focus-ring-color);
           }
         }
       }

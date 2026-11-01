@@ -4,7 +4,8 @@
     <!-- Single scroll page: display + content + actions (no section tabs, no top icon) -->
     <div class="form-block-wrapper">
       <AppForm class="form" :model-value="form" ref="ruleForm">
-        <div class="editor-tab-content">
+        <div class="editor-tab-content editor-group">
+        <p class="editor-group__title">{{ $t(`editorPage.subConfig.groups.basic`) }}</p>
         <!-- name -->
         <AppFormItem
           required
@@ -119,7 +120,10 @@
           </div>
         </AppFormItem>
         </div>
-        <div class="editor-tab-content">
+        <div class="editor-tab-content editor-group">
+        <p class="editor-group__title">
+          {{ editType === 'collections' ? $t(`editorPage.subConfig.groups.collection`) : $t(`editorPage.subConfig.groups.source`) }}
+        </p>
         <template v-if="editType === 'subs'">
           <!-- source -->
           <AppFormItem
@@ -1715,21 +1719,79 @@ const handleEditGlobalClick = () => {
   margin: 0;
   box-sizing: border-box;
 
-  /* Tighter field stack in editor */
-  &:deep(.app-form-item) {
-    align-items: center;
-    padding: 10px 12px;
-    margin-bottom: 8px;
+  /* Field groups: one surface per group, rows separated by hairlines */
+  &:deep(.editor-group) {
+    background: var(--card-color);
+    border: 1px solid var(--divider-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--card-shadow);
+    margin-bottom: var(--space-3);
   }
 
-  &:deep(.app-form-item__label) {
-    min-width: 4.5em;
-    max-width: 7.5em;
-    margin-right: 8px;
+  &:deep(.editor-group .app-form-item) {
+    align-items: center;
+    padding: 12px var(--space-4);
+    margin-bottom: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    grid-template-columns: 96px minmax(0, 1fr);
+  }
+
+  &:deep(.editor-group .app-form-item + .app-form-item) {
+    border-top: 1px solid var(--divider-color);
+  }
+
+  /* Keep the focus ring inside the card */
+  &:deep(.editor-group .app-form-item:focus-within) {
+    box-shadow: inset 0 0 0 2px var(--focus-ring-color);
+  }
+
+  &:deep(.editor-group .app-form-item__label) {
+    min-width: 0;
+    max-width: none;
+    margin-right: var(--space-3);
     padding: 0;
     line-height: 1.35;
     font-size: 13px;
   }
+
+  &:deep(.editor-group .app-form-item__error) {
+    grid-column: 2;
+  }
+
+  /* Phones: label above the control — no wrapped labels, full-width inputs */
+  @media screen and (max-width: 599px) {
+    &:deep(.editor-group .app-form-item) {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 6px 0;
+      padding: 12px var(--space-3);
+    }
+
+    &:deep(.editor-group .app-form-item__label) {
+      margin-right: 0;
+    }
+
+    &:deep(.editor-group .app-form-item__error) {
+      grid-column: 1;
+    }
+
+    &:deep(.editor-group .radio-wrapper) {
+      justify-content: flex-start;
+    }
+  }
+}
+
+.editor-group__title {
+  margin: 0;
+  padding: 10px var(--space-4) 8px;
+  border-bottom: 1px solid var(--divider-color);
+  color: var(--comment-text-color);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0;
 }
 .tag-check {
   display: flex;
@@ -1749,7 +1811,7 @@ const handleEditGlobalClick = () => {
   width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: stretch;
   gap: 8px;
   min-width: 0;
 }
@@ -1758,7 +1820,7 @@ const handleEditGlobalClick = () => {
 .inline-tag-editor__suggestions {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 6px;
   width: 100%;
 }
@@ -1767,7 +1829,7 @@ const handleEditGlobalClick = () => {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 8px;
   width: 100%;
   min-width: 0;
@@ -1776,17 +1838,21 @@ const handleEditGlobalClick = () => {
 .inline-tag-editor__input {
   flex: 1 1 auto;
   min-width: 0;
-  max-width: 280px;
-  text-align: right;
-  background: transparent;
-  border: 0;
+  height: 36px;
+  padding: 0 10px;
+  text-align: left;
+  background: var(--background-color);
+  border: 1px solid var(--divider-color);
   outline: none;
   color: var(--primary-text-color);
   font-size: 14px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
 
+  &:focus,
   &:focus-visible {
     outline: none;
+    border-color: var(--primary-color);
     box-shadow: 0 0 0 2px var(--focus-ring-color);
   }
 
@@ -1797,13 +1863,13 @@ const handleEditGlobalClick = () => {
 
 .inline-tag-editor__confirm {
   flex: 0 0 auto;
-  height: 28px;
-  padding: 0 12px;
+  height: 36px;
+  padding: 0 14px;
   border: 1px solid var(--divider-color);
-  border-radius: 9999px;
+  border-radius: var(--radius-md);
   background: var(--card-color, var(--background-color));
   color: var(--primary-color);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: transform 140ms ease-out, background-color 160ms ease, opacity 160ms ease;

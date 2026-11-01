@@ -259,7 +259,7 @@ export const useSubsStore = defineStore('subsStore', {
         if (data.status === 'success') {
           await this.fetchSubsData();
           isShowNotify && showNotify({
-            type: 'danger',
+            type: 'success',
             title: t('subPage.deleteItem.succeedNotify'),
           });
           return true;

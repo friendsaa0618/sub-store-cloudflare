@@ -5,6 +5,7 @@ import loon from '@/assets/icons/loon.png';
 import stash from '@/assets/icons/stash.png';
 import egern from '@/assets/icons/egern.png';
 import node from '@/assets/icons/node.svg?url';
+import logo from '@/assets/icons/logo.png';
 
 import { useGlobalStore } from '@/store/global';
 import { storeToRefs } from 'pinia';
@@ -30,8 +31,11 @@ export const useBackend = () => {
       case 'Stash':
         return stash;
       case 'Node':
-      case 'Cloudflare':
         return node;
+      // This app runs on Workers, not Node: show the Sub-Store mark instead of
+      // the Node.js logo in the profile card.
+      case 'Cloudflare':
+        return logo;
       default:
         return '';
     }

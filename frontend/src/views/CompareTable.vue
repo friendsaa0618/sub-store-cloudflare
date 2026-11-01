@@ -3,10 +3,23 @@
     <div class="compare-page-wrapper">
       <header class="compare-page-header preview-popup-header">
         <div class="btn-groups preview-leading">
-          <button type="button" class="btn close" @click="clickClose">
+          <button
+            type="button"
+            class="btn close"
+            :aria-label="$t('specificWord.close')"
+            :title="$t('specificWord.close')"
+            @click="clickClose"
+          >
             <font-awesome-icon icon="fa-solid fa-xmark" />
           </button>
-          <button v-if="showRefresh" type="button" class="btn refresh" @click="emit('refresh')">
+          <button
+            v-if="showRefresh"
+            type="button"
+            class="btn refresh"
+            :aria-label="$t('subPage.actions.refresh')"
+            :title="$t('subPage.actions.refresh')"
+            @click="emit('refresh')"
+          >
             <font-awesome-icon icon="fa-solid fa-arrows-rotate" />
           </button>
         </div>
