@@ -1,0 +1,67 @@
+#!/opt/local/bin/bash
+# 推送前检查：git 实际会使用的凭据身份，是否与该仓库声明的账号一致。
+#
+# 判定顺序：
+#   1. 仓库级 account.login（git config --local account.login <name>）存在时，必须与凭据身份一致
+#   2. 否则若远端属主是个人账号（非组织），凭据身份必须等于该属主
+#   3. 组织仓库（如 org/repo）不校验，因为个人账号推组织仓库是正常场景
+#
+# 兼容 macOS 自带的 bash 3.2（不使用惰性量词等 PCRE 语法）。
+# 绕过：git push --no-verify
+set -uo pipefail
+
+remote_name="${1:-origin}"
+url="$(git remote get-url --push "$remote_name" 2>/dev/null)"
+if [ -z "$url" ]; then
+  echo "pre-push: 取不到 remote '$remote_name' 的地址" >&2
+  exit 1
+fi
+
+# 解析 host / owner，兼容 https://[user@]host/owner/repo[.git] 与 git@host:owner/repo[.git]
+url="${url%.git}"
+url="${url%/}"
+if [ "${url#*://}" != "$url" ]; then
+  rest="${url#*://}"
+  rest="${rest#*@}"
+  host="${rest%%/*}"
+  path="${rest#*/}"
+else
+  rest="${url#*@}"
+  host="${rest%%:*}"
+  path="${rest#*:}"
+fi
+owner="${path%%/*}"
+
+if [ -z "$host" ] || [ -z "$owner" ] || [ "$owner" = "$path" ]; then
+  echo "pre-push: 无法解析 remote 地址: $url" >&2
+  exit 1
+fi
+
+# git 真正会用来认证的账号（走 credential helper，与 gh 的 active account 无关）
+cred="$(printf 'protocol=https\nhost=%s\n\n' "$host" | GIT_TERMINAL_PROMPT=0 git credential fill 2>/dev/null)"
+push_user="$(printf '%s\n' "$cred" | sed -n 's/^username=//p' | head -1)"
+
+if [ -z "$push_user" ]; then
+  echo "pre-push: 拒绝推送 —— 拿不到 $host 的凭据（credential helper 未配置？）" >&2
+  exit 1
+fi
+
+expected="$(git config --local --get account.login || true)"
+
+if [ -n "$expected" ]; then
+  if [ "$push_user" != "$expected" ]; then
+    echo "pre-push: 拒绝推送 —— 本仓库要求以 $expected 推送，但凭据身份是 $push_user" >&2
+    exit 1
+  fi
+  exit 0
+fi
+
+# 未声明 account.login 时，只在远端属主是个人账号的情况下比对
+owner_type="$(gh api "users/$owner" --jq .type 2>/dev/null || true)"
+if [ "$owner_type" = "User" ] && [ "$push_user" != "$owner" ]; then
+  echo "pre-push: 拒绝推送 —— 仓库属主是 $owner，但凭据身份是 $push_user" >&2
+  echo "          确认无误可执行: git config --local account.login $push_user" >&2
+  exit 1
+fi
+
+exit 0

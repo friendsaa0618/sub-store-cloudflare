@@ -1,0 +1,21 @@
+#!/opt/local/bin/bash
+# 提交前检查：本仓库声明的提交邮箱（git config --local account.email）与实际 user.email 是否一致。
+#
+# 只在该仓库设置了 account.email 时生效，避免影响其它仓库。
+# 绕过：git commit --no-verify
+set -uo pipefail
+
+expected="$(git config --local --get account.email || true)"
+[[ -z "$expected" ]] && exit 0
+
+actual="$(git config user.email || true)"
+name="$(git config user.name || true)"
+
+if [[ "$actual" != "$expected" ]]; then
+  echo "pre-commit: 拒绝提交 —— 本仓库要求 $expected，当前 user.email 是 ${actual:-<未设置>}" >&2
+  echo "            修正: git config --local user.email $expected" >&2
+  exit 1
+fi
+
+echo "pre-commit: 提交身份 $name <$actual> ✓" >&2
+exit 0
