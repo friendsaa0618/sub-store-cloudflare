@@ -108,6 +108,12 @@ export default {
       never: "永不过期",
       enabled: "已启用",
       disabled: "已停用",
+      expired: "已过期",
+      expiresAt: "到期",
+      created: "链接已创建",
+      createdHint: "只在这里显示一次，请立即复制。",
+      copyLink: "复制链接",
+      dismiss: "关闭",
       meta: "{target} · {expires}"
     },
     recycle: {
@@ -182,6 +188,9 @@ export default {
       tokenLabel: "管理 Token",
       tokenPlaceholder: "输入 SUB_STORE_ADMIN_TOKEN",
       saveAndRetry: "保存并重试",
+      invalidToken: "Token 无效，或接口仍不可达。",
+      showToken: "显示 Token",
+      hideToken: "隐藏 Token",
       doc: "查看部署文档",
       followOfficialChannel: "查看项目文档后再排查部署状态",
       about: "查看项目文档"

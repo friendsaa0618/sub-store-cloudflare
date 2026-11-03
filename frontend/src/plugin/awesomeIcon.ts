@@ -19,6 +19,7 @@ import {
   faCloudArrowDown,
   faCloudArrowUp,
   faEye,
+  faEyeSlash,
   faEllipsis,
   faFloppyDisk,
   faGrip,
@@ -64,6 +65,7 @@ library.add(faArrowUpRightFromSquare);
 library.add(faTrashCan);
 library.add(faClone);
 library.add(faEye);
+library.add(faEyeSlash);
 library.add(faGrip);
 library.add(faCircleQuestion);
 library.add(faFloppyDisk);

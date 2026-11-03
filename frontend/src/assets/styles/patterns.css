@@ -220,6 +220,12 @@
   &.is-muted {
     background: color-mix(in srgb, var(--comment-text-color) 6%, transparent);
   }
+
+  &.is-danger {
+    color: var(--danger-color);
+    border-color: color-mix(in srgb, var(--danger-color) 22%, transparent);
+    background: color-mix(in srgb, var(--danger-color) 8%, transparent);
+  }
 }
 
 /* Quiet empty state inside a section */

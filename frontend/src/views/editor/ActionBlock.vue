@@ -873,6 +873,16 @@ defineExpose({ exitAllEditName });
     color: var(--comment-text-color);
   }
 }
+/* Phones: the icon-only actions crowd the row until the action name is
+   unreadable. Rename works by tapping the field, so drop the pencil, the help
+   and the clone buttons here and keep the switches. */
+@media screen and (max-width: 767px) {
+  .list-group-item .list-group-item-title .right > .icon-button,
+  .list-group-item .list-group-item-title .right .icon-button__input {
+    display: none;
+  }
+}
+
 .list-group-item .list-group-item-title .right .icon-button__input {
   padding-right: 20px;
 }

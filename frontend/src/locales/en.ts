@@ -108,6 +108,12 @@ export default {
       never: "Never",
       enabled: "Enabled",
       disabled: "Disabled",
+      expired: "Expired",
+      expiresAt: "Expires",
+      created: "Link created",
+      createdHint: "Shown once here — copy it now.",
+      copyLink: "Copy link",
+      dismiss: "Dismiss",
       meta: "{target} · {expires}"
     },
     recycle: {
@@ -182,6 +188,9 @@ export default {
       tokenLabel: "Admin token",
       tokenPlaceholder: "Enter SUB_STORE_ADMIN_TOKEN",
       saveAndRetry: "Save and retry",
+      invalidToken: "That token was rejected, or the API is still unreachable.",
+      showToken: "Show token",
+      hideToken: "Hide token",
       doc: "Open deployment docs",
       followOfficialChannel: "Check the project docs before debugging the deployment.",
       about: "Open project docs"

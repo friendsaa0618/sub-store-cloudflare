@@ -113,15 +113,29 @@
         </AppButton>
       </div>
 
-      <button
-        v-if="createdShareUrl"
-        type="button"
-        class="created-link"
-        @click="copyText(createdShareUrl)"
-      >
-        <font-awesome-icon icon="fa-solid fa-link" class="btn-icon" aria-hidden="true" />
-        {{ createdShareUrl }}
-      </button>
+      <div v-if="createdShareUrl" class="created-share" role="status">
+        <div class="created-share__head">
+          <font-awesome-icon icon="fa-solid fa-circle-check" aria-hidden="true" />
+          <span>{{ t('toolsPage.shares.created') }}</span>
+          <button
+            type="button"
+            class="created-share__close"
+            :aria-label="t('toolsPage.shares.dismiss')"
+            :title="t('toolsPage.shares.dismiss')"
+            @click="createdShareUrl = ''"
+          >
+            <font-awesome-icon icon="fa-solid fa-xmark" aria-hidden="true" />
+          </button>
+        </div>
+        <code class="created-share__url">{{ createdShareUrl }}</code>
+        <div class="created-share__foot">
+          <span class="created-share__hint">{{ t('toolsPage.shares.createdHint') }}</span>
+          <AppButton plain size="mini" @click="copyText(createdShareUrl)">
+            <font-awesome-icon icon="fa-solid fa-copy" class="btn-icon" aria-hidden="true" />
+            {{ t('toolsPage.shares.copyLink') }}
+          </AppButton>
+        </div>
+      </div>
 
       <div v-if="loadingShares" class="surface list-rows">
         <div class="list-row skeleton-card skeleton-pulse">
@@ -151,8 +165,8 @@
               <span>{{ shareMeta(share) }}</span>
               <span
                 class="pill"
-                :class="share.enabled ? 'is-accent' : 'is-muted'"
-              >{{ share.enabled ? t('toolsPage.shares.enabled') : t('toolsPage.shares.disabled') }}</span>
+                :class="isExpired(share) ? 'is-danger' : share.enabled ? 'is-accent' : 'is-muted'"
+              >{{ isExpired(share) ? t('toolsPage.shares.expired') : share.enabled ? t('toolsPage.shares.enabled') : t('toolsPage.shares.disabled') }}</span>
             </div>
           </div>
           <div class="list-row__actions">
@@ -259,10 +273,15 @@ const resourceTypeLabel = (type: string) => {
   return type;
 };
 
+const isExpired = (share: { expiresAt?: string | null }) => {
+  if (!share.expiresAt) return false;
+  return new Date(share.expiresAt).getTime() <= Date.now();
+};
+
 const shareMeta = (share: { target?: string; expiresAt?: string | null }) => {
   const target = share.target || t('toolsPage.shares.auto');
   const expires = share.expiresAt
-    ? formatDateTime(share.expiresAt)
+    ? `${t('toolsPage.shares.expiresAt')} ${formatDateTime(share.expiresAt)}`
     : t('toolsPage.shares.never');
   return t('toolsPage.shares.meta', { target, expires });
 };
@@ -510,37 +529,67 @@ select.field-control {
   margin-top: var(--space-1);
 }
 
-.created-link {
+.created-share {
   margin-bottom: var(--space-3);
   padding: var(--space-3) 14px;
-  border-radius: var(--radius-md);
-  background: var(--background-color);
-  border: 1px dashed var(--divider-color);
-  overflow-wrap: anywhere;
-  cursor: copy;
-  font-size: var(--text-sm);
-  color: var(--primary-color);
-  font-family: var(--font-mono);
-  display: flex;
-  align-items: center;
+  display: grid;
   gap: var(--space-2);
-  width: 100%;
-  text-align: left;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in srgb, var(--succeed-color) 35%, var(--divider-color));
+  background: color-mix(in srgb, var(--succeed-color) 7%, var(--card-color));
 
-  @media (hover: hover) and (pointer: fine) {
+  & .created-share__head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--succeed-color);
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+
+  & .created-share__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    margin-left: auto;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--comment-text-color);
+    font-size: 12px;
+    cursor: pointer;
+
     &:hover {
-      background: color-mix(in srgb, var(--primary-color) 8%, transparent);
-      border-color: var(--primary-color);
+      color: var(--primary-text-color);
+    }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--focus-ring-color);
     }
   }
 
-  &:focus {
-    outline: none;
+  & .created-share__url {
+    color: var(--primary-text-color);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    line-height: 1.5;
+    word-break: break-all;
   }
 
-  &:focus-visible {
-    box-shadow: 0 0 0 2px var(--focus-ring-color);
+  & .created-share__foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+  }
+
+  & .created-share__hint {
+    color: var(--comment-text-color);
+    font-size: var(--text-xs);
   }
 }
 

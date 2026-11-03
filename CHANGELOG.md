@@ -12,6 +12,9 @@ This project follows semantic versioning where practical.
 
 ### Changed
 
+- The admin-token field has a show/hide toggle: an eye button inside the field switches it between `password` and `text` (`aria-pressed`, `显示 Token` / `隐藏 Token`), so a pasted token can be checked before submitting.
+- The admin-token gate is a centered 460px card instead of a form floating on the page background. It also carries the fixed nav's height itself (routed pages get that offset from `AppLayout`), so the mark no longer sits under the nav and the card centers in the space below it; on short viewports it starts below the nav and the page scrolls.
+- The link a scoped share returns is a result card now instead of a clickable URL blob: a success-tinted panel with `链接已创建`, the URL in the mono face, a `复制链接` button, a dismiss button and the `只在这里显示一次，请立即复制。` hint. The block is announced with `role="status"`, and the URL breaks evenly instead of leaving a short first line.
 - The editor's `常用配置` palette and the options it configures now share one card instead of chips floating on the page above separate bordered rows. The chips are 32px with the 13px text size, enabled ones are a filled primary pill (instead of an outline that read lighter than the unselected gray), and they expose `aria-pressed` plus hover and focus states.
 - The node-action picker in the editor is an even grid of 56px tiles instead of growing flex pills: one long script name used to stretch its whole row, so short tiles sat in a tall empty block and the longest labels wrapped to five lines. Script-backed actions show the script name with the action kind underneath, the paste row spans the grid, and phones get two tiles per row.
 - The UI uses the platform faces instead of a bundled webfont: `--font-sans` is the `system-ui` stack (SF Pro on macOS, Segoe UI on Windows) and `--font-mono` is the `ui-monospace` stack (SF Mono, JetBrains Mono, Menlo, Sarasa Mono SC), so Latin and CJK text come from the same family and the code editor matches the rest of the app. The bundled Roboto and JetBrains Mono files (six faces, ~100 KB) are gone, along with the `/fonts/*` cache rule, the Inter-only `cv02`–`cv11` feature settings, and the forced `-webkit-font-smoothing: antialiased`, so text renders with the platform's own weight.
@@ -33,6 +36,9 @@ This project follows semantic versioning where practical.
 
 ### Fixed
 
+- The admin-token gate now says why it is still there: a stored token plus a failed boot renders `Token 无效，或接口仍不可达。` under the field (`role="alert"`), instead of leaving the user with an unchanged form after a rejected token. The verdict is derived from the store, so it survives the panel unmounting during a retry.
+- A scoped share whose expiry has passed is labelled `已过期` (danger pill) instead of `已启用`, and the row's date is prefixed with `到期`.
+- On phones the editor's action row kept all seven controls (rename, help, clone, both switches, delete, drag), which squeezed the action name down to `节点…`. Below 768px the rename, help and clone buttons are hidden — renaming works by tapping the field — so the name stays readable.
 - A subscription card whose usage refresh failed without an error type printed `⚠️ undefined`; the line now falls back to the error message and then to the no-flow-info copy.
 - The Tools page's empty rows put their icon flush against the label; the icon and text now share a centered flex row with an 8px gap.
 - The subscription editor's local-source row no longer collapses into the label column: the editor card's `96px minmax(0, 1fr)` grid overrode `AppFormItem`'s label-less variant, so the node editor and its toolbar were squeezed to 96px and every button wrapped onto its own line. The row spans the card again, the editor and the validation summary sit inside the card padding instead of a `-15px` bleed, and a failed validation reads 「校验失败 / 未解析到有效节点」 instead of the same sentence twice.

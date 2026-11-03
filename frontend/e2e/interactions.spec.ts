@@ -63,6 +63,20 @@ test("code editor toolbar stays on one row at 320px", async ({ page }) => {
   expect(rows).toHaveLength(1);
 });
 
+test("action row keeps its name on phones", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await prepareVisualPage(page);
+  await installVisualMocks(page, "populated");
+  await page.goto("/edit/subs/UNTITLED", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".page-wrapper").first()).toBeVisible();
+  await page.locator(".action-tile").nth(1).click();
+  await expect(page.locator(".list-group-item")).toBeVisible();
+
+  // Seven controls used to squeeze the action name down to "节点...".
+  const nameBox = await page.locator(".list-group-item .input-wrapper").first().boundingBox();
+  expect(nameBox!.width).toBeGreaterThan(120);
+});
+
 test("card name survives a long tag run", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await prepareVisualPage(page);
