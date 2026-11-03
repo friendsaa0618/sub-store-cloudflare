@@ -14,6 +14,8 @@
   --space-5: 24px;
   --space-6: 32px;
   --safe-area-side: 16px;
+  /* Card inner gutter: 16px, 12px on phones (see the media query below) */
+  --card-gutter: var(--space-4);
 
   --text-xs: 12px;
   --text-sm: 13px;
@@ -39,4 +41,11 @@
   /* Card elevation defaults (overwritten by light/dark theme maps) */
   --card-shadow: 0 2px 12px -2px rgba(15, 23, 42, 0.06);
   --card-shadow-hover: 0 8px 24px -4px rgba(15, 23, 42, 0.1);
+}
+
+/* Phones: cards tighten their inner gutter to match the 14px page padding */
+@media screen and (max-width: 767px) {
+  :root {
+    --card-gutter: var(--space-3);
+  }
 }

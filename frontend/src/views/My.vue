@@ -598,7 +598,7 @@ onMounted(fetchTemplates);
 .profile-block {
   width: 100%;
   box-sizing: border-box;
-  padding: var(--space-4);
+  padding: var(--card-gutter);
 
   & .info {
     width: 100%;

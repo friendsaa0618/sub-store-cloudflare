@@ -12,6 +12,7 @@ This project follows semantic versioning where practical.
 
 ### Changed
 
+- Card padding comes from one token, `--card-gutter` (16px, 12px below 768px), so every page agrees on the phone gutter: settings and the editor were 16px while the subscription list and Tools were 12px. The token feeds `.surface--pad`, the profile card, the token gate, the editor field rows and palettes, and the node-action cards.
 - The gate's secondary actions (retry, deployment docs) share the form column's left edge instead of centering under it.
 - The admin-token field has a show/hide toggle: an eye button inside the field switches it between `password` and `text` (`aria-pressed`, `显示 Token` / `隐藏 Token`), so a pasted token can be checked before submitting.
 - The admin-token gate is a centered 460px card instead of a form floating on the page background. It also carries the fixed nav's height itself (routed pages get that offset from `AppLayout`), so the mark no longer sits under the nav and the card centers in the space below it; on short viewports it starts below the nav and the page scrolls.

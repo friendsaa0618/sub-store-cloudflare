@@ -643,8 +643,8 @@ defineExpose({ exitAllEditName });
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  /* Matches the 16px gutter of the editor's cards */
-  padding: 10px var(--space-4);
+  /* Matches the gutter of the editor's cards */
+  padding: 10px var(--card-gutter);
   margin-bottom: var(--space-3);
   border: 1px solid var(--divider-color);
   border-radius: var(--radius-lg);
@@ -892,9 +892,9 @@ defineExpose({ exitAllEditName });
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  /* Same 16px gutter as the editor's other cards, so the header, the tiles and
-     the fields above share one left edge */
-  padding: 10px var(--space-4);
+  /* Same gutter as the editor's other cards, so the header, the tiles and the
+     fields above share one left edge */
+  padding: 10px var(--card-gutter);
   margin-bottom: var(--space-3);
   border: 1px solid var(--divider-color);
   border-radius: var(--radius-lg);

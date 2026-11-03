@@ -284,7 +284,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    padding: 10px var(--space-4);
+    padding: 10px var(--card-gutter);
   }
 
   .quick-option-chip {

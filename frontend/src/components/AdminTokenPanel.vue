@@ -128,7 +128,7 @@ const saveTokenAndRetry = async () => {
 }
 
 .admin-token-card {
-  padding: var(--space-5) var(--space-4) var(--space-4);
+  padding: var(--space-5) var(--card-gutter) var(--space-4);
   border: 1px solid var(--divider-color);
   border-radius: var(--radius-lg);
   background: var(--card-color);

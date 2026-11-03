@@ -1730,7 +1730,7 @@ const handleEditGlobalClick = () => {
 
   &:deep(.editor-group .app-form-item) {
     align-items: center;
-    padding: 12px var(--space-4);
+    padding: 12px var(--card-gutter);
     margin-bottom: 0;
     border: 0;
     border-radius: 0;
