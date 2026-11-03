@@ -15,8 +15,8 @@ const mql = window.matchMedia('(prefers-color-scheme: dark)');
  *
  * --item-card-radios stays as a legacy alias for card radius (= radius-lg).
  * Font stacks: --font-sans for UI; --font-mono only for data/URL/code.
- * Geist is used when installed locally; bundled My Roboto / system faces
- * cover every other case.
+ * Both are platform faces, so nothing is downloaded and CJK and Latin text
+ * come from the same family.
  */
 export const designTokens: Record<string, string> = {
   // Radius
@@ -43,11 +43,11 @@ export const designTokens: Record<string, string> = {
   'text-lg': '20px',
   'text-xl': '24px',
 
-  // Fonts
+  // Fonts: the platform UI face for text, the platform mono face for data.
   'font-sans':
-    '"Geist", "My Roboto", "Roboto", "Noto Sans", "PingFang SC", "Source Han Sans SC", "Source Han Sans CN", "Microsoft YaHei", "ST Heiti", SimHei, system-ui, -apple-system, "Segoe UI", Arial, sans-serif',
+    'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif',
   'font-mono':
-    '"JB", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+    'ui-monospace, "SF Mono", SFMono-Regular, "JetBrains Mono", Menlo, Consolas, "Sarasa Mono SC", "Noto Sans Mono CJK SC", "NSimSun", monospace',
 
   // Overlay language (blur + z ladder used by drawers/dialogs/toasts)
   'overlay-blur': '16px',

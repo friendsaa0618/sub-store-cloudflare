@@ -47,8 +47,13 @@
           >
             <span class="status-pulse-dot" :class="statusDotClass"></span>
             <span class="sub-item-name">{{ displayName }}</span>
-            <span v-for="i in tag" :key="i" class="tag">
-              <AppTag>{{ i }}</AppTag>
+            <span v-if="visibleTags.length" class="sub-item-tags">
+              <span v-for="i in visibleTags" :key="i" class="tag">
+                <AppTag>{{ i }}</AppTag>
+              </span>
+              <span v-if="hiddenTagCount" class="tag">
+                <AppTag>+{{ hiddenTagCount }}</AppTag>
+              </span>
             </span>
           </h3>
           <h3
@@ -59,8 +64,13 @@
           >
             <span class="status-pulse-dot" :class="statusDotClass"></span>
             <span class="sub-item-name">{{ displayName }}</span>
-            <span v-for="i in tag" :key="i" class="tag">
-              <AppTag>{{ i }}</AppTag>
+            <span v-if="visibleTags.length" class="sub-item-tags">
+              <span v-for="i in visibleTags" :key="i" class="tag">
+                <AppTag>{{ i }}</AppTag>
+              </span>
+              <span v-if="hiddenTagCount" class="tag">
+                <AppTag>+{{ hiddenTagCount }}</AppTag>
+              </span>
             </span>
           </h3>
 
@@ -455,7 +465,13 @@ const displayName =
   props[props.type].displayName || props[props.type]["display-name"] || props[props.type].name;
 
 const name = props[props.type].name;
-const tag = props[props.type].tag;
+/** Tag pills on a card: the first few, then a counter. */
+const tags = computed<string[]>(() => {
+  const value = props[props.type].tag;
+  return Array.isArray(value) ? value.filter(Boolean) : [];
+});
+const visibleTags = computed(() => tags.value.slice(0, 2));
+const hiddenTagCount = computed(() => tags.value.length - visibleTags.value.length);
 const remark = props[props.type].remark;
 const remarkText = computed(() => {
   if (remark) {
@@ -674,9 +690,17 @@ const flow = computed(() => {
           secondLine: ``,
         };
       } else {
+        // A failed refresh can arrive without an error type (network error,
+        // 401); never print `undefined` in the card.
+        const reason = target.error?.type || target.error?.code || "";
+        const message = target.error?.message || "";
         return {
-          firstLine: `⚠️ ${target.error?.type}`,
-          secondLine: `${target.error?.message}`,
+          firstLine: reason
+            ? `⚠️ ${reason}`
+            : message
+              ? `⚠️ ${message}`
+              : t("subPage.subItem.noFlowInfo"),
+          secondLine: reason ? message : ``,
         };
       }
     }
@@ -1046,16 +1070,28 @@ const refreshSubFlowsIfNeeded = async () => {
         /* Phones: tag pills squeeze the name into an early ellipsis, so keep
            them on desktop and let the card stay a clean two-line row. */
         @media screen and (max-width: 767px) {
-          & .tag {
+          & .sub-item-tags {
             display: none;
           }
         }
       }
       & .sub-item-name {
-        min-width: 0;
+        /* The name must stay readable; the tag run clips first. */
+        flex: 0 1 auto;
+        min-width: 3.5em;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+      }
+      & .sub-item-tags {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        flex: 0 1 auto;
+        min-width: 0;
+        /* The name leads; a long tag run clips instead of crowding it out. */
+        max-width: 50%;
+        overflow: hidden;
       }
       & .app-url {
         font-size: 14px !important;
@@ -1064,7 +1100,7 @@ const refreshSubFlowsIfNeeded = async () => {
       & .tag {
         display: inline-flex;
         flex: 0 0 auto;
-        margin: 0 1px;
+        margin: 0;
 
         &:deep(.app-tag) {
           padding: 2px 3px;

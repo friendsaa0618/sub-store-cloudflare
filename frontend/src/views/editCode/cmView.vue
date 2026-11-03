@@ -371,6 +371,10 @@ const pasteNav = async () => {
 
 .cmviewRef {
   border-radius: 16px;
+
+  & .cm-scroller {
+    font-family: var(--font-mono);
+  }
 }
 
 .ͼ1 .cm-button {
@@ -381,6 +385,7 @@ const pasteNav = async () => {
 
 .cm-img-button {
   display: flex;
+  align-items: flex-start;
   padding-top: 9px;
   z-index: 10;
   height: 33px;
@@ -398,6 +403,20 @@ const pasteNav = async () => {
   }
 }
 
+/* One row at every width: the buttons shrink before they wrap, which used to
+   push the last icon onto a second line on a 320px screen. */
+.cm-img-button > div {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.cm-img-button > button {
+  flex: 0 0 auto;
+}
+
 .cm-img-button button {
   height: 16px;
   background-repeat: no-repeat;
@@ -405,7 +424,9 @@ const pasteNav = async () => {
   background: none;
   padding: 0;
   margin: 0;
+  flex: 0 1 auto;
   width: 33px;
+  min-width: 24px;
   transition: transform 0.2s;
 }
 .cimg-button {
@@ -513,7 +534,7 @@ input[type="checkbox"]:checked {
   border-top: 1px solid var(--divider-color);
   border-bottom-left-radius: 12px;
   border-bottom-right-radius: 12px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-family: var(--font-mono);
 
   & .status-item {
     display: inline-flex;

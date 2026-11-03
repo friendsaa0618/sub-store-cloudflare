@@ -12,6 +12,8 @@ This project follows semantic versioning where practical.
 
 ### Changed
 
+- The UI uses the platform faces instead of a bundled webfont: `--font-sans` is the `system-ui` stack (SF Pro on macOS, Segoe UI on Windows) and `--font-mono` is the `ui-monospace` stack (SF Mono, JetBrains Mono, Menlo, Sarasa Mono SC), so Latin and CJK text come from the same family and the code editor matches the rest of the app. The bundled Roboto and JetBrains Mono files (six faces, ~100 KB) are gone, along with the `/fonts/*` cache rule, the Inter-only `cv02`–`cv11` feature settings, and the forced `-webkit-font-smoothing: antialiased`, so text renders with the platform's own weight.
+- A subscription card shows at most two tag pills plus a `+N` counter, so the name keeps its space and a long tag run clips instead of pushing the name out of the card.
 - The source/collection editor's tag row reads as a form field again: the input, its confirm button, and the tag chips line up on the left under the label, instead of a transparent right-aligned box whose placeholder carried the instructions. The placeholder is shorter so it no longer clips on phones, and the Tools result group gets a little air after the action row.
 - Destructive confirmations (delete source/collection, delete template, delete share, purge a recycle-bin entry) now use a red confirm button; `showDialog` takes an optional `okType` for this.
 - Toasts use the app surfaces instead of the toast library's colored theme: a card-colored panel with a 1px divider, 12px radius, the status icon and a 3px progress line in the type's color, and a surface that follows `html[data-theme]` in dark mode. The container clears the notch (`env(safe-area-inset-top)`), stays inset and rounded on phones, and the refresh flow now shows one persistent loading toast that is replaced by the result instead of leaving "refreshing" next to "refreshed".
@@ -29,7 +31,10 @@ This project follows semantic versioning where practical.
 
 ### Fixed
 
+- A subscription card whose usage refresh failed without an error type printed `⚠️ undefined`; the line now falls back to the error message and then to the no-flow-info copy.
+- The Tools page's empty rows put their icon flush against the label; the icon and text now share a centered flex row with an 8px gap.
 - The subscription editor's local-source row no longer collapses into the label column: the editor card's `96px minmax(0, 1fr)` grid overrode `AppFormItem`'s label-less variant, so the node editor and its toolbar were squeezed to 96px and every button wrapped onto its own line. The row spans the card again, the editor and the validation summary sit inside the card padding instead of a `-15px` bleed, and a failed validation reads 「校验失败 / 未解析到有效节点」 instead of the same sentence twice.
+- The code editor's action strip no longer wraps its last icon onto a second row on a 320px screen: the buttons sit in a non-wrapping flex row and shrink to 24px before the row overflows.
 - The code editor's status bar no longer shows `NaN MB` for an empty or not-yet-loaded document; `formatLength` rejects non-finite lengths.
 - The profile card shows the Sub-Store mark on a Cloudflare deployment instead of the Node.js logo, which the backend icon map reused for `Cloudflare`.
 - The admin-token gate no longer slides its mark under the fixed nav on short viewports: the panel centers with `justify-content: safe center` plus padding, so overflowing content starts below the nav instead of above it.

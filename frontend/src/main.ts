@@ -1,4 +1,3 @@
-import '@/assets/styles/fonts.css';
 import '@/assets/styles/global.css';
 import '@/assets/styles/patterns.css';
 import '@/assets/styles/overrides.css';
