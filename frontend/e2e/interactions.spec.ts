@@ -31,3 +31,18 @@ test("settings request form expands", async ({ page }) => {
   await expect(page.locator(".settings-form-grid")).toHaveCount(0);
 });
 
+test("local source editor fills the card", async ({ page }) => {
+  await open(page, "/edit/subs/UNTITLED", ".page-wrapper");
+  // Second radio in the source switch is the local source.
+  await page.locator(".radio-wrapper .app-radio").nth(1).click();
+  const editor = page.locator(".cmviewRef").first();
+  await expect(editor).toBeVisible();
+
+  const editorBox = await editor.boundingBox();
+  const toolbarBox = await page.locator(".local-content-toolbar").boundingBox();
+  // The editor row has no label, so it owns the card width; a label column
+  // would squeeze it to ~96px and wrap every toolbar button onto its own line.
+  expect(editorBox!.width).toBeGreaterThan(700);
+  expect(toolbarBox!.height).toBeLessThan(40);
+});
+

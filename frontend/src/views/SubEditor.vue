@@ -235,7 +235,7 @@
                 </AppTag>
               </div>
             </div>
-            <div style="margin-left: -15px; margin-right: -15px;max-height: 60vh;overflow: auto;">
+            <div class="local-content-editor">
               <cmView :isReadOnly="false" id="SubEditer"/>
             </div>
           </AppFormItem>
@@ -1739,6 +1739,11 @@ const handleEditGlobalClick = () => {
     grid-template-columns: 96px minmax(0, 1fr);
   }
 
+  /* Label-less rows (the node editor) own the full card width */
+  &:deep(.editor-group .app-form-item.has-no-label) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   &:deep(.editor-group .app-form-item + .app-form-item) {
     border-top: 1px solid var(--divider-color);
   }
@@ -1975,6 +1980,11 @@ const handleEditGlobalClick = () => {
     margin-bottom: 8px;
   }
 
+  & .local-content-editor {
+    max-height: 60vh;
+    overflow: auto;
+  }
+
   & .toolbar-btn {
     display: inline-flex;
     align-items: center;
@@ -2014,7 +2024,7 @@ const handleEditGlobalClick = () => {
   }
 
   & .local-preview-summary {
-    margin: 10px -15px 12px;
+    margin: 10px 0 12px;
     padding: 10px 12px;
     border-radius: var(--item-card-radios);
     border: 1px solid var(--divider-color);

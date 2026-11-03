@@ -401,7 +401,7 @@ export default {
             empty: "Paste local node content first",
             success: "Parsed {count} node(s)",
             detail: "Protocol mix: {types}",
-            failed: "No valid nodes parsed",
+            failed: "Validation failed",
             noNodes: "No valid nodes parsed",
             importFailed: "File import failed",
             compareLoading: "Generating node comparison…",

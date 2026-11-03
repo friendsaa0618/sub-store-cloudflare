@@ -29,6 +29,8 @@ This project follows semantic versioning where practical.
 
 ### Fixed
 
+- The subscription editor's local-source row no longer collapses into the label column: the editor card's `96px minmax(0, 1fr)` grid overrode `AppFormItem`'s label-less variant, so the node editor and its toolbar were squeezed to 96px and every button wrapped onto its own line. The row spans the card again, the editor and the validation summary sit inside the card padding instead of a `-15px` bleed, and a failed validation reads 「校验失败 / 未解析到有效节点」 instead of the same sentence twice.
+- The code editor's status bar no longer shows `NaN MB` for an empty or not-yet-loaded document; `formatLength` rejects non-finite lengths.
 - The profile card shows the Sub-Store mark on a Cloudflare deployment instead of the Node.js logo, which the backend icon map reused for `Cloudflare`.
 - The admin-token gate no longer slides its mark under the fixed nav on short viewports: the panel centers with `justify-content: safe center` plus padding, so overflowing content starts below the nav instead of above it.
 - A solid danger button now uses dark text in dark themes. Those themes define `--danger-color` as a light red for text use, so white on `#F87171` was about 2.4:1.

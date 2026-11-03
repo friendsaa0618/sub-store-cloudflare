@@ -175,13 +175,16 @@ const CreateView = () => {
   });
 };
 function formatLength(length) {
-  if (length < 1024) {
-    return length === 0 ? "" : length + " bytes";
-  } else if (length < 1024 * 1024) {
-    return (length / 1024).toFixed(2) + " KB";
-  } else {
-    return (length / (1024 * 1024)).toFixed(2) + " MB";
+  if (!Number.isFinite(length) || length <= 0) {
+    return "";
   }
+  if (length < 1024) {
+    return length + " bytes";
+  }
+  if (length < 1024 * 1024) {
+    return (length / 1024).toFixed(2) + " KB";
+  }
+  return (length / (1024 * 1024)).toFixed(2) + " MB";
 }
 const getjsjson = (res) => {
   Length.value = formatLength(res?.length);

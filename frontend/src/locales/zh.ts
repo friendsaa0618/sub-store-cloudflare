@@ -401,7 +401,7 @@ export default {
             empty: "请先填入本地节点内容",
             success: "已解析 {count} 个节点",
             detail: "协议分布: {types}",
-            failed: "未解析到有效节点",
+            failed: "校验失败",
             noNodes: "未解析到有效节点",
             importFailed: "文件导入失败",
             compareLoading: "生成节点对比中…",
