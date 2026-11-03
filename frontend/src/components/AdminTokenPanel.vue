@@ -220,9 +220,10 @@ const saveTokenAndRetry = async () => {
 .load-failed-actions {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 18px;
-  margin-top: 14px;
+  /* Same left edge as the label, the field and the submit button */
+  justify-content: flex-start;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
 
   & a {
     color: var(--primary-color);

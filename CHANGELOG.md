@@ -12,6 +12,7 @@ This project follows semantic versioning where practical.
 
 ### Changed
 
+- The gate's secondary actions (retry, deployment docs) share the form column's left edge instead of centering under it.
 - The admin-token field has a show/hide toggle: an eye button inside the field switches it between `password` and `text` (`aria-pressed`, `显示 Token` / `隐藏 Token`), so a pasted token can be checked before submitting.
 - The admin-token gate is a centered 460px card instead of a form floating on the page background. It also carries the fixed nav's height itself (routed pages get that offset from `AppLayout`), so the mark no longer sits under the nav and the card centers in the space below it; on short viewports it starts below the nav and the page scrolls.
 - The link a scoped share returns is a result card now instead of a clickable URL blob: a success-tinted panel with `链接已创建`, the URL in the mono face, a `复制链接` button, a dismiss button and the `只在这里显示一次，请立即复制。` hint. The block is announced with `role="status"`, and the URL breaks evenly instead of leaving a short first line.
