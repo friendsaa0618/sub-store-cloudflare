@@ -22,6 +22,7 @@
           type="button"
           class="quick-option-chip"
           :class="{ 'quick-option-chip--active': isConfigured(option.key) }"
+          :aria-pressed="isConfigured(option.key)"
           @click="toggleQuickOption(option.key)"
         >
           {{ $t(`editorPage.subConfig.commonOptions${option.localePath}.label`) }}
@@ -256,11 +257,34 @@
     color: var(--comment-text-color);
   }
 
+  /* Palette and configured rows share one card, like the other editor groups */
+  .common-options-form {
+    background: var(--card-color);
+    border: 1px solid var(--divider-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+
+    &:deep(.app-form-item) {
+      margin: 0;
+      padding: 10px var(--space-4);
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    &:deep(.quick-option-palette + .app-form-item),
+    &:deep(.app-form-item + .app-form-item) {
+      border-top: 1px solid var(--divider-color);
+    }
+  }
+
   .quick-option-palette {
     display: flex;
     flex-wrap: wrap;
-    gap: 5px;
-    padding: 10px 12px;
+    gap: 6px;
+    padding: 10px var(--space-4);
   }
 
   .quick-option-chip {
@@ -268,23 +292,42 @@
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
-    height: 30px;
-    padding: 0 9px;
-    border: 1px solid transparent;
+    height: 32px;
+    padding: 0 11px;
+    border: 1px solid var(--divider-color);
     border-radius: 999px;
-    background: var(--divider-color);
+    background: transparent;
     color: var(--second-text-color);
     cursor: pointer;
-    font-size: 12px;
+    font-size: var(--text-sm);
     font-weight: normal;
     line-height: 18px;
     white-space: nowrap;
+    transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--focus-ring-color);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        color: var(--primary-text-color);
+        background: color-mix(in srgb, var(--divider-color) 70%, var(--primary-text-color));
+      }
+
+      &.quick-option-chip--active:hover {
+        color: var(--card-color);
+        background: color-mix(in srgb, var(--primary-color) 88%, var(--card-color));
+      }
+    }
   }
 
   .quick-option-chip--active {
     border-color: var(--primary-color);
-    background: transparent;
-    color: var(--primary-color);
+    background: var(--primary-color);
+    color: var(--card-color);
+    font-weight: 500;
   }
 
   .configured-option-item {

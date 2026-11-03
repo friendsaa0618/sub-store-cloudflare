@@ -211,11 +211,24 @@
           <font-awesome-icon icon="fa-solid fa-circle-question" aria-hidden="true" />
         </button>
       </div>
-      <div class="horizontal-button-container">
-        <button v-for="(item, index) in columns" :key="index" @click="onButtonClick(item)" class="custom-button">
-          {{ item.text }}
+      <div class="horizontal-button-container action-grid">
+        <button
+          v-for="(item, index) in columns"
+          :key="index"
+          type="button"
+          class="action-tile"
+          :title="item.text"
+          @click="onButtonClick(item)"
+        >
+          <template v-if="item.customName">
+            <span class="action-tile__name">{{ item.customName }}</span>
+            <span class="action-tile__kind">
+              {{ $t(`editorPage.subConfig.nodeActions['${item.value}'].label`) }}
+            </span>
+          </template>
+          <span v-else class="action-tile__name">{{ item.text }}</span>
         </button>
-        <button @click="paste" class="custom-button">
+        <button type="button" class="action-tile action-tile--wide" @click="paste">
           {{ $t(`editorPage.subConfig.actions.pasteAction.label`) }}
         </button>
       </div>
@@ -970,11 +983,71 @@ defineExpose({ exitAllEditName });
   cursor: pointer;
 }
 
+/* Action picker: an even grid of tiles instead of growing flex pills, so one
+   long script name does not stretch its whole row. */
+.horizontal-button-container.action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 10px;
+
+  /* Phones: two shorter tiles per row instead of one tall stack */
+  @media screen and (max-width: 599px) {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+}
+
+.action-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  min-height: 56px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: var(--radius-lg);
+  background-color: var(--divider-color);
+  color: var(--second-text-color);
+  font: inherit;
+  font-size: var(--text-base);
+  line-height: 1.3;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease;
+
+  & .action-tile__name {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  & .action-tile__kind {
+    color: var(--comment-text-color);
+    font-size: var(--text-xs);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--focus-ring-color);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      color: var(--primary-text-color);
+      background-color: color-mix(in srgb, var(--divider-color) 70%, var(--primary-text-color));
+    }
+  }
+}
+
+.action-tile--wide {
+  grid-column: 1 / -1;
+}
+
 .custom-button {
   background-color: var(--divider-color);
   color: var(--second-text-color);
   padding: 9px 15px;
-  border-radius: 18px;
+  border-radius: var(--radius-md);
   border: none;
   font-weight: normal;
   cursor: pointer;
