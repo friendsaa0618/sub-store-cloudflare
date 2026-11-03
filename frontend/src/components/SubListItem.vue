@@ -515,8 +515,10 @@ const avatarSize = computed(() => {
   return props.isDualColumn ? "40" : "48";
 });
 const itemPadding = computed(() => {
-  if (appearanceSetting.value.isSimpleMode) return "9px";
-  return props.isDualColumn ? "12px" : "16px";
+  // Stay on the 4/8/12/16 space scale: the simple card keeps the 12px gutter
+  // instead of the old off-scale 9px, so phones match the rest of the app.
+  if (appearanceSetting.value.isSimpleMode) return "var(--space-3)";
+  return props.isDualColumn ? "var(--space-3)" : "var(--space-4)";
 });
 const imageMarginTop = computed(() => {
   if (appearanceSetting.value.isSimpleMode) return "5px";
