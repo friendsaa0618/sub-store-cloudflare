@@ -34,6 +34,7 @@ This project follows semantic versioning where practical.
 - A subscription card whose usage refresh failed without an error type printed `⚠️ undefined`; the line now falls back to the error message and then to the no-flow-info copy.
 - The Tools page's empty rows put their icon flush against the label; the icon and text now share a centered flex row with an 8px gap.
 - The subscription editor's local-source row no longer collapses into the label column: the editor card's `96px minmax(0, 1fr)` grid overrode `AppFormItem`'s label-less variant, so the node editor and its toolbar were squeezed to 96px and every button wrapped onto its own line. The row spans the card again, the editor and the validation summary sit inside the card padding instead of a `-15px` bleed, and a failed validation reads 「校验失败 / 未解析到有效节点」 instead of the same sentence twice.
+- Dialogs, sheets and popovers are teleported to `<body>`, which carried no font stack, so their Latin text fell back to the browser's serif face; the UI stack now lives on `body` instead of only `#app`.
 - The code editor's action strip no longer wraps its last icon onto a second row on a 320px screen: the buttons sit in a non-wrapping flex row and shrink to 24px before the row overflows.
 - The code editor's status bar no longer shows `NaN MB` for an empty or not-yet-loaded document; `formatLength` rejects non-finite lengths.
 - The profile card shows the Sub-Store mark on a Cloudflare deployment instead of the Node.js logo, which the backend icon map reused for `Cloudflare`.

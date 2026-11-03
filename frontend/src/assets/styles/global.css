@@ -18,6 +18,8 @@ body {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   min-height: 100% !important;
+  /* Base stack for everything, including overlays teleported to <body>. */
+  font-family: var(--font-sans), sans-serif;
   background-color: var(--background-color);
   color: var(--primary-text-color);
   transition: background-color 0.2s ease, color 0.2s ease;

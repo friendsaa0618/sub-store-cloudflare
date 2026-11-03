@@ -63,7 +63,6 @@ watchEffect(() => {
 
 <style>
 #app {
-  font-family: var(--font-sans), sans-serif;
   position: absolute;
   min-height: 100%;
   width: 100%;
