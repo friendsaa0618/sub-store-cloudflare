@@ -643,8 +643,9 @@ defineExpose({ exitAllEditName });
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  padding: 10px 12px;
-  margin-bottom: 8px;
+  /* Matches the 16px gutter of the editor's cards */
+  padding: 10px var(--space-4);
+  margin-bottom: var(--space-3);
   border: 1px solid var(--divider-color);
   border-radius: var(--radius-lg);
   background: var(--card-color);
@@ -891,8 +892,10 @@ defineExpose({ exitAllEditName });
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  padding: 10px 12px;
-  margin-bottom: 8px;
+  /* Same 16px gutter as the editor's other cards, so the header, the tiles and
+     the fields above share one left edge */
+  padding: 10px var(--space-4);
+  margin-bottom: var(--space-3);
   border: 1px solid var(--divider-color);
   border-radius: var(--radius-lg);
   background: var(--card-color);
@@ -903,7 +906,7 @@ defineExpose({ exitAllEditName });
     align-items: center;
     color: var(--comment-text-color);
     border-bottom: 1px solid var(--divider-color);
-    padding: 1px 0 12px 12px;
+    padding: 1px 0 12px;
 
     & span {
       margin-right: 6px;
@@ -999,6 +1002,11 @@ defineExpose({ exitAllEditName });
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
   gap: 10px;
+  /* The card already provides the gutter */
+  margin: 0;
+  padding: 10px 0 4px;
+  border-radius: 0;
+  background: transparent;
 
   /* Phones: two shorter tiles per row instead of one tall stack */
   @media screen and (max-width: 599px) {
