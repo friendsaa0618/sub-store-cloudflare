@@ -37,6 +37,7 @@ This project follows semantic versioning where practical.
 
 ### Fixed
 
+- On phones the editor's field rows dropped to a 12px gutter while the other cards on the page kept 16px, so the labels and controls sat 4px left of the section cards around them. The 16px gutter now holds at every width (measured inset 17px on all cards at 390px and 320px).
 - The editor's node-action cards used a 12px gutter (and the tile grid added another 10px margin), so their header and tiles sat 4–8px right of every other card's content. The action cards and the added-action rows now share the same 16px gutter and 12px group spacing as the rest of the editor.
 - The admin-token gate now says why it is still there: a stored token plus a failed boot renders `Token 无效，或接口仍不可达。` under the field (`role="alert"`), instead of leaving the user with an unchanged form after a rejected token. The verdict is derived from the store, so it survives the panel unmounting during a retry.
 - A scoped share whose expiry has passed is labelled `已过期` (danger pill) instead of `已启用`, and the row's date is prefixed with `到期`.

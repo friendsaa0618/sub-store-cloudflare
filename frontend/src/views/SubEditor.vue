@@ -1766,12 +1766,12 @@ const handleEditGlobalClick = () => {
     grid-column: 2;
   }
 
-  /* Phones: label above the control — no wrapped labels, full-width inputs */
+  /* Phones: label above the control — no wrapped labels, full-width inputs.
+     The 16px gutter stays so these rows line up with the other cards. */
   @media screen and (max-width: 599px) {
     &:deep(.editor-group .app-form-item) {
       grid-template-columns: minmax(0, 1fr);
       gap: 6px 0;
-      padding: 12px var(--space-3);
     }
 
     &:deep(.editor-group .app-form-item__label) {
