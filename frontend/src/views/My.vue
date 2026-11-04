@@ -176,6 +176,7 @@
             </span>
             <AppSwitch
               :model-value="Boolean(appearanceSetting[item.key])"
+              :aria-label="t(item.label)"
               @update:model-value="(value) => setAppearance(item.key, value)"
             />
           </div>
@@ -236,6 +237,7 @@
             </span>
             <AppSwitch
               :model-value="Boolean(appearanceSetting[item.key])"
+              :aria-label="t(item.label)"
               @update:model-value="(value) => setAppearance(item.key, value)"
             />
           </div>
@@ -355,7 +357,10 @@
 
           <div class="toggle-card-row form-field-group--full">
             <span class="toggle-card-title">{{ t('myPage.request.remoteCacheStaleOnError') }}</span>
-            <AppSwitch v-model="requestForm.remoteCacheStaleOnError" />
+            <AppSwitch
+              v-model="requestForm.remoteCacheStaleOnError"
+              :aria-label="t('myPage.request.remoteCacheStaleOnError')"
+            />
           </div>
         </div>
       </div>

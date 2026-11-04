@@ -252,7 +252,11 @@
             v-if="form.source === 'remote'"
           >
             <div class="switch-wrapper">
-              <AppSwitch v-model="form.passThroughUA" @change="handlePassThroughUAChange"/>
+              <AppSwitch
+                v-model="form.passThroughUA"
+                :aria-label="$t(`editorPage.subConfig.basic.passThroughUA.label`)"
+                @change="handlePassThroughUAChange"
+              />
             </div>
           </AppFormItem>
           <AppFormItem

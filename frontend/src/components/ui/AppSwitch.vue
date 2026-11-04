@@ -6,6 +6,7 @@
       role="switch"
       :checked="modelValue"
       :disabled="disabled"
+      :aria-label="ariaLabel || undefined"
       @change="onChange"
     />
     <span class="app-switch__track" aria-hidden="true">
@@ -19,6 +20,8 @@ const props = withDefaults(
   defineProps<{
     modelValue?: boolean;
     disabled?: boolean;
+    /** Accessible name for rows whose visible label is a sibling element. */
+    ariaLabel?: string;
   }>(),
   {
     modelValue: false,
