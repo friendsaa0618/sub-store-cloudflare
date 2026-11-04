@@ -47,7 +47,7 @@
 
 <script lang="ts" setup>
 import axios from 'axios';
-import { computed, watch, watchEffect } from "vue";
+import { computed, onBeforeUnmount, onMounted, watch, watchEffect } from "vue";
 import { useI18n } from "vue-i18n";
 import { useClipboard } from "@vueuse/core";
 import useV3Clipboard from "vue-clipboard3";
@@ -121,6 +121,13 @@ watch(() => props.previewData?.processed, (val) => {
 const clickClose = () => {
   emit("closePreview");
 };
+
+/* The overlay is not a <dialog>, so Escape has to be wired by hand. */
+const onKeydown = (event: KeyboardEvent) => {
+  if (event.key === "Escape") clickClose();
+};
+onMounted(() => window.addEventListener("keydown", onKeydown));
+onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 const copyUrl = async () => {
   if (isSupported) {
     await copy(url);

@@ -2,12 +2,13 @@
   <div
     class="app-form-item"
     :class="{ 'is-error': error, 'has-no-label': !hasLabel }"
+    @click="focusControl"
   >
     <label v-if="hasLabel" class="app-form-item__label">
       <span v-if="required" class="app-form-item__required" aria-hidden="true">*</span>
       <slot name="label">{{ label }}</slot>
     </label>
-    <div class="app-form-item__body">
+    <div ref="bodyEl" class="app-form-item__body">
       <slot />
     </div>
     <p v-if="error" class="app-form-item__error" role="alert">{{ error }}</p>
@@ -46,6 +47,19 @@ const slots = useSlots();
 const form = inject<FormContext | null>(FORM_KEY, null);
 const error = ref("");
 const hasLabel = computed(() => Boolean(slots.label || props.label));
+
+/** A 20px-tall borderless input is a small target on a phone, so the row itself
+    focuses its control; clicks on a control, link or button are left alone. */
+const bodyEl = ref<HTMLElement | null>(null);
+const focusControl = (event: MouseEvent) => {
+  const target = event.target as HTMLElement | null;
+  if (!target || target.closest("input, textarea, select, button, a, [contenteditable]")) {
+    return;
+  }
+  bodyEl.value
+    ?.querySelector<HTMLElement>("input, textarea, select, button, [tabindex]")
+    ?.focus();
+};
 
 const isEmpty = (value: unknown) => {
   if (value === undefined || value === null) {

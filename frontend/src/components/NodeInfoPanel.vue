@@ -15,6 +15,15 @@
         >
           {{ tab }}
         </button>
+        <button
+          type="button"
+          class="node-tabs__close"
+          :aria-label="$t('specificWord.close')"
+          :title="$t('specificWord.close')"
+          @click="closePanel"
+        >
+          <font-awesome-icon icon="fa-solid fa-xmark" aria-hidden="true" />
+        </button>
       </div>
       <div class="node-tab-content">
         <div v-show="currentTab === 0" class="node-tab-pane">
@@ -56,7 +65,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { computed, onMounted, ref } from 'vue';
+  import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
   import { useI18n } from 'vue-i18n';
   import { useCloudflareApi } from '@/api/app';
 
@@ -111,6 +120,13 @@
     emit('close');
   };
 
+  /* Not a <dialog>, so Escape is wired by hand like the compare overlay. */
+  const onKeydown = (event: KeyboardEvent) => {
+    if (event.key === 'Escape') closePanel();
+  };
+  onMounted(() => window.addEventListener('keydown', onKeydown));
+  onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
+
   onMounted(loadIpInfo);
 </script>
 
@@ -158,6 +174,31 @@
     &.is-active {
       background: color-mix(in srgb, var(--primary-color) 12%, transparent);
       color: var(--primary-color);
+    }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--focus-ring-color);
+    }
+  }
+
+  .node-tabs__close {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--comment-text-color);
+    cursor: pointer;
+
+    &:hover {
+      color: var(--primary-text-color);
+      background: color-mix(in srgb, var(--comment-text-color) 12%, transparent);
     }
 
     &:focus-visible {

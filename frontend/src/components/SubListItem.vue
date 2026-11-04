@@ -46,7 +46,11 @@
             :title="displayName"
           >
             <span class="status-pulse-dot" :class="statusDotClass"></span>
-            <span class="sub-item-name">{{ displayName }}</span>
+            <button
+              type="button"
+              class="sub-item-name"
+              :title="displayName"
+            >{{ displayName }}</button>
             <span v-if="visibleTags.length" class="sub-item-tags">
               <span v-for="i in visibleTags" :key="i" class="tag">
                 <AppTag>{{ i }}</AppTag>
@@ -63,7 +67,11 @@
             :title="displayName"
           >
             <span class="status-pulse-dot" :class="statusDotClass"></span>
-            <span class="sub-item-name">{{ displayName }}</span>
+            <button
+              type="button"
+              class="sub-item-name"
+              :title="displayName"
+            >{{ displayName }}</button>
             <span v-if="visibleTags.length" class="sub-item-tags">
               <span v-for="i in visibleTags" :key="i" class="tag">
                 <AppTag>{{ i }}</AppTag>
@@ -1080,12 +1088,29 @@ const refreshSubFlowsIfNeeded = async () => {
         }
       }
       & .sub-item-name {
-        /* The name must stay readable; the tag run clips first. */
+        /* The name must stay readable; the tag run clips first. It is a real
+           button so the preview panel is reachable by keyboard, but it keeps
+           the text look of the title. */
         flex: 0 1 auto;
         min-width: 3.5em;
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        background: none;
+        color: inherit;
+        font: inherit;
+        text-align: left;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        cursor: pointer;
+
+        &:focus-visible {
+          outline: none;
+          border-radius: var(--radius-sm);
+          box-shadow: 0 0 0 2px var(--focus-ring-color);
+        }
       }
       & .sub-item-tags {
         display: flex;
