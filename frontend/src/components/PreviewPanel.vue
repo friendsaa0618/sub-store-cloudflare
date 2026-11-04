@@ -1,8 +1,8 @@
 <template>
   <div>
     <button type="button" class="desc" :aria-label="desc" @click="tips">
-      <span>{{ desc }}</span>
       <font-awesome-icon icon="fa-solid fa-circle-question" aria-hidden="true" />
+      <span>{{ desc }}</span>
     </button>
     <ul class="preview-list">
       <li v-for="platform in platformList" :key="platform.name">
@@ -182,25 +182,34 @@
 </script>
 
 <style scoped>
+  /* A hint line, not a filled box: centered text in a tinted pill read like a
+     disabled search field above the list. */
   .desc {
     display: flex;
-    justify-content: center;
-    align-items: center;
+    align-items: flex-start;
+    gap: 6px;
     width: 100%;
-    cursor: pointer;
-    padding: 6px 12px;
-    margin-bottom: 10px;
-    background: color-mix(in srgb, var(--primary-color) 8%, transparent);
-    border-radius: var(--radius-lg);
-    border: 1px solid color-mix(in srgb, var(--primary-color) 15%, transparent);
+    margin-bottom: 8px;
+    padding: 6px 8px;
+    border: 0;
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--primary-color) 6%, transparent);
     color: var(--comment-text-color);
     font: inherit;
     font-size: 12px;
-    gap: 6px;
-    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    line-height: 1.5;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+
+    & svg {
+      margin-top: 3px;
+      flex-shrink: 0;
+      color: var(--primary-color);
+    }
 
     &:hover {
-      background: color-mix(in srgb, var(--primary-color) 14%, transparent);
+      background: color-mix(in srgb, var(--primary-color) 12%, transparent);
       color: var(--primary-color);
     }
   }

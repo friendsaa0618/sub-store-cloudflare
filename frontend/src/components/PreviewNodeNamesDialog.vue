@@ -10,30 +10,32 @@
       <h2 class="preview-node-names-title">{{ title }}</h2>
       <p class="preview-node-names-desc">
         {{ t('comparePage.nodeNames.descriptionBefore') }}
-        {{ t('comparePage.nodeNames.aiLink') }}
+      </p>
+      <p class="preview-node-names-hint">
+        <font-awesome-icon icon="fa-solid fa-circle-question" aria-hidden="true" />
+        <span>{{ t('comparePage.nodeNames.aiLink') }}</span>
       </p>
       <textarea
         class="preview-node-names-textarea"
         :value="nodeNamesText"
+        :rows="textareaRows"
+        :aria-label="title"
         readonly
       />
       <div class="preview-node-names-footer">
+        <span class="preview-node-names-count">
+          {{ t('comparePage.nodeNames.count', { count: props.nodeInfos.length }) }}
+        </span>
         <AppButton
           size="small"
           plain
           type="primary"
-          class="preview-node-names-footer-button"
-          @click="copyNodeNames"
-        >
-          {{ t('comparePage.nodeNames.copyAll') }}
-        </AppButton>
-        <AppButton
-          size="small"
-          type="primary"
-          class="preview-node-names-footer-button"
           @click="copyPrompt"
         >
           {{ t('comparePage.nodeNames.copyPrompt') }}
+        </AppButton>
+        <AppButton size="small" type="primary" @click="copyNodeNames">
+          {{ t('comparePage.nodeNames.copyAll') }}
         </AppButton>
       </div>
     </div>
@@ -78,6 +80,9 @@ const nodeNamesText = computed(() => {
   return formatPreviewNodeNames(props.nodeInfos);
 });
 
+/** Grow with the list instead of always reserving a fixed 220px. */
+const textareaRows = computed(() => Math.min(12, Math.max(3, props.nodeInfos.length)));
+
 const promptText = computed(() => {
   return formatPreviewNodeInfoPrompt(props.nodeInfos);
 });
@@ -112,7 +117,7 @@ const copyPrompt = async () => {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  width: min(72vw, 520px);
+  width: min(560px, 92vw);
   max-width: 100%;
   color: var(--second-text-color);
 }
@@ -132,7 +137,8 @@ const copyPrompt = async () => {
 
 .preview-node-names-textarea {
   width: 100%;
-  height: 220px;
+  /* Height comes from `rows`; the cap keeps a long list from filling the modal. */
+  max-height: 260px;
   padding: 10px 12px;
   resize: none;
   border: 1px solid var(--divider-color);
@@ -162,23 +168,42 @@ const copyPrompt = async () => {
   letter-spacing: -0.01em;
 }
 
-.preview-node-names-footer {
+.preview-node-names-hint {
   display: flex;
-  justify-content: flex-end;
-  gap: 8px;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--primary-color) 7%, transparent);
+  color: var(--comment-text-color);
+  font-size: 12px;
+  line-height: 1.5;
+
+  & svg {
+    margin-top: 2px;
+    flex-shrink: 0;
+    color: var(--primary-color);
+  }
 }
 
-.preview-node-names-footer-button {
-  min-width: 96px;
+.preview-node-names-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.preview-node-names-count {
+  margin-right: auto;
+  color: var(--comment-text-color);
+  font-size: 12px;
 }
 
 @media screen and (max-width: 520px) {
   .preview-node-names-content {
-    width: 76vw;
-  }
-
-  .preview-node-names-textarea {
-    height: 180px;
+    width: 100%;
   }
 }
 </style>

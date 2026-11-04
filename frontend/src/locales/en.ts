@@ -876,6 +876,7 @@ export default {
       copyPrompt: "Copy prompt",
       copyAllSucceed: "Node names copied",
       copyPromptSucceed: "Prompt copied",
+      count: "{count} nodes",
       copyFailed: "Failed to copy\n{e}"
     },
     divider: "Following is filtered nodes",

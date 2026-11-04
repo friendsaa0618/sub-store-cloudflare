@@ -876,6 +876,7 @@ export default {
       copyPrompt: "复制提示词",
       copyAllSucceed: "节点名已复制",
       copyPromptSucceed: "提示词已复制",
+      count: "共 {count} 个节点",
       copyFailed: "复制失败\n{e}"
     },
     divider: "以下为被过滤的节点",
