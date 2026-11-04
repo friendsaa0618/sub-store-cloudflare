@@ -923,6 +923,9 @@ export default {
     cleared: "Cleared",
     pastedLength: "Pasted characters: {count}",
     clipboardFailed: "Failed to read clipboard: available on localhost/HTTPS or after granting permission",
+    clearConfirmTitle: "Clear the editor",
+    clearConfirmDesc: "Everything in this editor will be deleted and not saved.",
+    clearConfirmOk: "Clear",
     toolbar: {
       highlight: "Syntax highlight",
       undo: "Undo",

@@ -923,6 +923,9 @@ export default {
     cleared: "已清空",
     pastedLength: "已粘贴字数: {count}",
     clipboardFailed: "获取剪贴板失败: 本地/HTTPS 环境下可用(或手动配置权限)",
+    clearConfirmTitle: "清空编辑器内容",
+    clearConfirmDesc: "当前编辑器里的内容会被全部删除，且不会保存。",
+    clearConfirmOk: "清空",
     toolbar: {
       highlight: "语法高亮",
       undo: "撤销",

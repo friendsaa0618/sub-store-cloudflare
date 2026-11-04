@@ -86,6 +86,7 @@ import { useCodeStore } from "@/store/codeStore";
 import { storeToRefs } from "pinia";
 import beautify from "js-beautify";
 import { useAppNotifyStore } from "@/store/appNotify";
+import { showDialog } from "@/utils/dialog";
 import { useI18n } from "vue-i18n";
 const { toClipboard } = useV3Clipboard();
 const { showNotify } = useAppNotifyStore();
@@ -329,12 +330,26 @@ const copyText = async () => {
   }
 };
 
-const delAllCode = () => {
+const clearAll = () => {
   cmStore.setEditCode([props.id], "");
   cmStore.CodeClear([props.id], true);
   showNotify({
     type: "success",
     title: t("codeEditor.cleared"),
+  });
+};
+
+/* One mis-tap on a phone wipes the whole subscription otherwise. */
+const delAllCode = () => {
+  if (!String(cmStore.EditCode[props.id] || "").trim()) return;
+  showDialog({
+    title: t("codeEditor.clearConfirmTitle"),
+    content: t("codeEditor.clearConfirmDesc"),
+    okText: t("codeEditor.clearConfirmOk"),
+    cancelText: t("specificWord.cancel"),
+    okType: "danger",
+    closeOnClickOverlay: true,
+    onOk: clearAll,
   });
 };
 
