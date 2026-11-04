@@ -18,6 +18,47 @@
       >
         <font-awesome-icon icon="fa-solid fa-arrow-rotate-right" />
       </button>
+      <div
+        v-if="(hasSubs || hasCollections) && appearanceSetting.showFloatingAddButton"
+        ref="addShellEl"
+        class="floating-add-shell"
+        :style="{ bottom: floatingButtonBottom }"
+      >
+        <ul v-if="addMenuOpen" ref="addMenuEl" class="floating-add-menu" role="menu">
+          <li role="none">
+            <router-link
+              role="menuitem"
+              class="floating-add-menu__item"
+              to="/edit/subs/UNTITLED"
+              @click="closeAddMenu"
+            >
+              {{ $t('subPage.actions.createSource') }}
+            </router-link>
+          </li>
+          <li role="none">
+            <router-link
+              role="menuitem"
+              class="floating-add-menu__item"
+              to="/edit/collections/UNTITLED"
+              @click="closeAddMenu"
+            >
+              {{ $t('subPage.actions.createCollection') }}
+            </router-link>
+          </li>
+        </ul>
+        <button
+          ref="addButtonEl"
+          type="button"
+          class="floating-add"
+          aria-haspopup="menu"
+          :aria-expanded="addMenuOpen"
+          :aria-label="$t('navBar.actions.add')"
+          :title="$t('navBar.actions.add')"
+          @click="toggleAddMenu"
+        >
+          <font-awesome-icon icon="fa-solid fa-plus" aria-hidden="true" />
+        </button>
+      </div>
     </Teleport>
 
     <!-- 页面内容 -->
@@ -258,7 +299,7 @@
 
 <script lang="ts" setup>
 import { storeToRefs } from "pinia";
-import { computed, nextTick, onMounted, ref, toRaw, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, toRaw, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute } from 'vue-router';
 import draggable from "vuedraggable";
@@ -288,6 +329,45 @@ const globalStore = useGlobalStore();
 const settingsStore = useSettingsStore();
 const listSearchStore = useListSearchStore();
 const listSearchInput = ref<HTMLInputElement | null>(null);
+
+/* Floating add button: a two-entry menu, since "new" means source or collection. */
+const addMenuOpen = ref(false);
+const addShellEl = ref<HTMLElement | null>(null);
+const addMenuEl = ref<HTMLElement | null>(null);
+const addButtonEl = ref<HTMLElement | null>(null);
+const floatingButtonBottom = computed(
+  () =>
+    `calc(${48 + 36 + (!isMobile() ? (appearanceSetting.value.isSimpleMode ? 44 : 48) : 0)}px + env(safe-area-inset-bottom))`,
+);
+
+const closeAddMenu = (returnFocus = false) => {
+  if (!addMenuOpen.value) return;
+  addMenuOpen.value = false;
+  if (returnFocus) addButtonEl.value?.focus();
+};
+
+const toggleAddMenu = () => {
+  addMenuOpen.value = !addMenuOpen.value;
+  if (!addMenuOpen.value) return;
+  void nextTick(() => addMenuEl.value?.querySelector<HTMLElement>("[role=menuitem]")?.focus());
+};
+
+const onAddMenuPointerDown = (event: MouseEvent) => {
+  if (!addMenuOpen.value) return;
+  if (addShellEl.value?.contains(event.target as Node)) return;
+  closeAddMenu();
+};
+
+const onAddMenuKeydown = (event: KeyboardEvent) => {
+  if (event.key === "Escape") closeAddMenu(true);
+};
+
+document.addEventListener("pointerdown", onAddMenuPointerDown);
+document.addEventListener("keydown", onAddMenuKeydown);
+onBeforeUnmount(() => {
+  document.removeEventListener("pointerdown", onAddMenuPointerDown);
+  document.removeEventListener("keydown", onAddMenuKeydown);
+});
 
 const closeListSearch = () => listSearchStore.close();
 const handleListSearchClose = () => {
@@ -525,10 +605,8 @@ const filteredCollections = useFilteredDraggableList(collections, shouldShowElem
 </script>
 
 <style scoped>
-.floating-refresh {
-  position: fixed;
-  left: 15px;
-  z-index: 999;
+.floating-refresh,
+.floating-add {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -564,6 +642,52 @@ const filteredCollections = useFilteredDraggableList(collections, shouldShowElem
     width: 20px;
     height: 20px;
     color: #fff;
+  }
+}
+
+.floating-refresh {
+  position: fixed;
+  left: 15px;
+  z-index: 999;
+}
+
+.floating-add-shell {
+  position: fixed;
+  right: 15px;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.floating-add-menu {
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border: 1px solid var(--divider-color);
+  border-radius: var(--radius-lg);
+  background: var(--popup-color);
+  box-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.28);
+  min-width: 168px;
+}
+
+.floating-add-menu__item {
+  display: block;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  color: var(--primary-text-color);
+  font-size: var(--text-base);
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--divider-color);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--focus-ring-color);
   }
 }
 
