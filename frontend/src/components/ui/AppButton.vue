@@ -86,10 +86,6 @@ withDefaults(
     box-shadow: none;
   }
 
-  &:disabled.is-plain {
-    opacity: 0.55;
-  }
-
   &:focus-visible {
     outline: none;
     box-shadow: 0 0 0 2px var(--focus-ring-color);
@@ -107,6 +103,14 @@ withDefaults(
       color: var(--second-text-color);
       border-color: var(--divider-color);
     }
+  }
+
+  /* A faded outline still read as an enabled button next to the gray filled
+     one; both variants now go quiet the same way. Placed after `.is-plain`
+     so it wins the color cascade. */
+  &:disabled.is-plain {
+    color: var(--comment-text-color);
+    border-color: var(--divider-color);
   }
 
   &.is-block {

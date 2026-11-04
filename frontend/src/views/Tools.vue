@@ -107,7 +107,7 @@
           </div>
         </div>
 
-        <AppButton type="primary" :loading="shareCreating" @click="createShare">
+        <AppButton type="primary" :loading="shareCreating" :disabled="!shareForm.resourceId" @click="createShare">
           <font-awesome-icon icon="fa-solid fa-plus" class="btn-icon" aria-hidden="true" />
           {{ t('toolsPage.shares.create') }}
         </AppButton>
@@ -173,7 +173,7 @@
             <AppButton plain size="mini" @click="toggleShare(share)">
               {{ share.enabled ? t('toolsPage.shares.disable') : t('toolsPage.shares.enable') }}
             </AppButton>
-            <AppButton plain type="danger" size="mini" @click="removeShare(share.id)">
+            <AppButton plain type="danger" size="mini" @click="removeShare(share)">
               {{ t('myPage.btn.delete') }}
             </AppButton>
           </div>
@@ -220,7 +220,7 @@
             <AppButton plain type="primary" size="mini" @click="restoreEntry(entry.id)">
               {{ t('toolsPage.recycle.restore') }}
             </AppButton>
-            <AppButton plain type="danger" size="mini" @click="purgeEntry(entry.id)">
+            <AppButton plain type="danger" size="mini" @click="purgeEntry(entry)">
               {{ t('toolsPage.recycle.purge') }}
             </AppButton>
           </div>
@@ -232,7 +232,7 @@
 
 <script lang="ts" setup>
 import { showDialog } from '@/utils/dialog';
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useCloudflareApi } from '@/api/app';
 import { useAppNotifyStore } from '@/store/appNotify';
@@ -266,6 +266,14 @@ const shareCreating = ref(false);
 const createdShareUrl = ref('');
 const shareForm = reactive({ resourceType: 'source', resourceId: '', target: '', expiresHours: '0' });
 const conversionTargets = computed(() => conversionKind.value === 'proxy' ? proxyTargets : ruleTargets);
+/* Proxy targets outnumber rule targets, so switching the kind can leave the
+   output select on a value it no longer offers; the browser then renders it
+   blank. Fall back to the first target of the new kind. */
+watch(conversionKind, () => {
+  if (!conversionTargets.value.includes(conversionTarget.value)) {
+    conversionTarget.value = conversionTargets.value[0];
+  }
+});
 
 const resourceTypeLabel = (type: string) => {
   if (type === 'collection') return t('toolsPage.shares.collection');
@@ -289,7 +297,6 @@ const shareMeta = (share: { target?: string; expiresAt?: string | null }) => {
 const runConversion = async () => {
   converting.value = true;
   try {
-    if (!conversionTargets.value.includes(conversionTarget.value)) conversionTarget.value = conversionTargets.value[0];
     const response = conversionKind.value === 'proxy'
       ? await api.convertProxies({ content: conversionInput.value, target: conversionTarget.value })
       : await api.convertRules({ content: conversionInput.value, target: conversionTarget.value });
@@ -354,29 +361,30 @@ const createShare = async () => {
 };
 
 const toggleShare = async (share: any) => { await api.updateShare(share.id, { enabled: !share.enabled }); await loadShares(); };
-const removeShare = (id: string) => {
+const removeShare = (share: { id: string; resourceType: string; resourceId: string }) => {
   showDialog({
     title: t('myPage.btn.delete'),
-    content: t('toolsPage.shares.title'),
+    /* Name the link being revoked; the section title said nothing. */
+    content: `${resourceTypeLabel(share.resourceType)}/${share.resourceId}`,
     cancelText: t('myPage.btn.cancel'),
     okText: t('myPage.btn.delete'),
     okType: 'danger',
     onOk: async () => {
-      await api.deleteShare(id);
+      await api.deleteShare(share.id);
       await Promise.all([loadShares(), loadRecycle()]);
     },
   });
 };
 const restoreEntry = async (id: string) => { await api.restoreRecycleEntry(id); await loadRecycle(); };
-const purgeEntry = (id: string) => {
+const purgeEntry = (entry: { id: string; resourceType: string; resourceId: string }) => {
   showDialog({
     title: t('toolsPage.recycle.purge'),
-    content: t('toolsPage.recycle.desc'),
+    content: `${resourceTypeLabel(entry.resourceType)}/${entry.resourceId}`,
     cancelText: t('myPage.btn.cancel'),
     okText: t('toolsPage.recycle.purge'),
     okType: 'danger',
     onOk: async () => {
-      await api.deleteRecycleEntry(id);
+      await api.deleteRecycleEntry(entry.id);
       await loadRecycle();
     },
   });

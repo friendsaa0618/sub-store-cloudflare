@@ -167,6 +167,7 @@
               v-model="requestForm.defaultTimeout"
               class="settings-input"
               type="number"
+              min="0"
               :placeholder="t('myPage.request.defaultTimeout')"
             />
           </div>
@@ -177,6 +178,7 @@
               v-model="requestForm.backendRequestConcurrency"
               class="settings-input"
               type="number"
+              min="0"
               :placeholder="t('myPage.request.backendRequestConcurrency')"
             />
           </div>
@@ -187,6 +189,7 @@
               v-model="requestForm.backendRequestConcurrencyWaitTime"
               class="settings-input"
               type="number"
+              min="0"
               :placeholder="t('myPage.request.backendRequestConcurrencyWaitTime')"
             />
           </div>
@@ -197,6 +200,7 @@
               v-model="requestForm.remoteCacheTtl"
               class="settings-input"
               type="number"
+              min="0"
               :placeholder="t('myPage.request.remoteCacheTtl')"
             />
           </div>
