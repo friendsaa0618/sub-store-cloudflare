@@ -308,6 +308,7 @@
 
     &:focus-within {
       border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px var(--focus-ring-color);
     }
 
     & > :deep(.app-input) {
