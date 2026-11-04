@@ -209,6 +209,7 @@ export default {
     },
     actions: {
       openApp: "打开订阅官网",
+      compare: "节点对比",
       preview: "即时预览",
       copyLink: "复制订阅链接",
       refresh: "刷新流量信息",

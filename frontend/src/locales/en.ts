@@ -209,6 +209,7 @@ export default {
     },
     actions: {
       openApp: "Open subscription website",
+      compare: "Compare nodes",
       preview: "Preview",
       copyLink: "Copy subscription link",
       refresh: "Refresh usage info",

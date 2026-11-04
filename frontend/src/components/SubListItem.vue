@@ -24,20 +24,22 @@
         :style="{ width: `${flow.progress * 100}%` }"
       ></div>
       <!-- compareSub -->
-      <div
+      <button
+        v-if="appearanceSetting.isShowIcon"
+        type="button"
         class="sub-img-wrappers"
         :style="{ 'margin-top': imageMarginTop }"
+        :aria-label="t('subPage.actions.compare')"
+        :title="t('subPage.actions.compare')"
         @click.stop="compareSub"
       >
         <!-- icon: stored URL or deterministic public avatar from name -->
-        <div v-if="appearanceSetting.isShowIcon">
-          <AppAvatar
-            :class="{ 'sub-item-customer-icon': !isIconColor }"
-            :size="avatarSize"
-            :url="resolvedIcon"
-          />
-        </div>
-      </div>
+        <AppAvatar
+          :class="{ 'sub-item-customer-icon': !isIconColor }"
+          :size="avatarSize"
+          :url="resolvedIcon"
+        />
+      </button>
       <div class="sub-item-content">
         <div class="sub-item-title-wrapper">
           <h3
@@ -1498,6 +1500,17 @@ const refreshSubFlowsIfNeeded = async () => {
 .sub-img-wrappers {
   display: flex;
   align-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--focus-ring-color);
+    border-radius: var(--radius-lg);
+  }
 }
 
 .status-pulse-dot {
