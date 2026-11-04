@@ -449,6 +449,7 @@ let scrollTop = 0;
 const compareTableIsVisible = ref(false);
 usePopupRoute(compareTableIsVisible);
 const previewPanelVisible = ref(false);
+usePopupRoute(previewPanelVisible, { rewindOnClose: true });
 
 const compareData = ref();
 const router = useRouter();
