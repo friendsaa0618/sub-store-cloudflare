@@ -17,7 +17,7 @@
             <AppTag
               @click="onClickTag"
               class="tag-item"
-              closeable
+              closable
               @close="deleteItem(index)"
             >
               <span>{{

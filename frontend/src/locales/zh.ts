@@ -13,7 +13,9 @@ export default {
     none: "无",
     confirm: "确定",
     cancel: "取消",
-    close: "关闭"
+    close: "关闭",
+    remove: "移除",
+    add: "添加"
   },
   globalNotify: {
     refresh: {

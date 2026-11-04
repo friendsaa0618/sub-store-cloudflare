@@ -13,7 +13,9 @@ export default {
     none: "None",
     confirm: "Confirm",
     cancel: "Cancel",
-    close: "Close"
+    close: "Close",
+    remove: "Remove",
+    add: "Add"
   },
   globalNotify: {
     refresh: {

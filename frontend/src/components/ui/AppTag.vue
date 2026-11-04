@@ -8,7 +8,7 @@
       v-if="closable"
       type="button"
       class="app-tag__close"
-      aria-label="Remove"
+      :aria-label="closeLabel"
       @click.stop="emit('close')"
     >
       <font-awesome-icon icon="fa-solid fa-xmark" aria-hidden="true" />
@@ -17,6 +17,12 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
+const closeLabel = computed(() => t("specificWord.remove"));
+
 withDefaults(
   defineProps<{
     type?: "default" | "primary" | "success" | "danger" | "warning";
@@ -84,6 +90,7 @@ const emit = defineEmits<{ (e: "close"): void }>();
 }
 
 .app-tag__close {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -100,6 +107,13 @@ const emit = defineEmits<{ (e: "close"): void }>();
 
   &:hover {
     background: color-mix(in srgb, currentColor 18%, transparent);
+  }
+
+  /* Keep the icon small but the tap target at ~22px. */
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
   }
 }
 </style>
