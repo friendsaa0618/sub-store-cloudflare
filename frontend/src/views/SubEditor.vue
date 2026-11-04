@@ -323,13 +323,17 @@
           <div v-show="!manualSubscriptionsIsFold" class="include-subs-wrapper">
             <div v-show="!manualSubscriptionsIsFold && tags && tags.length > 0" class="tag-check">
               <div class="radio-wrapper">
-                <span
+                <button
                   v-for="i in tags"
-                  :class="{ tag: true, current: i.value === tag }"
+                  :key="i.value"
+                  type="button"
+                  class="tag"
+                  :class="{ current: i.value === tag }"
+                  :aria-pressed="i.value === tag"
                   @click="setTag(i.value)"
                 >
                   {{ i.label }}
-                </span>
+                </button>
               </div>
               <AppCheckbox v-model="subCheckbox" :indeterminate="subCheckboxIndeterminate" @click="subCheckboxClick"></AppCheckbox>
             </div>
@@ -2276,6 +2280,9 @@ const handleEditGlobalClick = () => {
     justify-content: flex-start;
 
     & .tag {
+      border: 0;
+      background: transparent;
+      font: inherit;
       font-size: 12px;
       color: var(--second-text-color);
       margin: 0px 5px 0 0;
@@ -2284,6 +2291,12 @@ const handleEditGlobalClick = () => {
       -webkit-user-select: none;
       user-select: none;
       border-bottom: 1px solid transparent;
+
+      &:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 2px var(--focus-ring-color);
+        border-radius: var(--radius-sm);
+      }
     }
     & .current {
       border-bottom: 1px solid var(--primary-color);
