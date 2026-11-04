@@ -8,6 +8,7 @@ This project follows semantic versioning where practical.
 
 ### Added
 
+- The subscription page opens with a hero band: `订阅管道` with the live source and collection counts flowing into the client formats the app can emit (five target marks plus a `+8` counter) on a hairline card, so the page explains its own model before the list. One 340ms entrance runs on load and two dots travel the connectors; `prefers-reduced-motion` silences both.
 - Added local Playwright visual snapshots for the admin UI (`pnpm run check:visual`) so layout, overlay, and theme regressions can be compared automatically; the set now includes dark-mode settings and editor captures, and `e2e/interactions.spec.ts` covers the subscription fold toggle and the collapsible request-settings form.
 
 ### Changed

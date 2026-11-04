@@ -137,6 +137,13 @@ export default {
     backendDesc: "If you are seeing this, it is probably due to a routing interception issue on the front end of your browser. You can force a refresh to see it or use the link directly without affecting the use of this link."
   },
   subPage: {
+    hero: {
+      title: "Subscription pipeline",
+      desc: "Sources feed a collection, which becomes a config your client understands.",
+      sources: "Sources",
+      collections: "Collections",
+      targets: "Output formats",
+    },
     overview: {
       title: "Overview",
       subscriptions: "Subscriptions",

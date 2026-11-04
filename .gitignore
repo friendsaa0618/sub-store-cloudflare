@@ -22,6 +22,9 @@ config/scripts.local/
 config/script-plugins.local.json
 cloudflare/src/generated/
 
+# Skill CLI symlink dir; skills-lock.json records what was installed
+/.claude/skills/
+
 # Dependency and build output
 **/node_modules/
 **/dist/

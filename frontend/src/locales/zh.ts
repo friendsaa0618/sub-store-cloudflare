@@ -137,6 +137,13 @@ export default {
     backendDesc: "如果你看到这个 可能是因为浏览器前端路由拦截的问题 可以强制刷新查看或直接使用该链接 不影响此链接的使用"
   },
   subPage: {
+    hero: {
+      title: "订阅管道",
+      desc: "订阅源汇成组合，再输出成客户端认得的格式。",
+      sources: "订阅源",
+      collections: "组合订阅",
+      targets: "输出格式",
+    },
     overview: {
       title: "概览",
       subscriptions: "订阅",

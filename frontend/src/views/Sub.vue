@@ -88,6 +88,7 @@
       :class="{ 'dual-column-mode': isDualColumnMode }"
     >
       <div class="subs-list-container page-stack">
+        <HomeHero :source-count="subs.length" :collection-count="collections.length" />
         <section
           v-if="hasSubs && !hasCollections"
           class="onboarding-card onboarding-inline"
@@ -274,6 +275,7 @@ import draggable from "vuedraggable";
 
 import { useCloudflareApi } from "@/api/app";
 import logoRedIcon from "@/assets/icons/logo-red.png";
+import HomeHero from "@/components/HomeHero.vue";
 import SubListItem from "@/components/SubListItem.vue";
 import { useFilteredDraggableList } from "@/hooks/useFilteredDraggableList";
 import { useListViewMode } from "@/hooks/useListViewMode";
