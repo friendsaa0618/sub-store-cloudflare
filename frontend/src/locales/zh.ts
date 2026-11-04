@@ -812,6 +812,7 @@ export default {
       floatingRefresh: "悬浮刷新按钮",
       floatingAdd: "悬浮新建按钮",
       previewInPage: "在网页内预览",
+      previewInPageHint: "下载链接在应用内打开预览页",
       listViewMode: "列表布局",
       singleColumn: "单列",
       dualColumn: "双列",

@@ -812,6 +812,7 @@ export default {
       floatingRefresh: "Floating refresh button",
       floatingAdd: "Floating create button",
       previewInPage: "Preview inside the page",
+      previewInPageHint: "Download links open the preview page in the app",
       listViewMode: "List layout",
       singleColumn: "Single column",
       dualColumn: "Two columns",

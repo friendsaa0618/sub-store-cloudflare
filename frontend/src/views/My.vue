@@ -226,21 +226,6 @@
               </AppRadio>
             </AppRadioGroup>
           </div>
-          <div
-            v-for="item in editorToggles"
-            :key="item.key"
-            class="toggle-card-row"
-          >
-            <span class="toggle-card-title">
-              {{ t(item.label) }}
-              <span v-if="item.hint" class="toggle-card-hint">{{ t(item.hint) }}</span>
-            </span>
-            <AppSwitch
-              :model-value="Boolean(appearanceSetting[item.key])"
-              :aria-label="t(item.label)"
-              @update:model-value="(value) => setAppearance(item.key, value)"
-            />
-          </div>
         </div>
       </div>
     </section>
@@ -549,10 +534,7 @@ const listToggles: { key: string; label: string; hint?: string }[] = [
   { key: "useNarrowModeOnWideScreen", label: "myPage.appearance.narrowMode", hint: "myPage.appearance.narrowModeHint" },
   { key: "showFloatingRefreshButton", label: "myPage.appearance.floatingRefresh" },
   { key: "showFloatingAddButton", label: "myPage.appearance.floatingAdd" },
-];
-
-const editorToggles: { key: string; label: string; hint?: string }[] = [
-  { key: "displayPreviewInWebPage", label: "myPage.appearance.previewInPage" },
+  { key: "displayPreviewInWebPage", label: "myPage.appearance.previewInPage", hint: "myPage.appearance.previewInPageHint" },
 ];
 
 type AppearanceChoice = {
