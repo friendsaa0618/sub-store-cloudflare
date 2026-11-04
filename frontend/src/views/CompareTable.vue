@@ -1,6 +1,13 @@
 <template>
   <Teleport to="#app">
-    <div class="compare-page-wrapper">
+    <div
+      ref="wrapperEl"
+      class="compare-page-wrapper"
+      role="dialog"
+      aria-modal="true"
+      :aria-label="$t(`comparePage.title`)"
+      tabindex="-1"
+    >
       <header class="compare-page-header preview-popup-header">
         <div class="btn-groups preview-leading">
           <button
@@ -331,7 +338,7 @@
   import PreviewNodeNamesDialog from '@/components/PreviewNodeNamesDialog.vue';
   import { useSubsStore } from '@/store/subs';
   import { extractPreviewNodeInfos, PreviewNodeNameSide } from '@/utils/previewNodeNames';
-  import { computed, onBeforeUnmount, onMounted, ref, toRaw, watch } from 'vue';
+  import { computed, nextTick, onBeforeUnmount, onMounted, ref, toRaw, watch } from 'vue';
 
   const subsStore = useSubsStore();
   const props = defineProps<{
@@ -509,8 +516,20 @@
     if (nodeInfoIsVisible.value) return;
     clickClose();
   };
-  onMounted(() => window.addEventListener('keydown', onKeydown));
-  onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
+  /* The overlay covers the page, so focus has to move into it: otherwise Tab
+     walks the invisible list behind it. Focus goes back to the opener on close. */
+  const wrapperEl = ref<HTMLElement | null>(null);
+  let opener: HTMLElement | null = null;
+
+  onMounted(() => {
+    opener = document.activeElement as HTMLElement | null;
+    window.addEventListener('keydown', onKeydown);
+    void nextTick(() => wrapperEl.value?.focus({ preventScroll: true }));
+  });
+  onBeforeUnmount(() => {
+    window.removeEventListener('keydown', onKeydown);
+    opener?.focus?.({ preventScroll: true });
+  });
 
   const openNodeNamesDialog = (side: PreviewNodeNameSide) => {
     if (!hasNodeNamesData(side)) {
@@ -957,6 +976,8 @@
 
   .compare-page-wrapper {
     --compare-header-height: 56px;
+    /* Programmatic focus lands here; a ring around the whole screen helps nobody. */
+    outline: none;
     --compare-header-offset: calc(var(--compare-header-height) + env(safe-area-inset-top));
     position: fixed;
     inset: 0;
