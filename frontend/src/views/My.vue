@@ -105,6 +105,98 @@
       </div>
     </section>
 
+    <!-- Appearance -->
+    <section class="section">
+      <header class="section-head">
+        <div class="section-head__text">
+          <h2 class="section-head__title">{{ t("myPage.appearance.title") }}</h2>
+          <p class="section-head__desc">{{ t("myPage.appearance.desc") }}</p>
+        </div>
+      </header>
+
+      <div class="surface settings-form-card">
+        <div class="settings-form-grid">
+          <p class="appearance-group-title form-field-group--full">
+            {{ t("myPage.appearance.listGroup") }}
+          </p>
+          <div
+            v-for="item in listToggles"
+            :key="item.key"
+            class="toggle-card-row"
+          >
+            <span class="toggle-card-title">
+              {{ t(item.label) }}
+              <span v-if="item.hint" class="toggle-card-hint">{{ t(item.hint) }}</span>
+            </span>
+            <AppSwitch
+              :model-value="Boolean(appearanceSetting[item.key])"
+              @update:model-value="(value) => setAppearance(item.key, value)"
+            />
+          </div>
+          <div
+            v-for="item in listChoices"
+            :key="item.key"
+            class="form-field-group appearance-choice"
+          >
+            <span class="form-field-label">{{ t(item.label) }}</span>
+            <AppRadioGroup
+              direction="horizontal"
+              :model-value="String(appearanceSetting[item.key] ?? item.options[0].value)"
+              @update:model-value="(value) => setAppearance(item.key, String(value))"
+            >
+              <AppRadio
+                v-for="option in item.options"
+                :key="option.value"
+                shape="button"
+                :label="option.value"
+              >
+                {{ t(option.label) }}
+              </AppRadio>
+            </AppRadioGroup>
+          </div>
+
+          <p class="appearance-group-title form-field-group--full">
+            {{ t("myPage.appearance.editorGroup") }}
+          </p>
+          <div
+            v-for="item in editorChoices"
+            :key="item.key"
+            class="form-field-group appearance-choice"
+          >
+            <span class="form-field-label">{{ t(item.label) }}</span>
+            <AppRadioGroup
+              direction="horizontal"
+              :model-value="String(appearanceSetting[item.key] ?? item.options[0].value)"
+              @update:model-value="(value) => setAppearance(item.key, String(value))"
+            >
+              <AppRadio
+                v-for="option in item.options"
+                :key="option.value"
+                shape="button"
+                :label="option.value"
+              >
+                {{ t(option.label) }}
+              </AppRadio>
+            </AppRadioGroup>
+          </div>
+          <div
+            v-for="item in editorToggles"
+            :key="item.key"
+            class="toggle-card-row"
+          >
+            <span class="toggle-card-title">
+              {{ t(item.label) }}
+              <span v-if="item.hint" class="toggle-card-hint">{{ t(item.hint) }}</span>
+            </span>
+            <AppSwitch
+              :model-value="Boolean(appearanceSetting[item.key])"
+              @update:model-value="(value) => setAppearance(item.key, value)"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Request Settings -->
     <section class="section">
       <header
@@ -355,6 +447,74 @@ const appName = computed(() => {
     || env.value?.meta?.cloudflare?.env?.SUB_STORE_BACKEND_CUSTOM_NAME
     || "Sub-Store Cloudflare";
 });
+/** Appearance controls: order here is the order on the page. */
+const listToggles: { key: string; label: string; hint?: string }[] = [
+  { key: "isSimpleMode", label: "myPage.appearance.simpleMode", hint: "myPage.appearance.simpleModeHint" },
+  { key: "isShowIcon", label: "myPage.appearance.showIcon" },
+  { key: "isSimpleShowRemark", label: "myPage.appearance.showRemark" },
+  { key: "useNarrowModeOnWideScreen", label: "myPage.appearance.narrowMode", hint: "myPage.appearance.narrowModeHint" },
+  { key: "showFloatingRefreshButton", label: "myPage.appearance.floatingRefresh" },
+  { key: "showFloatingAddButton", label: "myPage.appearance.floatingAdd" },
+];
+
+const editorToggles: { key: string; label: string; hint?: string }[] = [
+  { key: "displayPreviewInWebPage", label: "myPage.appearance.previewInPage" },
+];
+
+const listChoices: { key: string; label: string; options: { value: string; label: string }[] }[] = [
+  {
+    key: "listPageViewMode",
+    label: "myPage.appearance.listViewMode",
+    options: [
+      { value: "single-column", label: "myPage.appearance.singleColumn" },
+      { value: "dual-column", label: "myPage.appearance.dualColumn" },
+    ],
+  },
+  {
+    key: "createItemPosition",
+    label: "myPage.appearance.createPosition",
+    options: [
+      { value: "top", label: "myPage.appearance.top" },
+      { value: "bottom", label: "myPage.appearance.bottom" },
+    ],
+  },
+];
+
+const editorChoices: { key: string; label: string; options: { value: string; label: string }[] }[] = [
+  {
+    key: "editorCommonDisplayMode",
+    label: "myPage.appearance.editorCommon",
+    options: [
+      { value: "expanded", label: "myPage.appearance.expanded" },
+      { value: "collapsed", label: "myPage.appearance.collapsed" },
+      { value: "hidden", label: "myPage.appearance.hidden" },
+    ],
+  },
+  {
+    key: "manualSubscriptionsDisplayMode",
+    label: "myPage.appearance.manualSubs",
+    options: [
+      { value: "expanded", label: "myPage.appearance.expanded" },
+      { value: "collapsed", label: "myPage.appearance.collapsed" },
+    ],
+  },
+  {
+    key: "editorGroupingMode",
+    label: "myPage.appearance.editorGrouping",
+    options: [
+      { value: "always", label: "myPage.appearance.groupingAlways" },
+      { value: "edit-only", label: "myPage.appearance.groupingEditOnly" },
+      { value: "disabled", label: "myPage.appearance.groupingDisabled" },
+    ],
+  },
+];
+
+const appearanceSetting = computed(() => settingsStore.appearanceSetting);
+
+const setAppearance = (key: string, value: boolean | string) => {
+  settingsStore.changeAppearanceSetting({ [key]: value } as any);
+};
+
 const requestSummary = computed(() => {
   return t("myPage.request.summary", {
     concurrency: settingsStore.backendRequestConcurrency || "3",
@@ -840,6 +1000,25 @@ onMounted(fetchTemplates);
   grid-column: 1 / -1;
 }
 
+.appearance-group-title {
+  margin: 0;
+  padding: 0 var(--space-3);
+  color: var(--comment-text-color);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+
+  &:not(:first-child) {
+    margin-top: var(--space-2);
+  }
+}
+
+/* Choices sit under the toggle cards; line their labels up with the card text. */
+.appearance-choice {
+  padding-inline: var(--space-3);
+  gap: 8px;
+}
+
 .form-field-label {
   font-size: var(--text-xs);
   font-weight: 600;
@@ -882,6 +1061,14 @@ onMounted(fetchTemplates);
     font-size: var(--text-sm);
     font-weight: 500;
     color: var(--primary-text-color);
+
+    & .toggle-card-hint {
+      display: block;
+      margin-top: 2px;
+      color: var(--comment-text-color);
+      font-size: var(--text-xs);
+      font-weight: 400;
+    }
   }
 }
 

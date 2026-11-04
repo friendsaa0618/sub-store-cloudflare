@@ -24,12 +24,14 @@ test("subs fold toggles", async ({ page }) => {
 test("settings request form expands", async ({ page }) => {
   await open(page, "/my", ".profile-block");
   const head = page.locator(".section-head--clickable");
-  await expect(page.locator(".settings-form-grid")).toHaveCount(0);
+  /* The appearance section always shows a grid; this one belongs to the request form. */
+  const requestCard = page.locator(".section-head--clickable + .settings-form-card");
+  await expect(requestCard).toHaveCount(0);
   await head.click();
-  await expect(page.locator(".settings-form-grid")).toBeVisible();
-  await expect(page.locator(".settings-form-grid input").first()).toBeVisible();
+  await expect(requestCard).toBeVisible();
+  await expect(requestCard.locator("input").first()).toBeVisible();
   await head.click();
-  await expect(page.locator(".settings-form-grid")).toHaveCount(0);
+  await expect(requestCard).toHaveCount(0);
 });
 
 test("local source editor fills the card", async ({ page }) => {

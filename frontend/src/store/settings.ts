@@ -212,6 +212,23 @@ export const useSettingsStore = defineStore("settingsStore", {
       this.hasFetchedSettings = true;
       this.applyAppearanceSetting(data.appearanceSetting);
     },
+    /**
+     * Appearance switches apply immediately, so the UI updates before the write
+     * lands; a failed write puts the previous values back.
+     */
+    async changeAppearanceSetting(patch: NonNullable<SettingsPostData["appearanceSetting"]>) {
+      const previous = { ...this.appearanceSetting };
+      this.applyAppearanceSetting({ ...this.appearanceSetting, ...patch });
+      try {
+        const res = await settingsApi.setSettings({ appearanceSetting: { ...this.appearanceSetting } });
+        if (res?.data?.status === "success") return true;
+      } catch (error) {
+        /* The axios interceptor already reported it. */
+        console.error(error);
+      }
+      this.applyAppearanceSetting(previous);
+      return false;
+    },
     async changeSettings(data: SettingsPostData) {
       const { showNotify } = useAppNotifyStore();
       const res = await settingsApi.setSettings(data);
