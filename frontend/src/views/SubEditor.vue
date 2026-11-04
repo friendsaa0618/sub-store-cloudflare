@@ -527,6 +527,7 @@ import { notifyLoading, dismissNotify } from "@/utils/notify";
 import { storeToRefs } from "pinia";
 import {
   computed,
+  nextTick,
   onBeforeUnmount,
   onMounted,
   provide,
@@ -571,8 +572,32 @@ const markDirty = () => {
   isDirty.value = true;
 };
 /** All editor sections render on one page — tab chrome removed. */
-const focusValidationErrorTab = (_errors: unknown) => {
-  // No section tabs; validation dialog already shows the first error.
+/**
+ * There are no section tabs any more, but the form is long enough that the
+ * offending field is usually off-screen: bring it into view and focus it so
+ * "去修改" lands on something.
+ */
+const revealField = (prop: string) => {
+  const item = document.querySelector<HTMLElement>(`.app-form-item[data-prop="${prop}"]`);
+  if (!item) return;
+  item.scrollIntoView({ block: "center", behavior: "smooth" });
+  item.querySelector<HTMLElement>("input, textarea, select")?.focus({ preventScroll: true });
+};
+
+let pendingValidationProp: string | null = null;
+
+const focusValidationErrorTab = (errors?: { prop?: string }[] | { prop?: string }) => {
+  const prop = Array.isArray(errors) ? errors[0]?.prop : errors?.prop;
+  if (!prop) return;
+  pendingValidationProp = prop;
+  nextTick(() => revealField(prop));
+};
+
+/** The dialog takes focus, so land on the field once it closes. */
+const focusPendingValidationField = () => {
+  const prop = pendingValidationProp;
+  pendingValidationProp = null;
+  if (prop) nextTick(() => revealField(prop));
 };
 const manualSubscriptionsDefaultFolded = computed(() => {
   return (appearanceSetting.value.manualSubscriptionsDisplayMode || "collapsed") === "collapsed";
@@ -1221,6 +1246,7 @@ const compare = () => {
         noCancelBtn: true,
         okText: t(`editorPage.subConfig.pop.errorBtn`),
         closeOnClickOverlay: true,
+        onOk: focusPendingValidationField,
       });
       return;
     }
@@ -1274,6 +1300,7 @@ const submit = () => {
         noCancelBtn: true,
         okText: t(`editorPage.subConfig.pop.errorBtn`),
         closeOnClickOverlay: true,
+        onOk: focusPendingValidationField,
       });
       return;
     }

@@ -2,6 +2,7 @@
   <div
     class="app-form-item"
     :class="{ 'is-error': error, 'has-no-label': !hasLabel }"
+    :data-prop="prop"
     @click="focusControl"
   >
     <label v-if="hasLabel" class="app-form-item__label">
