@@ -5,6 +5,7 @@
     :round="!isDesktop"
     pop-class="app-picker"
     @update:visible="emit('update:visible', $event)"
+    @opened="focusSelectedOption"
   >
     <div class="app-picker__shell">
       <header class="app-picker__header">
@@ -16,14 +17,21 @@
           {{ okText }}
         </button>
       </header>
-      <ul class="app-picker__list" role="listbox" :aria-label="title">
-        <li v-for="option in columns" :key="option.value">
+      <ul
+        class="app-picker__list"
+        role="listbox"
+        :aria-label="title"
+        @keydown="onListKeydown"
+      >
+        <li v-for="(option, index) in columns" :key="option.value">
           <button
+            :ref="(el) => setOptionEl(el as HTMLElement | null, index)"
             type="button"
             class="app-picker__option"
             :class="{ 'is-selected': option.value === selected }"
             role="option"
             :aria-selected="option.value === selected"
+            :tabindex="option.value === selected ? 0 : -1"
             @click="selected = option.value"
           >
             <span class="app-picker__option-text">{{ option.text }}</span>
@@ -40,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { nextTick, ref, watch } from "vue";
 import AppPopup from "./AppPopup.vue";
 import { useDesktopLayout } from "@/hooks/useDesktopLayout";
 
@@ -76,12 +84,79 @@ const emit = defineEmits<{
 
 const isDesktop = useDesktopLayout();
 const selected = ref<string>(props.modelValue[0] ?? "");
+const optionEls = ref<(HTMLElement | null)[]>([]);
+
+const setOptionEl = (el: HTMLElement | null, index: number) => {
+  optionEls.value[index] = el;
+};
+
+const selectedIndex = () => {
+  const index = props.columns.findIndex((option) => option.value === selected.value);
+  return index >= 0 ? index : 0;
+};
+
+/** The list opens on the current choice, so a long list never hides it. */
+const focusSelectedOption = async () => {
+  await nextTick();
+  const el = optionEls.value[selectedIndex()];
+  el?.focus({ preventScroll: true });
+  el?.scrollIntoView({ block: "nearest" });
+};
+
+/** Arrow keys move the selection like a listbox; Enter applies it. */
+const moveSelection = (index: number) => {
+  const count = props.columns.length;
+  if (!count) return;
+  const next = (index + count) % count;
+  selected.value = props.columns[next].value;
+  void nextTick(() => {
+    const el = optionEls.value[next];
+    el?.focus({ preventScroll: true });
+    el?.scrollIntoView({ block: "nearest" });
+  });
+};
+
+const onListKeydown = (event: KeyboardEvent) => {
+  const last = props.columns.length - 1;
+  switch (event.key) {
+    case "ArrowDown":
+      event.preventDefault();
+      moveSelection(selectedIndex() + 1);
+      break;
+    case "ArrowUp":
+      event.preventDefault();
+      moveSelection(selectedIndex() - 1);
+      break;
+    case "Home":
+      event.preventDefault();
+      moveSelection(0);
+      break;
+    case "End":
+      event.preventDefault();
+      moveSelection(last);
+      break;
+    case "Enter":
+      event.preventDefault();
+      confirm();
+      break;
+  }
+};
 
 watch(
   () => props.visible,
   (visible) => {
     if (visible) {
       selected.value = props.modelValue[0] ?? props.columns[0]?.value ?? "";
+    }
+  },
+);
+
+/** Options often arrive after the picker opens; keep the selection valid. */
+watch(
+  () => props.columns,
+  (columns) => {
+    if (!columns.some((option) => option.value === selected.value)) {
+      selected.value = columns[0]?.value ?? "";
     }
   },
 );
