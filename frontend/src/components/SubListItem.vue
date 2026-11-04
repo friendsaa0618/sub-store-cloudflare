@@ -420,7 +420,9 @@ const previewPopupClass = computed(() =>
 const previewPopupStyle = computed(() => {
   if (isDesktop.value) {
     return {
-      width: "min(460px, 92vw)",
+      /* Wide enough for the two-column target grid, so the list fits without
+         scrolling inside the modal. */
+      width: "min(560px, 92vw)",
       maxHeight: "min(80vh, 720px)",
       borderRadius: "16px",
       overflow: "hidden",
@@ -428,7 +430,8 @@ const previewPopupStyle = computed(() => {
   }
   return {
     width: "100%",
-    maxHeight: "78vh",
+    /* The fourteen targets fit without scrolling on a standard phone. */
+    maxHeight: "88vh",
     borderRadius: "16px 16px 0 0",
     overflow: "hidden",
   };
@@ -1399,7 +1402,7 @@ const refreshSubFlowsIfNeeded = async () => {
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
-  padding: 12px 16px calc(16px + env(safe-area-inset-bottom));
+  padding: 10px 16px calc(12px + env(safe-area-inset-bottom));
   -webkit-overflow-scrolling: touch;
 }
 

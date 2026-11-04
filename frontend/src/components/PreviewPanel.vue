@@ -188,8 +188,8 @@
     align-items: center;
     width: 100%;
     cursor: pointer;
-    padding: 8px 12px;
-    margin-bottom: 14px;
+    padding: 6px 12px;
+    margin-bottom: 10px;
     background: color-mix(in srgb, var(--primary-color) 8%, transparent);
     border-radius: var(--radius-lg);
     border: 1px solid color-mix(in srgb, var(--primary-color) 15%, transparent);
@@ -205,28 +205,29 @@
     }
   }
 
+  /* Two columns from 600px up: fourteen targets used to run past the modal and
+     made the panel scroll. Phones keep one column, with tighter rows. */
   .preview-list {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2px 4px;
     padding: 0;
     margin: 0;
     list-style: none;
+
+    @media screen and (max-width: 599px) {
+      grid-template-columns: minmax(0, 1fr);
+    }
 
     & > li {
       width: 100%;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      padding: 8px 6px;
+      gap: 10px;
+      padding: 5px 8px;
       border-radius: var(--radius-md);
       transition: background-color 160ms ease;
-
-      & + li {
-        border-top: 1px solid var(--divider-color);
-        border-top-left-radius: 0;
-        border-top-right-radius: 0;
-      }
 
       @media (hover: hover) and (pointer: fine) {
         &:hover {
@@ -237,37 +238,44 @@
       & .infos {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
+        min-width: 0;
 
         & div {
-          width: 28px;
-          height: 28px;
-          border-radius: var(--radius-md);
+          width: 24px;
+          height: 24px;
+          border-radius: var(--radius-sm);
           overflow: hidden;
           display: flex;
           align-items: center;
           justify-content: center;
+          flex-shrink: 0;
         }
 
         & p {
-          font-size: 14px;
-          font-weight: 500;
-          color: var(--primary-text-color);
           margin: 0;
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          color: var(--primary-text-color);
+          font-size: 13px;
+          font-weight: 500;
         }
       }
 
       & .actions {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 2px;
+        flex-shrink: 0;
 
         & > button {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          width: 32px;
-          height: 32px;
+          width: 28px;
+          height: 28px;
           border-radius: var(--radius-md);
           background: transparent;
           border: 1px solid transparent;
