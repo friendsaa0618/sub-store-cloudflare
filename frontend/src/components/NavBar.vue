@@ -116,7 +116,7 @@
 <script lang="ts" setup>
 import { useMediaQuery } from "@vueuse/core";
 import { storeToRefs } from "pinia";
-import { computed, onMounted, watch } from "vue";
+import { computed, onMounted, watch, watchEffect } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 
@@ -188,6 +188,14 @@ const currentTitle = computed(() => {
 
   const metaTitle = route.meta.title;
   return metaTitle ? t(`navBar.pagesTitle.${metaTitle}`) : undefined;
+});
+
+/* The tab, the history entry and the screen-reader announcement all use the
+   page title; the router used to reset it to "Sub Store" on every navigation.
+   /preview names itself after the subscription, so leave that one alone. */
+watchEffect(() => {
+  if (route.path === "/preview") return;
+  document.title = currentTitle.value ? `${currentTitle.value} - Sub Store` : "Sub Store";
 });
 
 const showRefreshButton = computed(() => {
