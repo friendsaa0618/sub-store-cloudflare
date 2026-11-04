@@ -201,6 +201,31 @@
         </div>
       </div>
     </div>
+    <!-- 首次加载：骨架屏，避免白屏 -->
+    <div
+      v-if="isLoading && !hasSubs && !hasCollections"
+      class="subs-list-wrapper"
+      aria-busy="true"
+    >
+      <div class="subs-list-container page-stack">
+        <div class="loading-hero">
+          <div class="loading-line skeleton-pulse"></div>
+          <div class="loading-line loading-line--short skeleton-pulse"></div>
+        </div>
+        <div v-for="section in 2" :key="section" class="loading-section">
+          <div class="loading-caption skeleton-pulse"></div>
+          <div class="loading-cards">
+            <div v-for="card in 2" :key="card" class="loading-card">
+              <div class="loading-avatar skeleton-pulse"></div>
+              <div class="loading-lines">
+                <div class="loading-line skeleton-pulse"></div>
+                <div class="loading-line loading-line--short skeleton-pulse"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- 没有数据 -->
     <div
       v-if="!isLoading && fetchResult && !hasSubs && !hasCollections"
@@ -663,6 +688,85 @@ const filteredCollections = useFilteredDraggableList(collections, shouldShowElem
 
   .onboarding-steps {
     grid-template-columns: 1fr;
+  }
+}
+
+/* First-load skeleton: mirrors the hero, captions and card rows */
+.loading-hero {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  height: 78px;
+  padding: 0 var(--card-gutter);
+  border: 1px solid var(--divider-color);
+  border-radius: var(--radius-lg);
+  background: var(--card-color);
+
+  & .loading-line:first-child {
+    width: 22%;
+  }
+
+  & .loading-line:last-child {
+    width: 40%;
+  }
+}
+
+.loading-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.loading-caption {
+  width: 64px;
+  height: 14px;
+  margin: 8px 0 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Same two-column rhythm as the real list */
+.loading-cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+
+  @media screen and (min-width: 900px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.loading-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px var(--card-gutter);
+  border: 1px solid var(--divider-color);
+  border-radius: var(--radius-lg);
+  background: var(--card-color);
+}
+
+.loading-avatar {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+}
+
+.loading-lines {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.loading-line {
+  height: 12px;
+  border-radius: var(--radius-sm);
+
+  &--short {
+    width: 40%;
   }
 }
 
