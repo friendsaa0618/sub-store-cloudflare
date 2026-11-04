@@ -43,7 +43,8 @@ import {
   faShareNodes,
   faPlay,
   faSliders,
-  faGear
+  faGear,
+  faMagnifyingGlass
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(faSun);
@@ -89,4 +90,5 @@ library.add(faMinimize);
 library.add(faShareNodes);
 library.add(faPlay);
 library.add(faSliders);
+library.add(faMagnifyingGlass);
 library.add(faGear);

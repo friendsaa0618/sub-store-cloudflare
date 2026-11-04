@@ -210,7 +210,9 @@ export default {
     },
     sectionEmpty: {
       source: "No sources yet. Tap + to create one.",
+      sourceSearch: "No matching sources",
       collection: "No collections yet. Tap + to create one.",
+      collectionSearch: "No matching collections",
     },
     actions: {
       openMenu: "Expand quick actions",

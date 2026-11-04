@@ -210,6 +210,8 @@ export default {
     },
     sectionEmpty: {
       source: "还没有订阅源，点击右侧 + 创建",
+      sourceSearch: "没有匹配的订阅源",
+      collectionSearch: "没有匹配的组合订阅",
       collection: "还没有组合订阅，点击右侧 + 创建",
     },
     actions: {

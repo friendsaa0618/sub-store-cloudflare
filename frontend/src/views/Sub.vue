@@ -29,6 +29,31 @@
     >
       <div class="subs-list-container page-stack">
         <HomeHero :source-count="subs.length" :collection-count="collections.length" />
+        <div v-if="listSearchStore.isSearchOpen" class="list-search">
+          <font-awesome-icon
+            class="list-search__icon"
+            icon="fa-solid fa-magnifying-glass"
+            aria-hidden="true"
+          />
+          <input
+            ref="listSearchInput"
+            v-model="listSearchStore.query"
+            class="list-search__input"
+            type="search"
+            :placeholder="$t('navBar.listSearch.placeholder')"
+            :aria-label="$t('navBar.listSearch.placeholder')"
+            @keydown.esc.stop.prevent="closeListSearch"
+          />
+          <button
+            type="button"
+            class="list-search__clear"
+            :aria-label="listSearchStore.hasQuery ? $t('navBar.listSearch.clear') : $t('navBar.listSearch.close')"
+            :title="listSearchStore.hasQuery ? $t('navBar.listSearch.clear') : $t('navBar.listSearch.close')"
+            @click.stop="handleListSearchClose"
+          >
+            <font-awesome-icon icon="fa-solid fa-circle-xmark" aria-hidden="true" />
+          </button>
+        </div>
         <section
           v-if="hasSubs && !hasCollections"
           class="onboarding-card onboarding-inline"
@@ -105,7 +130,7 @@
             v-else-if="!isFold('sub') && filterdSubsCount === 0"
             class="section-empty"
           >
-            {{ $t('subPage.sectionEmpty.source') }}
+            {{ listSearchStore.hasQuery ? $t('subPage.sectionEmpty.sourceSearch') : $t('subPage.sectionEmpty.source') }}
           </p>
         </div>
 
@@ -171,7 +196,7 @@
             v-else-if="!isFold('col') && filterdColsCount === 0"
             class="section-empty"
           >
-            {{ $t('subPage.sectionEmpty.collection') }}
+            {{ listSearchStore.hasQuery ? $t('subPage.sectionEmpty.collectionSearch') : $t('subPage.sectionEmpty.collection') }}
           </p>
         </div>
       </div>
@@ -208,7 +233,7 @@
 
 <script lang="ts" setup>
 import { storeToRefs } from "pinia";
-import { computed, onMounted, ref, toRaw, watch } from "vue";
+import { computed, nextTick, onMounted, ref, toRaw, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute } from 'vue-router';
 import draggable from "vuedraggable";
@@ -237,6 +262,22 @@ const subsStore = useSubsStore();
 const globalStore = useGlobalStore();
 const settingsStore = useSettingsStore();
 const listSearchStore = useListSearchStore();
+const listSearchInput = ref<HTMLInputElement | null>(null);
+
+const closeListSearch = () => listSearchStore.close();
+const handleListSearchClose = () => {
+  if (listSearchStore.hasQuery) listSearchStore.setQuery("");
+  else listSearchStore.close();
+};
+
+watch(
+  () => listSearchStore.isSearchOpen,
+  async (open) => {
+    if (!open) return;
+    await nextTick();
+    listSearchInput.value?.focus();
+  },
+);
 const { hasSubs, hasCollections, subs, collections, flows } = storeToRefs(subsStore);
 const { appearanceSetting } = storeToRefs(settingsStore);
 const { effectiveListViewMode } = useListViewMode();
@@ -622,6 +663,67 @@ const filteredCollections = useFilteredDraggableList(collections, shouldShowElem
 
   .onboarding-steps {
     grid-template-columns: 1fr;
+  }
+}
+
+/* List search: a compact field between the hero and the sections */
+.list-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 var(--card-gutter);
+  border: 1px solid var(--divider-color);
+  border-radius: var(--radius-lg);
+  background: var(--card-color);
+}
+
+.list-search__icon {
+  flex-shrink: 0;
+  color: var(--comment-text-color);
+  font-size: 13px;
+}
+
+.list-search__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--primary-text-color);
+  font: inherit;
+  font-size: var(--text-base);
+  outline: none;
+
+  &::placeholder {
+    color: var(--comment-text-color);
+  }
+
+  &::-webkit-search-cancel-button {
+    display: none;
+  }
+}
+
+.list-search__clear {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--comment-text-color);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--primary-text-color);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--focus-ring-color);
   }
 }
 

@@ -64,6 +64,22 @@
 
       <div class="nav-bar__right">
         <button
+          v-if="showListSearch"
+          type="button"
+          class="nav-btn"
+          :class="{ 'is-active': listSearchStore.isSearchOpen }"
+          :aria-label="t('navBar.listSearch.open')"
+          :title="t('navBar.listSearch.open')"
+          :aria-expanded="listSearchStore.isSearchOpen"
+          @click.stop="toggleListSearch"
+        >
+          <font-awesome-icon
+            class="nav-btn__icon"
+            icon="fa-solid fa-magnifying-glass"
+            aria-hidden="true"
+          />
+        </button>
+        <button
           v-if="showRefreshButton"
           type="button"
           class="nav-btn"
@@ -99,12 +115,13 @@
 <script lang="ts" setup>
 import { useMediaQuery } from "@vueuse/core";
 import { storeToRefs } from "pinia";
-import { computed, onMounted } from "vue";
+import { computed, onMounted, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 
 import brandLogo from "@/assets/icons/logo.png";
 import LanguageSwitcherButton from "@/components/LanguageSwitcherButton.vue";
+import { useListSearchStore } from "@/store/listSearch";
 import { useSettingsStore } from "@/store/settings";
 import { SIDEBAR_BREAKPOINT, useSystemStore } from "@/store/system";
 import { initStores } from "@/utils/initApp";
@@ -114,10 +131,27 @@ const router = useRouter();
 const route = useRoute();
 const systemStore = useSystemStore();
 const settingsStore = useSettingsStore();
+const listSearchStore = useListSearchStore();
 const { appearanceSetting } = storeToRefs(settingsStore);
 const { navBarHeight, navBartop } = storeToRefs(systemStore);
 
 const isDesktop = useMediaQuery(`(min-width: ${SIDEBAR_BREAKPOINT}px)`);
+
+/** Search lives on the subscription list only; the route opts in. */
+const showListSearch = computed(() => Boolean(route.meta.supportsListSearch));
+
+const toggleListSearch = () => {
+  if (listSearchStore.isSearchOpen) {
+    listSearchStore.close();
+  } else {
+    listSearchStore.open(route.path);
+  }
+};
+
+watch(
+  () => route.path,
+  (path) => listSearchStore.syncRoute(path, Boolean(route.meta.supportsListSearch)),
+);
 
 onMounted(() => {
   systemStore.initSystemState();
