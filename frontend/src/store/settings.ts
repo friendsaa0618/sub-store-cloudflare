@@ -4,8 +4,6 @@ import { useAppNotifyStore } from "@/store/appNotify";
 import { runFrontendRequestTask } from "@/utils/requestConcurrency";
 import { notifyLoading, dismissNotify } from "@/utils/notify";
 import { defineStore } from "pinia";
-// import { useEnvApi } from '@/api/env';
-// import { useSubsStore } from '@/store/subs';
 
 const settingsApi = useSettingsApi();
 const { t } = i18n.global;

@@ -124,7 +124,7 @@ import LanguageSwitcherButton from "@/components/LanguageSwitcherButton.vue";
 import { useListSearchStore } from "@/store/listSearch";
 import { getThemeCatalog } from "@/hooks/useThemes";
 import { useSettingsStore } from "@/store/settings";
-import { SIDEBAR_BREAKPOINT, useSystemStore } from "@/store/system";
+import { useSystemStore } from "@/store/system";
 import { initStores } from "@/utils/initApp";
 
 const { t } = useI18n();
