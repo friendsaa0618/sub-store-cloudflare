@@ -791,6 +791,11 @@ export default {
     appearance: {
       title: "Appearance",
       desc: "These switches only change this account's UI and apply immediately.",
+      progressStyle: "Traffic progress style",
+      progressHidden: "Hidden",
+      progressBackground: "Card tint",
+      progressBar: "Bottom bar",
+      narrowListViewMode: "List layout in narrow mode",
       themeGroup: "Theme",
       themeMode: "Mode",
       themeAuto: "Follow system",

@@ -3,6 +3,7 @@ import { computed } from "vue";
 import { useRoute } from "vue-router";
 
 import { useListPageViewStore } from "@/store/listPageView";
+import { useSettingsStore } from "@/store/settings";
 import { useSystemStore } from "@/store/system";
 
 // Dual-column once viewport is wide enough for two cards inside the
@@ -15,6 +16,7 @@ export const useListViewMode = () => {
   const systemStore = useSystemStore();
 
   const { singleColumnLockRoutePath } = storeToRefs(listPageViewStore);
+  const settingsStore = useSettingsStore();
   const { screenWidth } = storeToRefs(systemStore);
 
   const supportsListViewMode = computed(() => Boolean(route.meta?.supportsListViewMode));
@@ -28,7 +30,13 @@ export const useListViewMode = () => {
       return "single-column";
     }
 
-    return "dual-column";
+    const appearance = settingsStore.appearanceSetting;
+    /* Narrow layout on a wide screen leaves no room for two columns. */
+    if (appearance.useNarrowModeOnWideScreen) {
+      return appearance.listPageViewModeInWideScreenNarrowMode ?? "single-column";
+    }
+
+    return appearance.listPageViewMode ?? "dual-column";
   });
 
   return {

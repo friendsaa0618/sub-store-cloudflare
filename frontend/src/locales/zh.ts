@@ -791,6 +791,11 @@ export default {
     appearance: {
       title: "外观",
       desc: "只影响这个账号的界面，改完立即生效。",
+      progressStyle: "订阅进度样式",
+      progressHidden: "隐藏",
+      progressBackground: "卡片底色",
+      progressBar: "底部进度条",
+      narrowListViewMode: "窄导航时的列表布局",
       themeGroup: "主题",
       themeMode: "模式",
       themeAuto: "跟随系统",

@@ -40,9 +40,9 @@
 </template>
 
 <script setup lang="ts">
-import { useMediaQuery } from "@vueuse/core";
 import { ref, watch } from "vue";
 import AppPopup from "./AppPopup.vue";
+import { useDesktopLayout } from "@/hooks/useDesktopLayout";
 
 export type PickerOption = {
   text: string;
@@ -74,7 +74,7 @@ const emit = defineEmits<{
   (e: "confirm", payload: { selectedValue: string[] }): void;
 }>();
 
-const isDesktop = useMediaQuery("(min-width: 768px)");
+const isDesktop = useDesktopLayout();
 const selected = ref<string>(props.modelValue[0] ?? "");
 
 watch(

@@ -181,7 +181,7 @@
             />
           </div>
           <div
-            v-for="item in listChoices"
+            v-for="item in visibleListChoices"
             :key="item.key"
             class="form-field-group appearance-choice"
           >
@@ -417,7 +417,6 @@
 <script lang="ts" setup>
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from "vue";
 import { showDialog } from "@/utils/dialog";
-import { useMediaQuery } from "@vueuse/core";
 import { useI18n } from "vue-i18n";
 
 import { useCloudflareApi } from "@/api/app";
@@ -428,6 +427,7 @@ import { useCodeStore } from "@/store/codeStore";
 import { useSettingsStore } from "@/store/settings";
 import { TEMPLATE_TARGET_OPTIONS, getTargetLabel } from "@/constants/subscriptionTargets";
 import { getThemeCatalog } from "@/hooks/useThemes";
+import { useDesktopLayout } from "@/hooks/useDesktopLayout";
 
 const CmView = defineAsyncComponent(() => import("@/views/editCode/cmView.vue"));
 
@@ -439,7 +439,7 @@ const { showNotify } = useAppNotifyStore();
 const { t } = useI18n();
 const { icon, env } = useBackend();
 const TEMPLATE_EDITOR_ID = "TemplateEditor";
-const isDesktop = useMediaQuery("(min-width: 768px)");
+const isDesktop = useDesktopLayout();
 
 const fileInput = ref<HTMLInputElement | null>(null);
 const templateFileInput = ref<HTMLInputElement | null>(null);
@@ -555,7 +555,15 @@ const editorToggles: { key: string; label: string; hint?: string }[] = [
   { key: "displayPreviewInWebPage", label: "myPage.appearance.previewInPage" },
 ];
 
-const listChoices: { key: string; label: string; options: { value: string; label: string }[] }[] = [
+type AppearanceChoice = {
+  key: string;
+  label: string;
+  options: { value: string; label: string }[];
+  /** Only shown while this boolean setting is on. */
+  showWhen?: string;
+};
+
+const listChoices: AppearanceChoice[] = [
   {
     key: "listPageViewMode",
     label: "myPage.appearance.listViewMode",
@@ -572,9 +580,27 @@ const listChoices: { key: string; label: string; options: { value: string; label
       { value: "bottom", label: "myPage.appearance.bottom" },
     ],
   },
+  {
+    key: "subProgressStyle",
+    label: "myPage.appearance.progressStyle",
+    options: [
+      { value: "hidden", label: "myPage.appearance.progressHidden" },
+      { value: "background", label: "myPage.appearance.progressBackground" },
+      { value: "bar", label: "myPage.appearance.progressBar" },
+    ],
+  },
+  {
+    key: "listPageViewModeInWideScreenNarrowMode",
+    label: "myPage.appearance.narrowListViewMode",
+    showWhen: "useNarrowModeOnWideScreen",
+    options: [
+      { value: "single-column", label: "myPage.appearance.singleColumn" },
+      { value: "dual-column", label: "myPage.appearance.dualColumn" },
+    ],
+  },
 ];
 
-const editorChoices: { key: string; label: string; options: { value: string; label: string }[] }[] = [
+const editorChoices: AppearanceChoice[] = [
   {
     key: "editorCommonDisplayMode",
     label: "myPage.appearance.editorCommon",
@@ -604,6 +630,11 @@ const editorChoices: { key: string; label: string; options: { value: string; lab
 ];
 
 const appearanceSetting = computed(() => settingsStore.appearanceSetting);
+
+/** Some choices only make sense while another switch is on. */
+const visibleListChoices = computed(() =>
+  listChoices.filter((item) => !item.showWhen || Boolean(appearanceSetting.value[item.showWhen])),
+);
 
 const setAppearance = (key: string, value: boolean | string) => {
   settingsStore.changeAppearanceSetting({ [key]: value } as any);

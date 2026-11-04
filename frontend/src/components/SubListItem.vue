@@ -316,11 +316,11 @@
 <script lang="ts" setup>
 import { notifyLoading, dismissNotify } from "@/utils/notify";
 import { showDialog } from "@/utils/dialog";
-import { useMediaQuery } from "@vueuse/core";
 import dayjs from "dayjs";
 import { storeToRefs } from "pinia";
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, toRaw, type CSSProperties } from "vue";
 import { useAppClipboard } from "@/utils/clipboard";
+import { useDesktopLayout } from "@/hooks/useDesktopLayout";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 
@@ -346,7 +346,7 @@ const props = defineProps<{
 }>();
 const writeClipboard = useAppClipboard();
 
-const isDesktop = useMediaQuery("(min-width: 768px)");
+const isDesktop = useDesktopLayout();
 const { t } = useI18n();
 
 /** Mobile: collapse secondary card actions into a compact overflow menu */

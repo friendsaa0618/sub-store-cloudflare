@@ -114,7 +114,6 @@
 </template>
 
 <script lang="ts" setup>
-import { useMediaQuery } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 import { computed, onMounted, watch, watchEffect } from "vue";
 import { useI18n } from "vue-i18n";
@@ -124,6 +123,7 @@ import brandLogo from "@/assets/icons/logo.png";
 import LanguageSwitcherButton from "@/components/LanguageSwitcherButton.vue";
 import { useListSearchStore } from "@/store/listSearch";
 import { getThemeCatalog } from "@/hooks/useThemes";
+import { useDesktopLayout } from "@/hooks/useDesktopLayout";
 import { useSettingsStore } from "@/store/settings";
 import { SIDEBAR_BREAKPOINT, useSystemStore } from "@/store/system";
 import { initStores } from "@/utils/initApp";
@@ -137,7 +137,7 @@ const listSearchStore = useListSearchStore();
 const { appearanceSetting } = storeToRefs(settingsStore);
 const { navBarHeight, navBartop } = storeToRefs(systemStore);
 
-const isDesktop = useMediaQuery(`(min-width: ${SIDEBAR_BREAKPOINT}px)`);
+const isDesktop = useDesktopLayout();
 
 /** Search lives on the subscription list only; the route opts in. */
 const showListSearch = computed(() => Boolean(route.meta.supportsListSearch));
