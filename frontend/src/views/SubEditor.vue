@@ -531,6 +531,7 @@ import { storeToRefs } from "pinia";
 import {
   computed,
   nextTick,
+  defineAsyncComponent,
   onBeforeUnmount,
   onMounted,
   provide,
@@ -543,7 +544,9 @@ import {
 } from "vue";
 import { useI18n } from "vue-i18n";
 import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
-import cmView from "@/views/editCode/cmView.vue";
+/* CodeMirror is the biggest chunk on this page; load it after the form so the
+   editor opens without waiting for it. */
+const cmView = defineAsyncComponent(() => import("@/views/editCode/cmView.vue"));
 import { useCodeStore } from "@/store/codeStore";
 const cmStore = useCodeStore();
 const isDis = ref(true)
