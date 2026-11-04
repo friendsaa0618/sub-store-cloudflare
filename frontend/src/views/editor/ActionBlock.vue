@@ -400,10 +400,9 @@ const cancelPaste = async () => {
 const paste = async () => {
   try {
     let text = ''
-  if (showPasteboard.value) {
+  const fromPasteboard = showPasteboard.value
+  if (fromPasteboard) {
     text = pasteboard.value
-    showPasteboard.value = false
-    pasteboard.value = ''
   } else {
     try {
       text = await navigator.clipboard.readText()
@@ -429,12 +428,21 @@ const paste = async () => {
       value: item.data.type,
     }]
     emit('addAction', data);
+    /* Only clear the fallback panel once the paste worked; a typo keeps the
+       text so it can be fixed instead of retyped. */
+    if (fromPasteboard) {
+      showPasteboard.value = false
+      pasteboard.value = ''
+    }
   } else {
     throw new Error(t("editorPage.subConfig.actions.pasteAction.invalidData"))
   }
   } catch (e) {
     console.error(e)
-    notify({ title: t("editorPage.subConfig.actions.pasteAction.importFailed", { e: e.message ?? e }) });
+    notify({
+      type: "danger",
+      title: t("editorPage.subConfig.actions.pasteAction.importFailed", { e: e.message ?? e }),
+    });
   }
 };
 const emit = defineEmits(['addAction', 'deleteAction', 'updateCustomNameModeFlag', 'toggleAction']);
@@ -599,16 +607,38 @@ defineExpose({ exitAllEditName });
 </script>
 
 <style scoped>
+/* Fallback when the browser refuses to read the clipboard: the user pastes by
+   hand. A fixed 300x140 box clipped its own textarea and buttons. */
 .paste-action {
-  background-color: var(--dialog-color);
-  box-shadow: 0 1px 40px var(--background-color);
-  border-radius: var(--item-card-radios);
-  border: solid 1px var(--divider-color);
   position: fixed;
-  width: 300px;
-  height: 140px;
-  left: calc(50vw - 150px);
-  top: calc(50vh - 70px);
+  z-index: var(--z-dialog, 1200);
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: min(360px, calc(100vw - 32px));
+  max-height: min(60vh, 360px);
+  padding: var(--space-4);
+  box-sizing: border-box;
+  background-color: var(--dialog-color);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 24%);
+  border-radius: var(--radius-lg);
+  border: solid 1px var(--divider-color);
+
+  & .horizontal-button-container {
+    margin: 0;
+    background: transparent;
+  }
+
+  /* Without a border the field reads as loose text above the buttons. */
+  & :deep(.textarea-wrapper) {
+    padding: 8px 10px;
+    border: 1px solid var(--divider-color);
+    border-radius: var(--radius-md);
+    background: var(--background-color);
+  }
 }
 .add-action-btn {
   font-size: 14px;
