@@ -225,12 +225,18 @@ const hiddenTargetCount = computed(() => Math.max(0, DOWNLOAD_TARGET_OPTIONS.len
   .home-hero__flow {
     width: 100%;
     justify-content: space-between;
+    gap: var(--space-2);
   }
 
   .flow-link {
     flex: 1 1 auto;
     width: auto;
-    min-width: 24px;
+    min-width: 16px;
+  }
+
+  /* The counter would sit in the card's gutter at phone widths; the marks say enough. */
+  .flow-targets__more {
+    display: none;
   }
 }
 </style>
