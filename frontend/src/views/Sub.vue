@@ -109,6 +109,7 @@
             <button
               type="button"
               class="section-head__toggle"
+              :aria-expanded="!isFold('sub')"
               @click="toggleFold('sub')"
             >
               <span class="section-head__title">{{ $t(`specificWord.singleSub`) }}</span>
@@ -174,6 +175,7 @@
             <button
               type="button"
               class="section-head__toggle"
+              :aria-expanded="!isFold('col')"
               @click="toggleFold('col')"
             >
               <span class="section-head__title">{{ $t(`specificWord.collectionSub`) }}</span>
@@ -685,7 +687,9 @@ const importTips = () => {
 }
 
 .onboarding-empty {
-  width: min(calc(100% - 32px), 600px);
+  /* Three steps side by side need the room; 600px split the second step
+     mid-phrase. */
+  width: min(calc(100% - 32px), 720px);
   padding: 28px 24px;
   text-align: center;
 }
@@ -729,6 +733,10 @@ const importTips = () => {
     font-size: 12px;
     line-height: 1.5;
     text-align: left;
+    /* Wrap at the comma instead of inside 组合订阅; `anywhere` is the fallback
+       for a label longer than its column. */
+    word-break: keep-all;
+    overflow-wrap: anywhere;
   }
 
   & strong {
@@ -858,6 +866,7 @@ const importTips = () => {
 
 /* Section caption row: fold toggle + create action (shared .section-head) */
 .section-head__toggle {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -872,6 +881,14 @@ const importTips = () => {
   user-select: none;
   text-align: left;
   border-radius: var(--radius-sm);
+
+  /* The caption line is 21px tall; this grows the tap area to ~45px without
+     moving anything on the page. */
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -12px -10px;
+  }
 
   &:focus {
     outline: none;

@@ -113,7 +113,7 @@
         </AppButton>
       </div>
 
-      <div v-if="createdShareUrl" class="created-share" role="status">
+      <div v-if="createdShareUrl" ref="createdShareEl" class="created-share" role="status">
         <div class="created-share__head">
           <font-awesome-icon icon="fa-solid fa-circle-check" aria-hidden="true" />
           <span>{{ t('toolsPage.shares.created') }}</span>
@@ -232,7 +232,7 @@
 
 <script lang="ts" setup>
 import { showDialog } from '@/utils/dialog';
-import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useCloudflareApi } from '@/api/app';
 import { useAppNotifyStore } from '@/store/appNotify';
@@ -264,6 +264,7 @@ const loadingShares = ref(true);
 const loadingRecycle = ref(true);
 const shareCreating = ref(false);
 const createdShareUrl = ref('');
+const createdShareEl = ref<HTMLElement | null>(null);
 const shareForm = reactive({ resourceType: 'source', resourceId: '', target: '', expiresHours: '0' });
 const conversionTargets = computed(() => conversionKind.value === 'proxy' ? proxyTargets : ruleTargets);
 /* Proxy targets outnumber rule targets, so switching the kind can leave the
@@ -351,6 +352,9 @@ const createShare = async () => {
       expiresIn: Math.max(0, Number(shareForm.expiresHours) || 0) * 3600,
     });
     createdShareUrl.value = String((response?.data as any)?.data?.url || '');
+    /* The result card sits under the form, often below the fold; bring it in. */
+    await nextTick();
+    createdShareEl.value?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     await loadShares();
     showNotify({ type: 'success', title: t('toolsPage.notify.shareCreated') });
   } catch (error) {

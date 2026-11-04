@@ -331,7 +331,7 @@
   import PreviewNodeNamesDialog from '@/components/PreviewNodeNamesDialog.vue';
   import { useSubsStore } from '@/store/subs';
   import { extractPreviewNodeInfos, PreviewNodeNameSide } from '@/utils/previewNodeNames';
-  import { computed, ref, toRaw, watch } from 'vue';
+  import { computed, onBeforeUnmount, onMounted, ref, toRaw, watch } from 'vue';
 
   const subsStore = useSubsStore();
   const props = defineProps<{
@@ -501,6 +501,17 @@
     emit('closeCompare');
   };
 
+  /* The overlay is not a <dialog>, so Escape has to be wired by hand. The node
+     panel inside it has its own handler; without this guard one Escape closed
+     both layers. */
+  const onKeydown = (event: KeyboardEvent) => {
+    if (event.key !== 'Escape') return;
+    if (nodeInfoIsVisible.value) return;
+    clickClose();
+  };
+  onMounted(() => window.addEventListener('keydown', onKeydown));
+  onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
+
   const openNodeNamesDialog = (side: PreviewNodeNameSide) => {
     if (!hasNodeNamesData(side)) {
       return;
@@ -639,7 +650,7 @@
     top: calc(var(--compare-header-offset) + 62px);
     border-bottom: 1px solid var(--divider-color);
     font-weight: bold;
-    background: var(--background-color);
+    background: var(--compare-item-background-color);
     color: var(--comment-text-color);
 
     &.filter-table-head {
@@ -758,12 +769,22 @@
     position: relative;
     background: var(--compare-item-background-color);
 
+    /* Phones are full-bleed, so the surface only gets a border and corners once
+       the page body has side margins. No `overflow` here — it would turn the
+       block into the sticky container. */
+    @media screen and (min-width: 768px) {
+      border: 1px solid var(--divider-color);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--space-4);
+    }
+
     & .compare-title {
       padding: 0 var(--safe-area-side);
       z-index: 9;
       margin-top: 0;
       top: var(--compare-header-offset);
-      background: var(--background-color);
+      background: var(--compare-item-background-color);
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
       & small {
         cursor: pointer;
         text-decoration: underline;
