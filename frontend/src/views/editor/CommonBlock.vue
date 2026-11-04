@@ -252,7 +252,7 @@
     }
   }
   .options-label {
-    font-size: 12px;
+    font-size: var(--text-sm);
     margin: 0 0 8px;
     color: var(--comment-text-color);
   }
@@ -262,7 +262,6 @@
     background: var(--card-color);
     border: 1px solid var(--divider-color);
     border-radius: var(--radius-lg);
-    box-shadow: var(--card-shadow);
     overflow: hidden;
 
     &:deep(.app-form-item) {
@@ -295,7 +294,7 @@
     height: 32px;
     padding: 0 11px;
     border: 1px solid var(--divider-color);
-    border-radius: 999px;
+    border-radius: var(--radius-full);
     background: transparent;
     color: var(--second-text-color);
     cursor: pointer;

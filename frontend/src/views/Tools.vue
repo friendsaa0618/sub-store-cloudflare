@@ -447,7 +447,7 @@ onMounted(() => Promise.all([loadShares(), loadRecycle()]));
 
 .field-label {
   margin: 0;
-  font-size: var(--text-xs);
+  font-size: var(--text-sm);
   font-weight: 600;
   color: var(--second-text-color);
   line-height: 1.3;
@@ -622,16 +622,13 @@ select.field-control {
 }
 
 .mono-time {
-  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
 }
 
 .stats {
   color: var(--comment-text-color);
-  font-size: var(--text-sm);
   margin-top: var(--space-2);
-  font-family: var(--font-mono);
   font-size: var(--text-xs);
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";

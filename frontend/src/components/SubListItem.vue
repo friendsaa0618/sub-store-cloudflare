@@ -549,7 +549,7 @@ const appendRemarkToSimpleDetailLine = (value: string) => {
     return value;
   }
 
-  return [value, remarkText.value].filter(Boolean).join(" · ");
+  return [value, remarkText.value].filter(Boolean).join(t("specificWord.metaSeparator"));
 };
 const simpleCollectionDetailLine = computed(() => {
   return appendRemarkToSimpleDetailLine(collectionDetail.value);
@@ -721,8 +721,9 @@ const simpleSubDetailLine = computed(() => {
     return appendRemarkToSimpleDetailLine(flow.value);
   }
 
+  const separator = t("specificWord.metaSeparator");
   const baseLine = flow.value.secondLine
-    ? `${flow.value.firstLine} · ${flow.value.secondLine}`
+    ? `${flow.value.firstLine}${separator}${flow.value.secondLine}`
     : flow.value.firstLine;
 
   return appendRemarkToSimpleDetailLine(baseLine);
@@ -752,7 +753,7 @@ const nonSimpleSecondLine = computed(() => {
     return remarkText.value;
   }
 
-  return [flow.value.secondLine, remarkText.value].filter(Boolean).join(" · ");
+  return [flow.value.secondLine, remarkText.value].filter(Boolean).join(t("specificWord.metaSeparator"));
 });
 
 const closeCompare = () => {
@@ -1000,17 +1001,15 @@ const refreshSubFlowsIfNeeded = async () => {
   min-width: 0;
   background: var(--card-color);
   border: 1px solid var(--divider-color);
-  box-shadow: var(--card-shadow);
   cursor: pointer;
   position: relative;
   overflow: visible;
-  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+  transition: border-color 160ms ease, transform 160ms ease;
 
   /* Hover tint only on true hover devices — no lift, no sticky hover on touch */
   @media (hover: hover) and (pointer: fine) {
     &:hover {
       border-color: color-mix(in srgb, var(--primary-color) 22%, var(--divider-color));
-      box-shadow: var(--card-shadow-hover);
     }
   }
 
@@ -1023,7 +1022,7 @@ const refreshSubFlowsIfNeeded = async () => {
     width: 48px;
     height: 48px;
     margin-right: 12px;
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
 
     @media screen and (min-width: 768px) {
       width: 56px;
@@ -1033,7 +1032,7 @@ const refreshSubFlowsIfNeeded = async () => {
 
     & img {
       object-fit: contain;
-      border-radius: 10px;
+      border-radius: var(--radius-md);
     }
   }
 
@@ -1130,7 +1129,7 @@ const refreshSubFlowsIfNeeded = async () => {
           & .sub-item-action {
             width: 40px;
             height: 40px;
-            border-radius: 10px;
+            border-radius: var(--radius-md);
           }
         }
       }
@@ -1140,7 +1139,7 @@ const refreshSubFlowsIfNeeded = async () => {
         height: 32px;
         padding: 0;
         border: 1px solid transparent;
-        border-radius: 8px;
+        border-radius: var(--radius-md);
         background: transparent;
         color: var(--comment-text-color);
         cursor: pointer;
@@ -1367,7 +1366,7 @@ const refreshSubFlowsIfNeeded = async () => {
   width: 36px;
   height: 4px;
   margin: 10px auto 0;
-  border-radius: 9999px;
+  border-radius: var(--radius-full);
   background: color-mix(in srgb, var(--comment-text-color) 28%, transparent);
   flex-shrink: 0;
 }
@@ -1409,7 +1408,7 @@ const refreshSubFlowsIfNeeded = async () => {
   box-sizing: border-box;
   min-width: 176px;
   padding: 6px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--divider-color);
   background: var(--popup-color, var(--card-color));
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.22);
@@ -1425,7 +1424,7 @@ const refreshSubFlowsIfNeeded = async () => {
   min-height: 40px;
   padding: 8px 12px;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: transparent;
   color: var(--primary-text-color);
   font-size: 13px;

@@ -132,7 +132,6 @@ const saveTokenAndRetry = async () => {
   border: 1px solid var(--divider-color);
   border-radius: var(--radius-lg);
   background: var(--card-color);
-  box-shadow: var(--card-shadow);
 }
 
 .empty-state-image {
@@ -162,7 +161,7 @@ const saveTokenAndRetry = async () => {
     width: 100%;
     box-sizing: border-box;
     border: 1px solid var(--divider-color);
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     background: var(--card-color);
     color: var(--primary-text-color);
     padding: 12px 44px 12px 14px;

@@ -4,6 +4,7 @@
     <!-- Single scroll page: display + content + actions (no section tabs, no top icon) -->
     <div class="form-block-wrapper">
       <AppForm class="form" :model-value="form" ref="ruleForm">
+        <div class="editor-paper">
         <div class="editor-tab-content editor-group">
         <p class="editor-group__title">{{ $t(`editorPage.subConfig.groups.basic`) }}</p>
         <!-- name -->
@@ -430,6 +431,7 @@
           </button>
         </AppFormItem>
         </div>
+        </div>
       </AppForm>
     </div>
 
@@ -801,7 +803,7 @@ const selectedSubsDisplay = computed(() => selectedSubs.value.replace(/^:\s*/, "
         ? t("editorPage.subConfig.basic.template.builtIn")
         : t("editorPage.subConfig.basic.template.custom");
       return {
-        text: `${label}（${type} · ${template.target || "mihomo"}）`,
+        text: `${label}（${type}，${template.target || "mihomo"}）`,
         value: template.name,
       };
     });
@@ -1719,13 +1721,17 @@ const handleEditGlobalClick = () => {
   margin: 0;
   box-sizing: border-box;
 
-  /* Field groups: one surface per group, rows separated by hairlines */
-  &:deep(.editor-group) {
+  /* One paper for all field groups; a hairline separates the sections */
+  &:deep(.editor-paper) {
     background: var(--card-color);
     border: 1px solid var(--divider-color);
     border-radius: var(--radius-lg);
-    box-shadow: var(--card-shadow);
     margin-bottom: var(--space-3);
+    overflow: hidden;
+  }
+
+  &:deep(.editor-group + .editor-group) {
+    border-top: 1px solid var(--divider-color);
   }
 
   &:deep(.editor-group .app-form-item) {
@@ -1906,7 +1912,7 @@ const handleEditGlobalClick = () => {
   height: 26px;
   padding: 0 10px;
   border: 1px solid var(--divider-color);
-  border-radius: 9999px;
+  border-radius: var(--radius-full);
   background: var(--background-color);
   color: var(--second-text-color);
   font-size: 12px;
@@ -1992,7 +1998,7 @@ const handleEditGlobalClick = () => {
     height: 30px;
     padding: 0 10px;
     border: 1px solid var(--divider-color);
-    border-radius: 9999px;
+    border-radius: var(--radius-full);
     background: var(--background-color);
     color: var(--second-text-color);
     font-size: 12px;

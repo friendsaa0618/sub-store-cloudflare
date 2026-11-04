@@ -376,7 +376,7 @@ const toggleTheme = async () => {
   align-items: center;
   max-width: 100%;
   padding: 3px;
-  border-radius: 9999px;
+  border-radius: var(--radius-full);
   background: rgba(148, 163, 184, 0.08);
   border: 1px solid var(--divider-color);
   gap: 2px;
@@ -392,7 +392,7 @@ const toggleTheme = async () => {
   min-height: 32px;
   padding: 6px 12px;
   border: 0;
-  border-radius: 9999px;
+  border-radius: var(--radius-full);
   background: transparent;
   color: var(--second-text-color);
   font-size: 13px;

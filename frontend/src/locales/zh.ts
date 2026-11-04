@@ -1,5 +1,6 @@
 export default {
   specificWord: {
+    metaSeparator: "，",
     singleSub: "订阅源",
     collectionSub: "组合订阅",
     unknownType: "未知类型",
@@ -87,7 +88,7 @@ export default {
       output: "转换结果…",
       run: "开始转换",
       copy: "复制结果",
-      stats: "解析 {parsed} · 输出 {emitted} · 跳过 {skipped}"
+      stats: "解析 {parsed}，输出 {emitted}，跳过 {skipped}"
     },
     shares: {
       title: "独立分享链接",
@@ -114,7 +115,7 @@ export default {
       createdHint: "只在这里显示一次，请立即复制。",
       copyLink: "复制链接",
       dismiss: "关闭",
-      meta: "{target} · {expires}"
+      meta: "{target}，{expires}"
     },
     recycle: {
       title: "回收站",
@@ -139,7 +140,7 @@ export default {
     overview: {
       title: "概览",
       subscriptions: "订阅",
-      subBreakdown: "{single} 个订阅源 · {collection} 个组合",
+      subBreakdown: "{single} 个订阅源，{collection} 个组合",
       flowStatus: "异常",
       flowOk: "全部正常",
       flowPending: "正在检查流量…",
@@ -176,7 +177,7 @@ export default {
       copyLink: "复制 Mihomo、sing-box 等下载链接",
       createSource: "添加第一个订阅源",
       openGuide: "查看五分钟快速开始",
-      step2: "下一步 · 2/3",
+      step2: "下一步（2/3）",
       collectionTitle: "创建一个组合订阅",
       collectionDesc: "如果默认 Daily 已被删除，可以重新创建组合订阅，合并、去重并套用分流模板。",
       createCollection: "创建组合订阅"

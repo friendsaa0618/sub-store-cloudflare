@@ -111,7 +111,7 @@ onUnmounted(() => {
   height: 32px;
   box-sizing: border-box;
   border: 1px solid var(--divider-color);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   margin: 0;
   background: var(--card-color);
   color: var(--second-text-color);
@@ -178,7 +178,7 @@ onUnmounted(() => {
   z-index: 200;
   min-width: 150px;
   padding: 4px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--divider-color);
   background: var(--card-color);
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
@@ -206,7 +206,7 @@ onUnmounted(() => {
   gap: 12px;
   padding: 8px 10px;
   border: 0;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--primary-text-color);
   font-size: 13px;

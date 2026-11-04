@@ -327,7 +327,7 @@ onMounted(async () => {
       );
       const scriptName = locale.value.startsWith('zh') && script.nameZh ? script.nameZh : script.name;
       columns.value.push({
-        text: `${scriptName} · ${t(`editorPage.subConfig.nodeActions['${type}'].label`)}`,
+        text: `${scriptName}，${t(`editorPage.subConfig.nodeActions['${type}'].label`)}`,
         value: type,
         customName: scriptName,
         args: { scriptId: script.id, scriptKind: script.kind, arguments: args },
@@ -1085,6 +1085,6 @@ defineExpose({ exitAllEditName });
   gap: 15px;
   background-color: var(--card-color);
   margin: 10px;
-  border-radius: 15px;
+  border-radius: var(--radius-lg);
 }
 </style>

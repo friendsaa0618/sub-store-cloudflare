@@ -136,7 +136,7 @@ const copyPrompt = async () => {
   padding: 10px 12px;
   resize: none;
   border: 1px solid var(--divider-color);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   outline: none;
   color: var(--primary-text-color);
   background: var(--card-color);

@@ -12,6 +12,11 @@ This project follows semantic versioning where practical.
 
 ### Changed
 
+- Cards stopped floating: page-level surfaces (`surface`, the subscription card, the token gate, the editor groups) keep their 1px border and drop `--card-shadow`, so a shadow now means "this layer is above the page" (dialogs, sheets, menus, toasts, tooltips). The editor's 基本信息 and 订阅来源 groups share one paper with a hairline between the sections instead of sitting in two cards.
+- Radii are down to three values: 8px for controls, 12px for cards and overlays, full for pills. The off-scale 10px, 15px and 16px radii and the duplicate 999/9999 pill values are gone.
+- Facts in a meta line are comma-separated instead of joined with a middle dot (`D1，v1.1.0`, `mihomo，到期 …`, the conversion stats, the subscription breakdown and the onboarding step), through `specificWord.metaSeparator` (`，` / `, `).
+- The mono face is reserved for machine data (URLs, tokens, node text); conversion stats and timestamps use the UI face with tabular figures.
+- Field labels are 13px everywhere: the Tools field label and the common-settings row label were 12px.
 - Card padding comes from one token, `--card-gutter` (16px, 12px below 768px), so every page agrees on the phone gutter: settings and the editor were 16px while the subscription list and Tools were 12px. The token feeds `.surface--pad`, the profile card, the token gate, the editor field rows and palettes, and the node-action cards.
 - The gate's secondary actions (retry, deployment docs) share the form column's left edge instead of centering under it.
 - The admin-token field has a show/hide toggle: an eye button inside the field switches it between `password` and `text` (`aria-pressed`, `显示 Token` / `隐藏 Token`), so a pasted token can be checked before submitting.

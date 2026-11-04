@@ -1,5 +1,6 @@
 export default {
   specificWord: {
+    metaSeparator: ", ",
     singleSub: "Source",
     collectionSub: "Collection",
     unknownType: "Unknown Type",
@@ -87,7 +88,7 @@ export default {
       output: "Converted result…",
       run: "Convert",
       copy: "Copy result",
-      stats: "parsed {parsed} · emitted {emitted} · skipped {skipped}"
+      stats: "parsed {parsed}, emitted {emitted}, skipped {skipped}"
     },
     shares: {
       title: "Scoped share links",
@@ -114,7 +115,7 @@ export default {
       createdHint: "Shown once here — copy it now.",
       copyLink: "Copy link",
       dismiss: "Dismiss",
-      meta: "{target} · {expires}"
+      meta: "{target}, {expires}"
     },
     recycle: {
       title: "Recycle bin",
@@ -139,7 +140,7 @@ export default {
     overview: {
       title: "Overview",
       subscriptions: "Subscriptions",
-      subBreakdown: "{single} sources · {collection} collections",
+      subBreakdown: "{single} sources, {collection} collections",
       flowStatus: "Issues",
       flowOk: "All healthy",
       flowPending: "Checking usage…",
@@ -176,7 +177,7 @@ export default {
       copyLink: "Copy a Mihomo, sing-box, or other download link",
       createSource: "Add the first source",
       openGuide: "Open the five-minute guide",
-      step2: "Next step · 2/3",
+      step2: "Next step (2 of 3)",
       collectionTitle: "Create a collection",
       collectionDesc: "If the default Daily collection was removed, create a collection to combine, deduplicate, and apply a routing template.",
       createCollection: "Create collection"

@@ -191,7 +191,7 @@
     padding: 8px 12px;
     margin-bottom: 14px;
     background: color-mix(in srgb, var(--primary-color) 8%, transparent);
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
     border: 1px solid color-mix(in srgb, var(--primary-color) 15%, transparent);
     color: var(--comment-text-color);
     font: inherit;
@@ -242,7 +242,7 @@
         & div {
           width: 28px;
           height: 28px;
-          border-radius: 8px;
+          border-radius: var(--radius-md);
           overflow: hidden;
           display: flex;
           align-items: center;

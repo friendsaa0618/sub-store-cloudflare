@@ -361,7 +361,7 @@ const pasteNav = async () => {
 .cm-panels.cm-panels-bottom {
   padding: 10px;
   border-top: none !important;
-  border-radius: 15px;
+  border-radius: var(--radius-lg);
   margin-left: 3%;
   margin-right: 3%;
   margin-top: 30px;
@@ -370,7 +370,7 @@ const pasteNav = async () => {
 }
 
 .cmviewRef {
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
 
   & .cm-scroller {
     font-family: var(--font-mono);
@@ -457,7 +457,7 @@ const pasteNav = async () => {
   background-image: none !important;
   background-color: #88828217 !important;
   border: none !important;
-  border-radius: 10px !important;
+  border-radius: var(--radius-md) !important;
 }
 
 .cm-textfield {
@@ -465,7 +465,7 @@ const pasteNav = async () => {
   color: inherit;
   font-size: 70%;
   border: 1px solid #8b8b8b3b !important;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background-color: transparent !important;
   width: 40%;
   padding: 0.2em 0.5em;

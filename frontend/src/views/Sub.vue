@@ -425,7 +425,7 @@ const flowStatusDetail = computed(() => {
   if (warning > 0) {
     parts.push(t("subPage.overview.flowWarning", { count: warning }));
   }
-  return parts.join(" · ");
+  return parts.join(t("specificWord.metaSeparator"));
 });
 
 const lastRefreshDisplay = computed(() => {
@@ -665,7 +665,6 @@ const importTips = () => {
   border: 1px solid var(--divider-color);
   border-radius: var(--radius-lg);
   background: var(--card-color);
-  box-shadow: var(--card-shadow);
   color: var(--second-text-color);
 
   & h3 {
@@ -779,7 +778,7 @@ const importTips = () => {
     width: 36px;
     height: 4px;
     margin: 0 auto 10px;
-    border-radius: 9999px;
+    border-radius: var(--radius-full);
     background: color-mix(in srgb, var(--comment-text-color) 28%, transparent);
   }
 
@@ -968,7 +967,7 @@ const importTips = () => {
   padding: 10px 4px;
   background: var(--card-color);
   border: 1px solid var(--divider-color);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   box-sizing: border-box;
 
   & .overview-stat {

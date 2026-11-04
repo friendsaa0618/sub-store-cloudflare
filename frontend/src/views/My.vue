@@ -15,7 +15,7 @@
             <p class="des">
               <span class="des-line1">{{ t("myPage.profile.desc") }}</span>
               <span class="des-line2">
-                {{ env.storage || "D1" }} · v{{ env.version || "-" }}
+                {{ env.storage || "D1" }}{{ t("specificWord.metaSeparator") }}v{{ env.version || "-" }}
                 <span class="pill is-muted">{{ env.runtime || env.backend || "Cloudflare" }}</span>
               </span>
             </p>
@@ -727,7 +727,7 @@ onMounted(fetchTemplates);
   width: 36px;
   height: 4px;
   margin: 0 auto 4px;
-  border-radius: 9999px;
+  border-radius: var(--radius-full);
   background: color-mix(in srgb, var(--comment-text-color) 28%, transparent);
   flex-shrink: 0;
 }
