@@ -5,7 +5,7 @@
     :data-prop="prop"
     @click="focusControl"
   >
-    <label v-if="hasLabel" class="app-form-item__label">
+    <label v-if="hasLabel" :id="labelId" class="app-form-item__label">
       <span v-if="required" class="app-form-item__required" aria-hidden="true">*</span>
       <slot name="label">{{ label }}</slot>
     </label>
@@ -17,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, onBeforeUnmount, onMounted, ref, useSlots } from "vue";
+import { computed, inject, onBeforeUnmount, onMounted, ref, useId, useSlots } from "vue";
 import { FORM_KEY } from "./context";
 
 export type FormRule = {
@@ -104,7 +104,21 @@ const validate = async () => {
 
 const instance = { prop: props.prop, validate };
 
-onMounted(() => form?.register(instance));
+/* The label sits beside the control, not around it, so it names nothing until
+   we point the control at it. */
+const labelId = `app-form-item-${useId()}`;
+const nameControl = () => {
+  if (!hasLabel.value) return;
+  const control = bodyEl.value?.querySelector<HTMLElement>("input, textarea, select");
+  if (!control) return;
+  if (control.getAttribute("aria-label") || control.getAttribute("aria-labelledby")) return;
+  control.setAttribute("aria-labelledby", labelId);
+};
+
+onMounted(() => {
+  form?.register(instance);
+  nameControl();
+});
 onBeforeUnmount(() => form?.unregister(instance));
 
 defineExpose({ validate, clearValidate: () => (error.value = "") });

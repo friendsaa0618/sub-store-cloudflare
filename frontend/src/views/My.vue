@@ -282,8 +282,9 @@
       <div v-if="requestEditing" class="surface settings-form-card">
         <div class="settings-form-grid">
           <div class="form-field-group">
-            <label class="form-field-label">{{ t("myPage.request.defaultUserAgent") }}</label>
+            <label class="form-field-label" for="request-user-agent">{{ t("myPage.request.defaultUserAgent") }}</label>
             <input
+              id="request-user-agent"
               v-model="requestForm.defaultUserAgent"
               class="settings-input"
               type="text"
@@ -292,8 +293,9 @@
           </div>
 
           <div class="form-field-group">
-            <label class="form-field-label">{{ t("myPage.request.defaultFlowUserAgent") }}</label>
+            <label class="form-field-label" for="request-flow-user-agent">{{ t("myPage.request.defaultFlowUserAgent") }}</label>
             <input
+              id="request-flow-user-agent"
               v-model="requestForm.defaultFlowUserAgent"
               class="settings-input"
               type="text"
@@ -302,8 +304,9 @@
           </div>
 
           <div class="form-field-group">
-            <label class="form-field-label">{{ t("myPage.request.defaultTimeout") }}</label>
+            <label class="form-field-label" for="request-timeout">{{ t("myPage.request.defaultTimeout") }}</label>
             <input
+              id="request-timeout"
               v-model="requestForm.defaultTimeout"
               class="settings-input"
               type="number"
@@ -313,8 +316,9 @@
           </div>
 
           <div class="form-field-group">
-            <label class="form-field-label">{{ t("myPage.request.backendRequestConcurrency") }}</label>
+            <label class="form-field-label" for="request-concurrency">{{ t("myPage.request.backendRequestConcurrency") }}</label>
             <input
+              id="request-concurrency"
               v-model="requestForm.backendRequestConcurrency"
               class="settings-input"
               type="number"
@@ -324,8 +328,9 @@
           </div>
 
           <div class="form-field-group">
-            <label class="form-field-label">{{ t("myPage.request.backendRequestConcurrencyWaitTime") }}</label>
+            <label class="form-field-label" for="request-concurrency-wait">{{ t("myPage.request.backendRequestConcurrencyWaitTime") }}</label>
             <input
+              id="request-concurrency-wait"
               v-model="requestForm.backendRequestConcurrencyWaitTime"
               class="settings-input"
               type="number"
@@ -335,8 +340,9 @@
           </div>
 
           <div class="form-field-group">
-            <label class="form-field-label">{{ t("myPage.request.remoteCacheTtl") }}</label>
+            <label class="form-field-label" for="request-cache-ttl">{{ t("myPage.request.remoteCacheTtl") }}</label>
             <input
+              id="request-cache-ttl"
               v-model="requestForm.remoteCacheTtl"
               class="settings-input"
               type="number"
@@ -346,8 +352,9 @@
           </div>
 
           <div class="form-field-group form-field-group--full">
-            <label class="form-field-label">{{ t("myPage.request.nodeInfoApiUrl") }}</label>
+            <label class="form-field-label" for="request-node-info">{{ t("myPage.request.nodeInfoApiUrl") }}</label>
             <input
+              id="request-node-info"
               v-model="requestForm.nodeInfoApiUrl"
               class="settings-input"
               type="text"
