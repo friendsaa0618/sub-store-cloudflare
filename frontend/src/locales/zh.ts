@@ -80,6 +80,7 @@ export default {
     converter: {
       title: "一次性转换",
       desc: "粘贴节点、订阅或规则，不保存到 D1，直接转换为目标格式。",
+      kind: "内容类型",
       proxy: "节点/订阅",
       rule: "规则",
       target: "输出格式",

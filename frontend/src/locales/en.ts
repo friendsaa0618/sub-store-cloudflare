@@ -80,6 +80,7 @@ export default {
     converter: {
       title: "One-shot conversion",
       desc: "Paste nodes, a subscription, or rules and convert without saving to D1.",
+      kind: "Input type",
       proxy: "Nodes / subscription",
       rule: "Rules",
       target: "Output format",

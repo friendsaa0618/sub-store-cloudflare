@@ -12,7 +12,7 @@
       <div class="tool-card surface surface--pad">
         <div class="row">
           <div class="form-field">
-            <label class="field-label" for="tools-conversion-kind">{{ t('toolsPage.converter.proxy') }} / {{ t('toolsPage.converter.rule') }}</label>
+            <label class="field-label" for="tools-conversion-kind">{{ t('toolsPage.converter.kind') }}</label>
             <select id="tools-conversion-kind" v-model="conversionKind" class="field-control">
               <option value="proxy">{{ t('toolsPage.converter.proxy') }}</option>
               <option value="rule">{{ t('toolsPage.converter.rule') }}</option>
