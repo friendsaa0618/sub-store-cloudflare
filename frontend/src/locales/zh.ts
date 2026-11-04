@@ -791,6 +791,13 @@ export default {
     appearance: {
       title: "外观",
       desc: "只影响这个账号的界面，改完立即生效。",
+      themeGroup: "主题",
+      themeMode: "模式",
+      themeAuto: "跟随系统",
+      themeLight: "浅色",
+      themeDark: "深色",
+      themeLightName: "浅色主题",
+      themeDarkName: "深色主题",
       listGroup: "列表页",
       editorGroup: "编辑页",
       simpleMode: "简单模式",

@@ -115,6 +115,29 @@ const formatThemeLabel = (theme: ThemeDefinition) => {
   return theme.meta.legacy ? `${base} (Legacy)` : base;
 };
 
+export type ThemeOption = {
+  value: string;
+  label: string;
+  /** Which system scheme this theme belongs to. */
+  kind: 'light' | 'dark';
+  legacy: boolean;
+};
+
+/** Every bundled theme, official ones first. Pure — safe to call outside a component. */
+export const getThemeCatalog = (): ThemeOption[] => {
+  const officialKeys = ['light', 'dark'];
+  const orderedKeys = [
+    ...officialKeys.filter(key => modules[key]),
+    ...Object.keys(modules).filter(key => !officialKeys.includes(key)).sort(),
+  ];
+  return orderedKeys.map(key => ({
+    value: key,
+    label: formatThemeLabel(modules[key]),
+    kind: modules[key].meta.label,
+    legacy: Boolean(modules[key].meta.legacy),
+  }));
+};
+
 // 定义修改 root 变量方法
 const changeVariables = (newMode: CustomTheme) => {
   const themeDef = modules[newMode] || modules.light;
@@ -154,25 +177,13 @@ export const useThemes = () => {
   const pickerDarkList = ref([]);
   const pickerLightList = ref([]);
 
-  const officialKeys = ['light', 'dark'];
-  const orderedKeys = [
-    ...officialKeys.filter(k => modules[k]),
-    ...Object.keys(modules).filter(k => !officialKeys.includes(k)).sort(),
-  ];
-
-  for (const key of orderedKeys) {
-    const entry = {
-      text: formatThemeLabel(modules[key]),
-      value: key,
-      legacy: Boolean(modules[key].meta.legacy),
-    };
-
-    if (modules[key].meta.label === 'dark') {
+  for (const option of getThemeCatalog()) {
+    const entry = { text: option.label, value: option.value, legacy: option.legacy };
+    if (option.kind === 'dark') {
       pickerDarkList.value.push(entry);
-    } else if (modules[key].meta.label === 'light') {
+    } else {
       pickerLightList.value.push(entry);
     }
-
     pickerList.value.push(entry);
   }
 

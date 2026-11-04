@@ -255,16 +255,25 @@ export const useSettingsStore = defineStore("settingsStore", {
     async changeTheme(data: SettingsPostData) {
       notifyLoading(t("myPage.notify.save.themeLoading"), "theme__loading");
       const { showNotify } = useAppNotifyStore();
-      const res = await settingsApi.setSettings(data);
-      if (res?.data?.status === "success" && res?.data?.data) {
-        this.theme = res.data.data.theme;
-      } else {
+      try {
+        const res = await settingsApi.setSettings(data);
+        const nextTheme = res?.data?.status === "success" ? res.data.data?.theme : undefined;
+        if (nextTheme) {
+          /* Merge: a partial response must not wipe the other slots. */
+          this.theme = { ...this.theme, ...nextTheme };
+          return true;
+        }
         showNotify({
           title: t("myPage.notify.save.themeFailed"),
           type: "danger",
         });
+      } catch (error) {
+        /* The axios interceptor already reported it. */
+        console.error(error);
+      } finally {
+        dismissNotify("theme__loading");
       }
-      dismissNotify("theme__loading");
+      return false;
     },
   },
 });

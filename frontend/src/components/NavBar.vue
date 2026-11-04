@@ -122,6 +122,7 @@ import { useRoute, useRouter } from "vue-router";
 import brandLogo from "@/assets/icons/logo.png";
 import LanguageSwitcherButton from "@/components/LanguageSwitcherButton.vue";
 import { useListSearchStore } from "@/store/listSearch";
+import { getThemeCatalog } from "@/hooks/useThemes";
 import { useSettingsStore } from "@/store/settings";
 import { SIDEBAR_BREAKPOINT, useSystemStore } from "@/store/system";
 import { initStores } from "@/utils/initApp";
@@ -215,12 +216,15 @@ const refresh = async () => {
   await initStores(true, true, true);
 };
 
+/* Kind comes from the theme files, so a new dark theme is not silently treated
+   as light here (the old hardcoded list missed 静谧蓝). */
+const themeKinds = new Map(getThemeCatalog().map((option) => [option.value, option.kind]));
+
 const isDarkTheme = computed(() => {
   if (settingsStore.theme?.auto) {
     return window.matchMedia("(prefers-color-scheme: dark)").matches;
   }
-  const name = settingsStore.theme?.name || "light";
-  return ["dark", "pureblack", "darkblue", "monokai"].includes(name);
+  return themeKinds.get(settingsStore.theme?.name || "light") === "dark";
 });
 
 /** Cycle: System (auto) → Light → Dark → System */
@@ -250,11 +254,10 @@ const toggleTheme = async () => {
   };
   let next;
   if (current.auto) {
-    // System → fixed Light
-    next = { ...current, auto: false, name: "light" as const };
+    /* System → the light theme the user picked in settings, not always the base one. */
+    next = { ...current, auto: false, name: current.light || "light" };
   } else if (!isDarkTheme.value) {
-    // Light → fixed Dark
-    next = { ...current, auto: false, name: "dark" as const };
+    next = { ...current, auto: false, name: current.dark || "dark" };
   } else {
     // Dark → System (follow device)
     next = { ...current, auto: true, name: current.light || "light" };

@@ -117,6 +117,52 @@
       <div class="surface settings-form-card">
         <div class="settings-form-grid">
           <p class="appearance-group-title form-field-group--full">
+            {{ t("myPage.appearance.themeGroup") }}
+          </p>
+          <div class="form-field-group form-field-group--full appearance-choice">
+            <span class="form-field-label">{{ t("myPage.appearance.themeMode") }}</span>
+            <AppRadioGroup
+              direction="horizontal"
+              :model-value="themeMode"
+              @update:model-value="(value) => setThemeMode(String(value))"
+            >
+              <AppRadio shape="button" label="auto">{{ t("myPage.appearance.themeAuto") }}</AppRadio>
+              <AppRadio shape="button" label="light">{{ t("myPage.appearance.themeLight") }}</AppRadio>
+              <AppRadio shape="button" label="dark">{{ t("myPage.appearance.themeDark") }}</AppRadio>
+            </AppRadioGroup>
+          </div>
+          <div class="form-field-group appearance-choice">
+            <label class="form-field-label" for="appearance-theme-light">
+              {{ t("myPage.appearance.themeLightName") }}
+            </label>
+            <select
+              id="appearance-theme-light"
+              class="settings-select"
+              :value="settingsStore.theme.light || 'light'"
+              @change="setThemeSlot('light', ($event.target as HTMLSelectElement).value)"
+            >
+              <option v-for="option in lightThemes" :key="option.value" :value="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+          </div>
+          <div class="form-field-group appearance-choice">
+            <label class="form-field-label" for="appearance-theme-dark">
+              {{ t("myPage.appearance.themeDarkName") }}
+            </label>
+            <select
+              id="appearance-theme-dark"
+              class="settings-select"
+              :value="settingsStore.theme.dark || 'dark'"
+              @change="setThemeSlot('dark', ($event.target as HTMLSelectElement).value)"
+            >
+              <option v-for="option in darkThemes" :key="option.value" :value="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+          </div>
+
+          <p class="appearance-group-title form-field-group--full">
             {{ t("myPage.appearance.listGroup") }}
           </p>
           <div
@@ -369,6 +415,7 @@ import { useAppNotifyStore } from "@/store/appNotify";
 import { useCodeStore } from "@/store/codeStore";
 import { useSettingsStore } from "@/store/settings";
 import { TEMPLATE_TARGET_OPTIONS, getTargetLabel } from "@/constants/subscriptionTargets";
+import { getThemeCatalog } from "@/hooks/useThemes";
 
 const CmView = defineAsyncComponent(() => import("@/views/editCode/cmView.vue"));
 
@@ -447,6 +494,41 @@ const appName = computed(() => {
     || env.value?.meta?.cloudflare?.env?.SUB_STORE_BACKEND_CUSTOM_NAME
     || "Sub-Store Cloudflare";
 });
+const themeCatalog = getThemeCatalog();
+const lightThemes = themeCatalog.filter((option) => option.kind === "light");
+const darkThemes = themeCatalog.filter((option) => option.kind === "dark");
+
+const themeKindOf = (name?: string) =>
+  themeCatalog.find((option) => option.value === name)?.kind ?? "light";
+
+/** auto follows the OS; otherwise the explicit theme decides. */
+const themeMode = computed(() => {
+  if (settingsStore.theme.auto) return "auto";
+  return themeKindOf(settingsStore.theme.name);
+});
+
+const saveTheme = (patch: Record<string, unknown>) => {
+  settingsStore.changeTheme({ theme: { ...settingsStore.theme, ...patch } });
+};
+
+const setThemeMode = (mode: string) => {
+  if (mode === "auto") {
+    saveTheme({ auto: true });
+    return;
+  }
+  const name = mode === "dark"
+    ? settingsStore.theme.dark || "dark"
+    : settingsStore.theme.light || "light";
+  saveTheme({ auto: false, name });
+};
+
+/** Pick which theme each system scheme maps to, and keep the live theme in sync. */
+const setThemeSlot = (kind: "light" | "dark", value: string) => {
+  const patch: Record<string, unknown> = { [kind]: value };
+  if (!settingsStore.theme.auto && themeMode.value === kind) patch.name = value;
+  saveTheme(patch);
+};
+
 /** Appearance controls: order here is the order on the page. */
 const listToggles: { key: string; label: string; hint?: string }[] = [
   { key: "isSimpleMode", label: "myPage.appearance.simpleMode", hint: "myPage.appearance.simpleModeHint" },
@@ -1025,6 +1107,27 @@ onMounted(fetchTemplates);
   color: var(--second-text-color);
   line-height: 1.3;
   margin: 0;
+}
+
+.settings-select {
+  box-sizing: border-box;
+  width: 100%;
+  height: 40px;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--divider-color);
+  border-radius: var(--radius-md);
+  background: var(--background-color);
+  color: var(--primary-text-color);
+  font-family: inherit;
+  font-size: var(--text-base);
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px var(--focus-ring-color);
+  }
 }
 
 .settings-input {

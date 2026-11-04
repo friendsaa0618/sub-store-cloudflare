@@ -791,6 +791,13 @@ export default {
     appearance: {
       title: "Appearance",
       desc: "These switches only change this account's UI and apply immediately.",
+      themeGroup: "Theme",
+      themeMode: "Mode",
+      themeAuto: "Follow system",
+      themeLight: "Light",
+      themeDark: "Dark",
+      themeLightName: "Light theme",
+      themeDarkName: "Dark theme",
       listGroup: "List page",
       editorGroup: "Editor",
       simpleMode: "Simple mode",
