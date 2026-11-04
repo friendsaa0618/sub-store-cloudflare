@@ -403,7 +403,8 @@ const removeShare = (share: { id: string; resourceType: string; resourceId: stri
 const restoreEntry = async (id: string) => {
   try {
     await api.restoreRecycleEntry(id);
-    await loadRecycle();
+    /* The restored record belongs back in the list, not only in the bin view. */
+    await Promise.all([loadRecycle(), subsStore.fetchSubsData()]);
   } catch {
     /* Reported by the interceptor. */
   }
