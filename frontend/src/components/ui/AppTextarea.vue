@@ -1,5 +1,8 @@
 <template>
-  <div class="app-textarea" :class="{ 'is-disabled': disabled, 'is-readonly': readonly }">
+  <div
+    class="app-textarea"
+    :class="{ 'is-disabled': disabled, 'is-readonly': readonly, 'is-counting': showCounter }"
+  >
     <textarea
       ref="textareaEl"
       class="app-textarea__control"
@@ -15,7 +18,7 @@
       @blur="emit('blur', $event)"
       @focus="emit('focus', $event)"
     />
-    <span v-if="maxlength" class="app-textarea__counter">
+    <span v-if="showCounter" class="app-textarea__counter">
       {{ String(modelValue ?? "").length }}/{{ maxlength }}
     </span>
   </div>
@@ -50,6 +53,14 @@ const emit = defineEmits<{
 }>();
 
 const textareaEl = ref<HTMLTextAreaElement | null>(null);
+
+/** Only warn near the limit: a permanent `0/100` read as a stray label in the
+    editor's hairline rows and sat on top of the row divider. */
+const showCounter = computed(() => {
+  const max = Number(props.maxlength ?? 0);
+  if (!max) return false;
+  return String(props.modelValue ?? "").length >= max * 0.8;
+});
 
 const autosizeStyle = computed(() => {
   if (!props.autosize) {
@@ -112,6 +123,11 @@ defineExpose({
   &.is-readonly {
     cursor: default;
   }
+
+  /* Room for the counter under the field, inside the row. */
+  &.is-counting {
+    padding-bottom: 16px;
+  }
 }
 
 .app-textarea__control {
@@ -147,7 +163,7 @@ defineExpose({
 .app-textarea__counter {
   position: absolute;
   right: 0;
-  bottom: -14px;
+  bottom: 0;
   color: var(--lowest-text-color);
   font-size: 11px;
   line-height: 1;

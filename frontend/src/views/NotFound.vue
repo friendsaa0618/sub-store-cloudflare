@@ -20,7 +20,12 @@ const isBackend = /\/(api|download)\/.+/.test(route.fullPath)
 <style scoped>
   .wrapper {
     width: 100%;
-    min-height: 50vh;
+    /* Fill the area below the 56px nav (page-body carries the rest of the
+       padding) so the card centers in the screen instead of a quarter of the
+       way down. */
+    flex: 1;
+    min-height: calc(100vh - 96px);
+    min-height: calc(100dvh - 96px);
     display: flex;
     justify-content: center;
     justify-content: safe center;

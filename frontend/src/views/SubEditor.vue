@@ -252,72 +252,53 @@
             </div>
           </AppFormItem>
           <AppFormItem
-            :label="$t(`editorPage.subConfig.basic.ua.label`)"
             prop="ua"
             v-if="form.source === 'remote'"
           >
+            <template v-slot:label>
+              <span class="label-with-tip" @click.stop="uaTips">
+                <span>{{ $t(`editorPage.subConfig.basic.ua.label`) }}</span>
+                <font-awesome-icon class="label-tip-icon" icon="fa-solid fa-circle-question" />
+              </span>
+            </template>
             <AppInput
               v-model.trim="form.ua"
               :placeholder="userAgentPlaceholder"
               :readonly="passThroughUAOn"
-            >
-              <template #left>
-                <button
-                  type="button"
-                  class="input-icon-button"
-                  :aria-label="$t('editorPage.subConfig.basic.ua.label')"
-                  @click.stop="uaTips"
-                >
-                  <font-awesome-icon icon="fa-solid fa-circle-question" />
-                </button>
-              </template>
-            </AppInput>
+            />
           </AppFormItem>
 
-          <AppFormItem
-            :label="$t(`editorPage.subConfig.basic.subUserinfo.label`)"
-            prop="subUserinfo"
-          >
+          <AppFormItem prop="subUserinfo">
+            <template v-slot:label>
+              <span class="label-with-tip" @click.stop="subUserinfoTips">
+                <span>{{ $t(`editorPage.subConfig.basic.subUserinfo.label`) }}</span>
+                <font-awesome-icon class="label-tip-icon" icon="fa-solid fa-circle-question" />
+              </span>
+            </template>
             <AppInput
               v-model.trim="form.subUserinfo"
               :placeholder="
                 $t(`editorPage.subConfig.basic.subUserinfo.placeholder`)
               "
-            >
-              <template #left>
-                <button
-                  type="button"
-                  class="input-icon-button"
-                  :aria-label="$t('editorPage.subConfig.basic.subUserinfo.label')"
-                  @click.stop="subUserinfoTips"
-                >
-                  <font-awesome-icon icon="fa-solid fa-circle-question" />
-                </button>
-              </template>
-            </AppInput>
+            />
           </AppFormItem>
 
         </template>
 
         <template v-else-if="editType === 'collections'">
           <AppFormItem
-            :label="$t(`editorPage.subConfig.basic.template.label`)"
             class="template-trigger"
           >
-            <div class="picker-trigger-row">
-              <button
-                type="button"
-                class="input-icon-button"
-                :aria-label="$t(`editorPage.subConfig.basic.template.label`)"
-                @click.stop="templateTips"
-              >
-                <font-awesome-icon icon="fa-solid fa-circle-question" />
-              </button>
-              <button type="button" class="picker-trigger" @click.stop="openTemplatePicker">
-                <span class="picker-trigger__value">{{ selectedTemplateLabel }}</span>
-                <font-awesome-icon icon="fa-solid fa-chevron-right" aria-hidden="true" />
-              </button>
-            </div>
+            <template v-slot:label>
+              <span class="label-with-tip" @click.stop="templateTips">
+                <span>{{ $t(`editorPage.subConfig.basic.template.label`) }}</span>
+                <font-awesome-icon class="label-tip-icon" icon="fa-solid fa-circle-question" />
+              </span>
+            </template>
+            <button type="button" class="picker-trigger" @click.stop="openTemplatePicker">
+              <span class="picker-trigger__value">{{ selectedTemplateLabel }}</span>
+              <font-awesome-icon icon="fa-solid fa-chevron-right" aria-hidden="true" />
+            </button>
           </AppFormItem>
           <AppFormItem
             :label="$t(`editorPage.subConfig.basic.subscriptions.label`)"
@@ -395,27 +376,19 @@
               </draggable>
             </AppCheckboxGroup>
           </div>
-            <AppFormItem
-              :label="$t(`editorPage.subConfig.basic.subUserinfo.label`)"
-              prop="subUserinfo"
-            >
+            <AppFormItem prop="subUserinfo">
+              <template v-slot:label>
+                <span class="label-with-tip" @click.stop="subUserinfoTips">
+                  <span>{{ $t(`editorPage.subConfig.basic.subUserinfo.label`) }}</span>
+                  <font-awesome-icon class="label-tip-icon" icon="fa-solid fa-circle-question" />
+                </span>
+              </template>
               <AppInput
                 v-model.trim="form.subUserinfo"
                 :placeholder="
                   $t(`editorPage.subConfig.basic.subUserinfo.placeholder`)
                 "
-              >
-                <template #left>
-                  <button
-                    type="button"
-                    class="input-icon-button"
-                    :aria-label="$t('editorPage.subConfig.basic.subUserinfo.label')"
-                    @click.stop="subUserinfoTips"
-                  >
-                    <font-awesome-icon icon="fa-solid fa-circle-question" />
-                  </button>
-                </template>
-              </AppInput>
+              />
             </AppFormItem>
         </template>
 
@@ -1965,6 +1938,9 @@ const handleEditGlobalClick = () => {
     display: inline-flex;
     align-items: center;
     gap: 4px;
+    /* Keep the label on one line once the tip icon shares its box: the label
+       column is fixed, and `User-Agent` / `订阅流量信息` wrapped in half. */
+    white-space: nowrap;
     cursor: pointer;
     color: var(--comment-text-color);
     font-size: 13px;
@@ -2107,9 +2083,9 @@ const handleEditGlobalClick = () => {
   padding: 10px max(var(--space-4), calc((100% - 1024px) / 2 + var(--space-4)))
     calc(v-bind("padding") + 10px);
   box-sizing: border-box;
-  background: var(--nav-bar-color);
-  backdrop-filter: blur(var(--nav-bar-blur));
-  -webkit-backdrop-filter: blur(var(--nav-bar-blur));
+  /* Opaque: the node-action grid scrolls under this bar, and a translucent one
+     let its tiles read through the buttons. */
+  background: var(--card-color);
   border-top: 1px solid var(--divider-color);
 
   @media screen and (min-width: 768px) {

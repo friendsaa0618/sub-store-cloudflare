@@ -60,19 +60,22 @@ const select = () => {
 
   &.is-button {
     padding: 5px 10px;
-    border: 1px solid transparent;
+    border: 1px solid var(--divider-color);
     border-radius: var(--radius-md);
-    background: var(--divider-color);
+    background: transparent;
+    color: var(--second-text-color);
     transition:
       border-color 0.15s ease,
       background-color 0.15s ease,
       color 0.15s ease;
   }
 
+  /* The checked side fills with the accent, like the editor's quick-option
+     chips: an outline read lighter than the unchecked gray fill. */
   &.is-button.is-checked {
     border-color: var(--primary-color);
-    background: var(--card-color);
-    color: var(--primary-color);
+    background: var(--primary-color);
+    color: var(--card-color);
     font-weight: 500;
   }
 
