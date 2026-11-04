@@ -36,6 +36,21 @@ export const formatNotifyHtml = (value: string) => {
   return escapeHtml(value).replace(/\n/g, "<br/>");
 };
 
+/**
+ * The toast library never marks its container as a live region, so a screen
+ * reader misses every success and error message the app shows. Tag it once,
+ * after the lazily-created container exists.
+ */
+const markToastLiveRegion = () => {
+  requestAnimationFrame(() => {
+    const container = document.querySelector(".Toastify__toast-container");
+    if (!container || container.getAttribute("aria-live")) return;
+    container.setAttribute("role", "status");
+    container.setAttribute("aria-live", "polite");
+    container.setAttribute("aria-atomic", "false");
+  });
+};
+
 export const notify = (settings: NotifySettings) => {
   const { title, content, type, duration } = settings;
   const notifyType = type || "primary";
@@ -69,6 +84,7 @@ export const notify = (settings: NotifySettings) => {
     autoClose: duration || 2500,
     style: { zIndex: 65535 },
   });
+  markToastLiveRegion();
 };
 
 /** Persistent loading toast; pass the same id to `dismissNotify` to close it. */
@@ -85,6 +101,7 @@ export const notifyLoading = (title: string, id?: string) => {
     autoClose: false,
     style: { zIndex: 65535 },
   });
+  markToastLiveRegion();
 };
 
 export const dismissNotify = (id: string) => {
