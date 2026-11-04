@@ -6,31 +6,16 @@ const envApi = useEnvApi();
 export const useGlobalStore = defineStore('globalStore', {
   state: (): GlobalStoreState => {
     return {
-      subProgressStyle: localStorage.getItem('subProgressStyle') || 'hidden',
       isLoading: true,
       isFlowFetching: true,
       fetchResult: false,
-      isDarkMode: false,
       env: {},
       isDockerDeployment: false,
-      isSimpleMode: localStorage.getItem('isSimpleMode') === null
-        ? true
-        : localStorage.getItem('isSimpleMode') === '1',
-      isEditorCommon: localStorage.getItem('iseditorCommon') !== '1',
-      showFloatingRefreshButton: localStorage.getItem('showFloatingRefreshButton') === '1',
       savedPositions: {},
     };
   },
   getters: {},
   actions: {
-    setSubProgressStyle(style: string) {
-      if (style && style !== 'hidden') {
-        localStorage.setItem('subProgressStyle', style);
-      } else {
-        localStorage.removeItem('subProgressStyle');
-      }
-      this.subProgressStyle = style;
-    },
     setLoading(isLoading: boolean) {
       this.isLoading = isLoading;
     },
@@ -39,33 +24,6 @@ export const useGlobalStore = defineStore('globalStore', {
     },
     setFetchResult(fetchResult: boolean) {
       this.fetchResult = fetchResult;
-    },
-    setDarkMode(isDarkMode: boolean) {
-      this.isDarkMode = isDarkMode;
-    },
-    setSimpleMode(isSimpleMode: boolean) {
-      if (isSimpleMode) {
-        localStorage.setItem('isSimpleMode', '1');
-      } else {
-        localStorage.setItem('isSimpleMode', '0');
-      }
-      this.isSimpleMode = isSimpleMode;
-    },
-    setEditorCommon(isEditorCommon: boolean) {
-      if (!isEditorCommon) {
-        localStorage.setItem('iseditorCommon', '1');
-      } else {
-        localStorage.removeItem('iseditorCommon');
-      }
-      this.isEditorCommon = isEditorCommon;
-    },
-    setShowFloatingRefreshButton(showFloatingRefreshButton: boolean) {
-      if (showFloatingRefreshButton) {
-        localStorage.setItem('showFloatingRefreshButton', '1');
-      } else {
-        localStorage.removeItem('showFloatingRefreshButton');
-      }
-      this.showFloatingRefreshButton = showFloatingRefreshButton;
     },
     async setEnv(options?: { bypassCache?: boolean; strict?: boolean }) {
       const res = await envApi.getEnv({

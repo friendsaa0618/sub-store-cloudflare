@@ -2,14 +2,9 @@ interface GlobalStoreState {
   isLoading: boolean;
   isFlowFetching: boolean;
   fetchResult: boolean;
-  isDarkMode: boolean;
   env: ENV;
   isDockerDeployment: boolean;
-  isSimpleMode: boolean;
-  isEditorCommon: boolean;
-  showFloatingRefreshButton: boolean;
   savedPositions: any;
-  subProgressStyle: any;
 }
 
 interface ENV {
