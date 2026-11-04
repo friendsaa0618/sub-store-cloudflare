@@ -7,7 +7,9 @@ export const getHostAPIUrl = (): string => {
 export const useHostAPI = () => {
   const currentUrl = computed(() => {
     const url = getHostAPIUrl();
-    return url.startsWith('/') ? `${window.location.origin}${url}` : url;
+    const base = url.startsWith('/') ? `${window.location.origin}${url}` : url;
+    /* Callers append `/download/...`; the default base of `/` would double the slash. */
+    return base.replace(/\/+$/, '');
   });
 
   return {

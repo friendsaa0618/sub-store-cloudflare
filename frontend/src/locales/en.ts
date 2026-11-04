@@ -5,7 +5,6 @@ export default {
     singleSub: "Source",
     collectionSub: "Collection",
     unknownType: "Unknown Type",
-    unknownSource: "Unknown Source",
     unknown: "Unknown",
     all: "All",
     untagged: "Untagged",
@@ -149,7 +148,6 @@ export default {
     overview: {
       title: "Overview",
       subscriptions: "Subscriptions",
-      subBreakdown: "{single} sources, {collection} collections",
       flowStatus: "Issues",
       flowOk: "All healthy",
       flowPending: "Checking usage…",
@@ -163,15 +161,8 @@ export default {
       succeed: "Successfully imported!",
       failed: "Failed to import!\n{e}",
       tipsTitle: "Import subscription config",
-      tipsContent: "Import a JSON config for one source or collection. Use backup restore on the Settings page for full config migration."
     },
-    addSubTitle: "Choose Subscription type",
     previewTitle: "Copy/Preview a subscription",
-    tag: {
-      addTagTitle: "Add Tag",
-      tagPlaceholder: "Please enter tag name",
-      addTagBtn: "+ New Tag"
-    },
     emptySub: {
       title: "You have no Subscription yet",
       desc: "Add a remote subscription or local node text to start aggregating.",
@@ -202,7 +193,6 @@ export default {
       showToken: "Show token",
       hideToken: "Hide token",
       doc: "Open deployment docs",
-      followOfficialChannel: "Check the project docs before debugging the deployment.",
       about: "Open project docs"
     },
     collectionItem: {
@@ -216,14 +206,11 @@ export default {
       collectionSearch: "No matching collections",
     },
     actions: {
-      openMenu: "Expand quick actions",
-      closeMenu: "Collapse quick actions",
       openApp: "Open subscription website",
       preview: "Preview",
       copyLink: "Copy subscription link",
       refresh: "Refresh usage info",
       edit: "Edit",
-      moreActions: "Open more actions",
       cloneConfig: "Clone",
       openDownload: "Open download link",
       delete: "Delete",
@@ -284,20 +271,6 @@ export default {
     }
   },
   editorPage: {
-    groupingTips: {
-      open: "Detail page grouping tips",
-      title: "Detail page grouping",
-      content: "The editor is grouped into display, content, and actions so the source, collection, node processing, and routing template stay easy to maintain.",
-      goSettings: "OK",
-      cancel: "Cancel"
-    },
-    commonTips: {
-      open: "Detail page common settings tips",
-      title: "Detail page common settings",
-      content: "Common settings generate node actions for invalid-node cleanup and batch options such as UDP, TFO, and skip TLS verification.",
-      goSettings: "OK",
-      cancel: "Cancel"
-    },
     subConfig: {
       groups: {
         basic: "Basics",
@@ -307,6 +280,7 @@ export default {
       },
       btn: {
         compare: "Preview",
+        saveShortcut: "Save (Ctrl/⌘ + S)",
         save: "Save"
       },
       editorTabs: {
@@ -317,7 +291,6 @@ export default {
       pop: {
         helpTitle: "Help",
         helpContent: "Proxy node actions will be executed in order, and you can drag and drop to sort them.\n\nThe preview switch is used to control whether the action takes effect in the instant preview.\n\nPlease note that node actions will be saved and take effect regardless of whether the preview switch is on or off.",
-        helpBtn: "I Understand",
         errorTitle: "Submit Error!",
         errorBtn: "OK",
         succeedMsg: "Save Successfully!",
@@ -325,10 +298,6 @@ export default {
         deleteDes: "Do you really want to delete this action? Deleted action cannot be restored!",
         deleteConfirm: "Delete it",
         deleteCancel: "Cancel",
-        clearTitle: "Clear Confirm",
-        clearDes: "Do you really want to clear this content?",
-        clearConfirm: "Clear it",
-        clearCancel: "Cancel",
         leaveCancel: "Continue Editing",
         leaveConfirm: "Leave",
         leaveConfirmTitle: "Unsaved Changes",
@@ -372,6 +341,7 @@ export default {
           placeholder: "User-Agent for fetching subscription usage info"
         },
         tag: {
+          suggestions: "Existing tags",
           label: "Tag(s)",
           placeholder: "Add a tag, press Enter…",
           confirm: "Add",
@@ -389,9 +359,6 @@ export default {
           remote: "Remote URL",
           local: "Local",
           mergeSources: "Merge Sources",
-          noMerge: "Disabled",
-          localFirst: "Local Fist",
-          remoteFirst: "Remote First"
         },
         url: {
           label: "URL",
@@ -610,7 +577,6 @@ export default {
           ednsPlaceholder: "Enter a plain IP. Default: 223.6.6.6",
           resolveType: "Resolve type (IPv6 supports IP4P)",
           filterResult: "Filter result",
-          unsupported: "{provider} does not support {type}",
           ip4pTitle: "IP4P address format",
           ip4pContent: "When IPv6 is selected, IP4P addresses are converted automatically.\n\nFrom NATMap, the IPv4 address and port are encoded in DNS AAAA records.\n\nUse case: STUN NAT traversal without a public server.",
           ip4pOk: "Learn more",
@@ -782,7 +748,6 @@ export default {
         title: "Select Subscription Name",
         cancel: "Cancel",
         confirm: "Confirm",
-        emptyTips: "Subscription not found? Click to add a subscription"
       }
     }
   },
@@ -830,7 +795,7 @@ export default {
       backendRequestConcurrencyWaitTime: "Wait time between concurrent requests in milliseconds",
       remoteCacheTtl: "Remote subscription edge-cache TTL in seconds; 0 disables it",
       remoteCacheStaleOnError: "Use the latest edge cache when a remote source fails",
-      nodeInfoApiUrl: "HTTPS node-info API URL containing {ip}",
+      nodeInfoApiUrl: "HTTPS node-info API URL containing {'{ip}'}",
       summary: "Remote subscription concurrency is {concurrency}; timeout is {timeout}ms."
     },
     btn: {
@@ -860,6 +825,8 @@ export default {
   },
   comparePage: {
     title: "Instant Preview",
+    missingTarget: "This page opens from Preview in the subscription list and needs a preview URL.",
+    backToList: "Back to subscriptions",
     loading: "Generating node comparison…",
     subscriptionPreviewCopyLabel: "Click to copy the subscription link:",
     subscriptionPreviewLoadFailed: "Load failed: {e}",

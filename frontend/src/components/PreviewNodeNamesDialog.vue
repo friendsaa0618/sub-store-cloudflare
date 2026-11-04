@@ -44,9 +44,8 @@
 
 <script lang="ts" setup>
 import { notify } from '@/utils/notify';
-import { useClipboard } from '@vueuse/core';
 import { computed } from 'vue';
-import useV3Clipboard from 'vue-clipboard3';
+import { useAppClipboard } from '@/utils/clipboard';
 import { useI18n } from 'vue-i18n';
 import {
   formatPreviewNodeInfoPrompt,
@@ -63,8 +62,7 @@ const props = defineProps<{
 const emit = defineEmits(['close']);
 
 const { t } = useI18n();
-const { copy, isSupported } = useClipboard();
-const { toClipboard: copyFallback } = useV3Clipboard();
+const writeClipboard = useAppClipboard();
 
 const sideLabel = computed(() => {
   return props.side === 'after'
@@ -89,11 +87,7 @@ const promptText = computed(() => {
 
 const copyText = async (text: string, successText: string) => {
   try {
-    if (isSupported) {
-      await copy(text);
-    } else {
-      await copyFallback(text);
-    }
+    await writeClipboard(text);
     notify({ type: "success", title: successText });
   } catch (e) {
     notify({

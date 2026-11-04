@@ -81,10 +81,14 @@
               id="tools-share-id"
               v-model.trim="shareForm.resourceId"
               class="field-control"
+              list="tools-share-id-options"
               :placeholder="t('toolsPage.shares.resourceIdPlaceholder')"
               autocomplete="off"
               spellcheck="false"
             />
+            <datalist id="tools-share-id-options">
+              <option v-for="id in shareResourceIds" :key="id" :value="id" />
+            </datalist>
           </div>
           <div class="form-field">
             <label class="field-label" for="tools-share-target">{{ t('toolsPage.shares.target') }}</label>
@@ -232,10 +236,12 @@
 
 <script lang="ts" setup>
 import { showDialog } from '@/utils/dialog';
+import { useAppClipboard } from '@/utils/clipboard';
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useCloudflareApi } from '@/api/app';
 import { useAppNotifyStore } from '@/store/appNotify';
+import { useSubsStore } from '@/store/subs';
 
 const { t, locale } = useI18n();
 const api = useCloudflareApi();
@@ -266,6 +272,13 @@ const shareCreating = ref(false);
 const createdShareUrl = ref('');
 const createdShareEl = ref<HTMLElement | null>(null);
 const shareForm = reactive({ resourceType: 'source', resourceId: '', target: '', expiresHours: '0' });
+const subsStore = useSubsStore();
+/** Existing ids for the chosen type — the grant must name a real resource. */
+const shareResourceIds = computed(() =>
+  (shareForm.resourceType === 'collection' ? subsStore.collections : subsStore.subs)
+    .map((item) => item.name)
+    .filter(Boolean),
+);
 const conversionTargets = computed(() => conversionKind.value === 'proxy' ? proxyTargets : ruleTargets);
 /* Proxy targets outnumber rule targets, so switching the kind can leave the
    output select on a value it no longer offers; the browser then renders it
@@ -364,7 +377,15 @@ const createShare = async () => {
   }
 };
 
-const toggleShare = async (share: any) => { await api.updateShare(share.id, { enabled: !share.enabled }); await loadShares(); };
+const toggleShare = async (share: any) => {
+  try {
+    await api.updateShare(share.id, { enabled: !share.enabled });
+    await loadShares();
+  } catch {
+    /* The shared axios interceptor already reported it; skipping loadShares
+       keeps the row showing the state the server actually has. */
+  }
+};
 const removeShare = (share: { id: string; resourceType: string; resourceId: string }) => {
   showDialog({
     title: t('myPage.btn.delete'),
@@ -379,7 +400,14 @@ const removeShare = (share: { id: string; resourceType: string; resourceId: stri
     },
   });
 };
-const restoreEntry = async (id: string) => { await api.restoreRecycleEntry(id); await loadRecycle(); };
+const restoreEntry = async (id: string) => {
+  try {
+    await api.restoreRecycleEntry(id);
+    await loadRecycle();
+  } catch {
+    /* Reported by the interceptor. */
+  }
+};
 const purgeEntry = (entry: { id: string; resourceType: string; resourceId: string }) => {
   showDialog({
     title: t('toolsPage.recycle.purge'),
@@ -393,7 +421,15 @@ const purgeEntry = (entry: { id: string; resourceType: string; resourceId: strin
     },
   });
 };
-const copyText = async (value: string) => { await navigator.clipboard.writeText(value); showNotify({ type: 'success', title: t('toolsPage.notify.copied') }); };
+const writeClipboard = useAppClipboard();
+const copyText = async (value: string) => {
+  try {
+    await writeClipboard(value);
+    showNotify({ type: 'success', title: t('toolsPage.notify.copied') });
+  } catch (error) {
+    notifyError(error);
+  }
+};
 const notifyError = (error: unknown) => showNotify({ type: 'danger', title: t('toolsPage.notify.failed', { e: error instanceof Error ? error.message : String(error) }) });
 
 onMounted(() => Promise.all([loadShares(), loadRecycle()]));

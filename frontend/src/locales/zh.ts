@@ -5,7 +5,6 @@ export default {
     singleSub: "订阅源",
     collectionSub: "组合订阅",
     unknownType: "未知类型",
-    unknownSource: "未知来源",
     unknown: "未知",
     all: "全部",
     untagged: "未分组",
@@ -149,7 +148,6 @@ export default {
     overview: {
       title: "概览",
       subscriptions: "订阅",
-      subBreakdown: "{single} 个订阅源，{collection} 个组合",
       flowStatus: "异常",
       flowOk: "全部正常",
       flowPending: "正在检查流量…",
@@ -163,15 +161,8 @@ export default {
       succeed: "导入成功",
       failed: "导入失败\n{e}",
       tipsTitle: "导入订阅配置",
-      tipsContent: "可导入订阅源或组合订阅的 JSON 配置。完整配置迁移请使用「设置」页面的备份恢复。"
     },
-    addSubTitle: "选择要创建的订阅类型",
     previewTitle: "预览/拷贝订阅",
-    tag: {
-      addTagTitle: "添加标签",
-      tagPlaceholder: "请输入标签名称",
-      addTagBtn: "+ 新建标签"
-    },
     emptySub: {
       title: "你还没有添加订阅",
       desc: "添加远程订阅或本地节点后开始聚合",
@@ -202,7 +193,6 @@ export default {
       showToken: "显示 Token",
       hideToken: "隐藏 Token",
       doc: "查看部署文档",
-      followOfficialChannel: "查看项目文档后再排查部署状态",
       about: "查看项目文档"
     },
     collectionItem: {
@@ -216,14 +206,11 @@ export default {
       collection: "还没有组合订阅，点击右侧 + 创建",
     },
     actions: {
-      openMenu: "展开快捷操作",
-      closeMenu: "收起快捷操作",
       openApp: "打开订阅官网",
       preview: "即时预览",
       copyLink: "复制订阅链接",
       refresh: "刷新流量信息",
       edit: "编辑",
-      moreActions: "打开更多操作",
       cloneConfig: "克隆",
       openDownload: "打开下载链接",
       delete: "删除",
@@ -284,20 +271,6 @@ export default {
     }
   },
   editorPage: {
-    groupingTips: {
-      open: "详情页分组说明",
-      title: "详情页分组",
-      content: "详情页按显示、内容和操作分组，便于只维护订阅源、组合关系、节点处理和规则模板。",
-      goSettings: "确定",
-      cancel: "取消"
-    },
-    commonTips: {
-      open: "详情页常用配置说明",
-      title: "详情页常用配置",
-      content: "常用配置会生成一组节点处理动作，用于过滤无效节点并批量设置 UDP、TFO、跳过证书验证等常见字段。",
-      goSettings: "确定",
-      cancel: "取消"
-    },
     subConfig: {
       groups: {
         basic: "基本信息",
@@ -307,7 +280,8 @@ export default {
       },
       btn: {
         compare: "即时预览",
-        save: "保存"
+        save: "保存",
+        saveShortcut: "保存（Ctrl/⌘ + S）"
       },
       editorTabs: {
         display: "显示",
@@ -317,7 +291,6 @@ export default {
       pop: {
         helpTitle: "节点操作帮助",
         helpContent: "预览开关可控制即时预览时该模块是否生效，当保存时无论开启关闭都会保存并生效于订阅\n\n所有节点操作均为有序生效，可按住手柄拖动排序，点击即时进行预览对比",
-        helpBtn: "我知道了",
         errorTitle: "提交出错！",
         errorBtn: "去修改",
         succeedMsg: "保存成功！",
@@ -325,10 +298,6 @@ export default {
         deleteDes: "是否确认删除此操作？删除后不可恢复！\n\ntips: 可使用开关控制即时预览时是否生效",
         deleteConfirm: "确认删除",
         deleteCancel: "取消",
-        clearTitle: "清空确认",
-        clearDes: "是否确认清空？",
-        clearConfirm: "确认清空",
-        clearCancel: "取消",
         leaveCancel: "继续编辑",
         leaveConfirm: "确认离开",
         leaveConfirmTitle: "有内容未保存",
@@ -373,6 +342,7 @@ export default {
         },
         tag: {
           label: "标签",
+          suggestions: "常用标签",
           placeholder: "添加标签，回车确认…",
           confirm: "确认",
           remove: "移除标签"
@@ -389,9 +359,6 @@ export default {
           remote: "远程订阅",
           local: "本地订阅",
           mergeSources: "合并来源",
-          noMerge: "不合并",
-          localFirst: "本地优先",
-          remoteFirst: "远程优先"
         },
         url: {
           label: "链接",
@@ -610,7 +577,6 @@ export default {
           ednsPlaceholder: "请输入纯 IP, 默认为 223.6.6.6",
           resolveType: "解析类型(IPv6 兼容 IP4P)",
           filterResult: "过滤结果",
-          unsupported: "{provider} 不支持 {type}",
           ip4pTitle: "IP4P 地址格式",
           ip4pContent: "当选择解析类型为 IPv6 时\n将自动转换其中的 IP4P 地址\n\n来自 NATMap, 将 IPv4 地址和端口同时编码在 DNS AAAA 记录中\n\n使用场景: STUN 内网穿透, 无需公网服务器即可获得 IPv4 公网地址",
           ip4pOk: "更多说明",
@@ -782,7 +748,6 @@ export default {
         title: "选择订阅名称",
         cancel: "取消",
         confirm: "确定",
-        emptyTips: "未找到订阅？点击去添加订阅"
       }
     }
   },
@@ -830,7 +795,7 @@ export default {
       backendRequestConcurrencyWaitTime: "并发请求间隔，单位毫秒",
       remoteCacheTtl: "远程订阅边缘缓存秒数，0 表示关闭",
       remoteCacheStaleOnError: "远程订阅失败时允许使用最近的边缘缓存",
-      nodeInfoApiUrl: "节点信息 HTTPS API，必须包含 {ip}",
+      nodeInfoApiUrl: "节点信息 HTTPS API，必须包含 {'{ip}'}",
       summary: "当前远程订阅拉取并发 {concurrency}，超时 {timeout}ms。"
     },
     btn: {
@@ -860,6 +825,8 @@ export default {
   },
   comparePage: {
     title: "即时预览",
+    missingTarget: "这个页面需要从订阅列表的「即时预览」打开，缺少预览地址。",
+    backToList: "返回订阅列表",
     loading: "生成节点对比中…",
     subscriptionPreviewCopyLabel: "点击复制订阅链接:",
     subscriptionPreviewLoadFailed: "加载失败: {e}",

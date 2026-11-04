@@ -77,6 +77,7 @@
                 :key="tagName"
                 type="button"
                 class="inline-tag-chip is-selected"
+                :aria-label="`${$t(`editorPage.subConfig.basic.tag.remove`)} ${tagName}`"
                 :title="$t(`editorPage.subConfig.basic.tag.remove`)"
                 @click="removeEditorTag(tagName)"
               >
@@ -108,6 +109,9 @@
               v-if="suggestedEditorTags.length"
               class="inline-tag-editor__suggestions"
             >
+              <span class="inline-tag-editor__suggestions-label">
+                {{ $t(`editorPage.subConfig.basic.tag.suggestions`) }}
+              </span>
               <button
                 v-for="tagName in suggestedEditorTags"
                 :key="tagName"
@@ -429,6 +433,7 @@
       type="button"
       class="compare-link"
       :title="$t('editorPage.subConfig.btn.compare')"
+      :disabled="isget"
       @click="compare"
     >
       <font-awesome-icon icon="fa-solid fa-eye" />
@@ -439,6 +444,8 @@
       class="submit-btn btn"
       type="primary"
       shape="square"
+      :title="$t('editorPage.subConfig.btn.saveShortcut')"
+      :loading="isget"
     >
       <font-awesome-icon icon="fa-solid fa-floppy-disk" />
       {{ $t("editorPage.subConfig.btn.save") }}
@@ -515,7 +522,7 @@ import FilterSelect from "@/views/editor/components/FilterSelect.vue";
 import HandleDuplicate from "@/views/editor/components/HandleDuplicate.vue";
 import Regex from "@/views/editor/components/Regex.vue";
 import Sort from "@/views/editor/components/Sort.vue";
-import { showDialog } from "@/utils/dialog";
+import { dialogState, showDialog } from "@/utils/dialog";
 import { notifyLoading, dismissNotify } from "@/utils/notify";
 import { storeToRefs } from "pinia";
 import {
@@ -1340,6 +1347,18 @@ const submit = () => {
   });
 };
 
+/** ⌘S / Ctrl+S saves, like every other editor — otherwise the browser's
+ *  own "save page" dialog opens mid-edit. */
+const onSaveShortcut = (event: KeyboardEvent) => {
+  if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== "s") return;
+  /* Always swallow it: the browser's "save page" dialog is never what we want here. */
+  event.preventDefault();
+  if (dialogState.visible) return;
+  submit();
+};
+onMounted(() => window.addEventListener("keydown", onSaveShortcut));
+onBeforeUnmount(() => window.removeEventListener("keydown", onSaveShortcut));
+
 // 名称验证器
 const nameValidator = (val: string): Promise<boolean> => {
   return new Promise((resolve) => {
@@ -1804,9 +1823,15 @@ const handleEditGlobalClick = () => {
 .inline-tag-editor__suggestions {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   justify-content: flex-start;
   gap: 6px;
   width: 100%;
+}
+
+.inline-tag-editor__suggestions-label {
+  color: var(--comment-text-color);
+  font-size: 12px;
 }
 
 .inline-tag-editor__row {

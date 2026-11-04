@@ -40,7 +40,15 @@
           <div class="btn-groups preview-trailing" />
         </template>
       </header>
-      <cmView :isReadOnly="false" id="subscriptionPreview" />
+      <div v-if="isStandaloneWithoutUrl" class="compare-page-empty">
+        <div class="compare-page-empty__card surface">
+          <p class="compare-page-empty__text">{{ $t("comparePage.missingTarget") }}</p>
+          <button type="button" class="compare-page-empty__btn" @click="goToList">
+            {{ $t("comparePage.backToList") }}
+          </button>
+        </div>
+      </div>
+      <cmView v-else :isReadOnly="false" id="subscriptionPreview" />
     </div>
   </Teleport>
 </template>
@@ -49,22 +57,24 @@
 import axios from 'axios';
 import { computed, onBeforeUnmount, onMounted, watch, watchEffect } from "vue";
 import { useI18n } from "vue-i18n";
-import { useClipboard } from "@vueuse/core";
-import useV3Clipboard from "vue-clipboard3";
+import { useAppClipboard } from "@/utils/clipboard";
 import { useAppNotifyStore } from "@/store/appNotify";
 import cmView from "@/views/editCode/cmView.vue";
 import { useCodeStore } from "@/store/codeStore";
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 const cmStore = useCodeStore();
-const { copy, isSupported } = useClipboard();
-const { toClipboard: copyFallback } = useV3Clipboard();
+const writeClipboard = useAppClipboard();
 const { showNotify } = useAppNotifyStore();
 
 const { t } = useI18n();
 
 const route = useRoute();
+const router = useRouter();
 const { url } = route.query as { url: string };
+/* On the /preview route there is no parent panel to render preview data, so a
+   missing `?url=` leaves nothing to show. */
+const isStandaloneWithoutUrl = computed(() => route.path === '/preview' && !url);
 
 watchEffect(async () => {
   if (url) {
@@ -118,8 +128,12 @@ watch(() => props.previewData?.processed, (val) => {
 }, { immediate: true });
 
  
+const goToList = () => router.push('/subs');
+
 const clickClose = () => {
   emit("closePreview");
+  /* Opened as its own page, the × has no panel to close. */
+  if (route.path === '/preview') goToList();
 };
 
 /* The overlay is not a <dialog>, so Escape has to be wired by hand. */
@@ -129,16 +143,53 @@ const onKeydown = (event: KeyboardEvent) => {
 onMounted(() => window.addEventListener("keydown", onKeydown));
 onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 const copyUrl = async () => {
-  if (isSupported) {
-    await copy(url);
-  } else {
-    await copyFallback(url);
-  }
+  await writeClipboard(url);
   showNotify({ type: "success", title: t("comparePage.subscriptionPreviewCopied", { url }) });
 };
 </script>
 
 <style scoped>
+.compare-page-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - var(--compare-header-offset, 56px) - 80px);
+  padding: var(--space-4);
+  box-sizing: border-box;
+}
+
+.compare-page-empty__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  width: min(100%, 420px);
+  padding: var(--space-5);
+  text-align: center;
+}
+
+.compare-page-empty__text {
+  margin: 0;
+  color: var(--second-text-color);
+  font-size: var(--text-base);
+  line-height: 1.6;
+}
+
+.compare-page-empty__btn {
+  padding: 8px 16px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--primary-color);
+  color: var(--background-color);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
 .compare-page-header {
   padding: env(safe-area-inset-top) var(--space-4) 0;
   position: sticky;

@@ -10,6 +10,9 @@
       </main>
     </div>
     <AppDialogHost />
+    <!-- Route transitions can block on a guard fetch; keep the screen from
+         going blank without a word. -->
+    <div v-if="isNavigating" class="route-progress" aria-hidden="true" />
   </div>
 </template>
 
@@ -23,10 +26,34 @@ import { useSubsStore } from "@/store/subs";
 import { getFlowsUrlList } from "@/utils/getFlowsUrlList";
 import { initStores } from "@/utils/initApp";
 import { storeToRefs } from "pinia";
-import { computed, ref, watchEffect, onMounted } from "vue";
+import { computed, onBeforeUnmount, ref, watchEffect, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
+import { useRouter } from "vue-router";
 
 const { locale } = useI18n();
+
+/* A slim bar at the very top while a navigation is pending. Guarded routes
+   (the editors) await a fetch before rendering, which leaves the page blank
+   for a second or more; the bar only appears if that wait is noticeable. */
+const router = useRouter();
+const isNavigating = ref(false);
+let navigationTimer: ReturnType<typeof setTimeout> | undefined;
+
+const stopNavigation = () => {
+  clearTimeout(navigationTimer);
+  isNavigating.value = false;
+};
+
+router.beforeEach(() => {
+  clearTimeout(navigationTimer);
+  navigationTimer = setTimeout(() => {
+    isNavigating.value = true;
+  }, 150);
+});
+
+router.afterEach(stopNavigation);
+router.onError(stopNavigation);
+onBeforeUnmount(stopNavigation);
 const skipToMainLabel = computed(() =>
   String(locale.value || "").startsWith("zh") ? "跳到主要内容" : "Skip to main content",
 );
@@ -62,6 +89,37 @@ watchEffect(() => {
 </script>
 
 <style>
+/* Route progress: a 2px indeterminate bar pinned to the top edge */
+.route-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2000;
+  width: 35%;
+  height: 2px;
+  background: var(--primary-color);
+  border-radius: 0 var(--radius-full) var(--radius-full) 0;
+  animation: route-progress 1.1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes route-progress {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(300%);
+  }
+}
+
+/* No motion: a static indicator still says "working" */
+@media (prefers-reduced-motion: reduce) {
+  .route-progress {
+    width: 30%;
+    animation: none;
+  }
+}
+
 #app {
   position: absolute;
   min-height: 100%;

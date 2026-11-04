@@ -46,8 +46,7 @@
 
 <script lang="ts" setup>
   import logoIcon from '@/assets/icons/logo.png';
-  import { useClipboard } from '@vueuse/core';
-  import useV3Clipboard from 'vue-clipboard3';
+  import { useAppClipboard } from '@/utils/clipboard';
   import { useAppNotifyStore } from '@/store/appNotify';
   import SvgIcon from '@/components/SvgIcon.vue';
   import { useHostAPI } from '@/hooks/useHostAPI';
@@ -61,8 +60,7 @@
   const { appearanceSetting } = storeToRefs(settingsStore);
 
   const { t } = useI18n();
-  const { copy, isSupported } = useClipboard();
-  const { toClipboard: copyFallback } = useV3Clipboard();
+  const writeClipboard = useAppClipboard();
   const { showNotify } = useAppNotifyStore();
   const {
     name,
@@ -157,11 +155,7 @@
   };
   const targetCopy = async (path: PlatformPath) => {
     const url = await getRealUrl(path);
-    if (isSupported) {
-      await copy(url);
-    } else {
-      await copyFallback(url);
-    }
+    await writeClipboard(url);
     showNotify({ type: "success", title: notify });
   };
   const platformList = [

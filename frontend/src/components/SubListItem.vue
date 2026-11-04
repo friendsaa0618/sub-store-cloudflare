@@ -316,11 +316,11 @@
 <script lang="ts" setup>
 import { notifyLoading, dismissNotify } from "@/utils/notify";
 import { showDialog } from "@/utils/dialog";
-import { useClipboard, useMediaQuery } from "@vueuse/core";
+import { useMediaQuery } from "@vueuse/core";
 import dayjs from "dayjs";
 import { storeToRefs } from "pinia";
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, toRaw, type CSSProperties } from "vue";
-import useV3Clipboard from "vue-clipboard3";
+import { useAppClipboard } from "@/utils/clipboard";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 
@@ -344,8 +344,7 @@ const props = defineProps<{
   collection?: Collection;
   isDualColumn?: boolean;
 }>();
-const { copy, isSupported } = useClipboard();
-const { toClipboard: copyFallback } = useV3Clipboard();
+const writeClipboard = useAppClipboard();
 
 const isDesktop = useMediaQuery("(min-width: 768px)");
 const { t } = useI18n();
@@ -881,8 +880,11 @@ const refreshCompare = async () => {
   }
 };
 const onDeleteConfirm = async () => {
-  await subsStore.deleteItem(props.type, name, "permanent");
-  // Notify.danger(t('subPage.deleteItem.succeedNotify'), { duration: 1500 });
+  try {
+    await subsStore.deleteItem(props.type, name, "permanent");
+  } catch {
+    /* Reported by the interceptor; the card stays until the delete succeeds. */
+  }
 };
 
 const handleContentClick = (event: MouseEvent) => {
@@ -932,43 +934,50 @@ const onClickDelete = () => {
   });
 };
 
-const onClickCopyLink = async () => {
+const resolveDownloadUrl = async () => {
   const res = await cloudflareApi.getDownloadLink(props.type, name);
-  const url = res?.data?.status === "success" && res.data.data?.url
+  return res?.data?.status === "success" && res.data.data?.url
     ? res.data.data.url
     : `${host.value}/download/${
       props.type === "collection" ? "collection/" : "source/"
     }${encodeURIComponent(name)}`;
+};
 
-  if (isSupported) {
-    await copy(url);
-  } else {
-    await copyFallback(url);
+const onClickCopyLink = async () => {
+  try {
+    const url = await resolveDownloadUrl();
+    await writeClipboard(url);
+    showNotify({ type: "success", title: t("subPage.copyNotify.succeed") });
+  } catch {
+    /* Reported by the interceptor. */
   }
-  showNotify({ type: "success", title: t("subPage.copyNotify.succeed") });
 };
 
 const onClickOpenDownload = async () => {
-  const res = await cloudflareApi.getDownloadLink(props.type, name);
-  const url = res?.data?.status === "success" && res.data.data?.url
-    ? res.data.data.url
-    : `${host.value}/download/${
-      props.type === "collection" ? "collection/" : "source/"
-    }${encodeURIComponent(name)}`;
-  window.open(url, "_blank");
-  closeExpandedMenu();
+  try {
+    window.open(await resolveDownloadUrl(), "_blank");
+  } catch {
+    /* Reported by the interceptor. */
+  } finally {
+    closeExpandedMenu();
+  }
 };
 
 const onClickRefresh = async () => {
   notifyLoading(t("globalNotify.refresh.loading"), "refresh");
+  let failed = false;
   try {
     await cloudflareApi.downloadSource(name, { noCache: true });
   } catch (e) {
+    /* The fetch failed, so "刷新完成" would be a lie. */
+    failed = true;
     console.error(e);
   }
   await refreshSubFlowsIfNeeded()
   dismissNotify("refresh");
-  showNotify({ type: "success", title: t("globalNotify.refresh.succeed") });
+  /* The interceptor already reported a failed fetch; only claim success when
+     it succeeded. */
+  if (!failed) showNotify({ type: "success", title: t("globalNotify.refresh.succeed") });
 };
 
 const refreshSubFlowsIfNeeded = async () => {
