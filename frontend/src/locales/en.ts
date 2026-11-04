@@ -298,6 +298,7 @@ export default {
         succeedMsg: "Save Successfully!",
         deleteTitle: "Delete Confirm",
         deleteDes: "Do you really want to delete this action? Deleted action cannot be restored!",
+        deleteDesNamed: "Delete \u201c{name}\u201d? This cannot be undone.\n\nTip: the switch controls whether it applies in the live preview.",
         deleteConfirm: "Delete it",
         deleteCancel: "Cancel",
         leaveCancel: "Continue Editing",

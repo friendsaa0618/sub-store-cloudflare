@@ -298,6 +298,7 @@ export default {
         succeedMsg: "保存成功！",
         deleteTitle: "删除确认",
         deleteDes: "是否确认删除此操作？删除后不可恢复！\n\ntips: 可使用开关控制即时预览时是否生效",
+        deleteDesNamed: "确认删除「{name}」？删除后不可恢复！\n\ntips: 可使用开关控制即时预览时是否生效",
         deleteConfirm: "确认删除",
         deleteCancel: "取消",
         leaveCancel: "继续编辑",

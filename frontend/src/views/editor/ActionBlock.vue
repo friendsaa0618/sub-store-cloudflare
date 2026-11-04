@@ -473,11 +473,18 @@ const togglePreviewSwitch = (element) => {
 
 // 删除条目，actionsList 中记录的顺序 和 对应预览开关
 const deleteItem = id => {
+  /* Name the action being removed; "delete this operation?" says nothing when
+     the card has a custom name or there are several of the same type. */
+  const target = editNameList.find(item => item.id === id);
+  const name = String(target?.customName || target?.defaultName || "").trim();
   showDialog({
     title: t(`editorPage.subConfig.pop.deleteTitle`),
-    content: t(`editorPage.subConfig.pop.deleteDes`),
+    content: name
+      ? t(`editorPage.subConfig.pop.deleteDesNamed`, { name })
+      : t(`editorPage.subConfig.pop.deleteDes`),
     okText: t(`editorPage.subConfig.pop.deleteConfirm`),
     cancelText: t(`editorPage.subConfig.pop.deleteCancel`),
+    okType: "danger",
     onOk: () => {
       emit('deleteAction', id);
     },
