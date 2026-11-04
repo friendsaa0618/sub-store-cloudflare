@@ -30,13 +30,22 @@
     </div>
     <div class="input-wrapper">
       <AppInput
-       class="custom-input"
+        class="custom-input"
         :placeholder="
           $t(`editorPage.subConfig.nodeActions['${type}'].field.placeholder`)
         "
         v-model="input"
+        @keydown.enter.prevent="addItem"
       />
-      <font-awesome-icon @click="addItem" icon="fa-solid fa-location-arrow" />
+      <button
+        type="button"
+        class="action-add"
+        :aria-label="$t('specificWord.add')"
+        :title="$t('specificWord.add')"
+        @click="addItem"
+      >
+        <font-awesome-icon icon="fa-solid fa-location-arrow" />
+      </button>
     </div>
     <p class="des-label">
       {{ $t(`editorPage.subConfig.nodeActions['${type}'].action.des`) }}
@@ -204,17 +213,6 @@ const onClickTag = el => {
     grid-template-columns: 1fr 1fr;
   }
 
-  .input-wrapper {
-    display: flex;
-    align-items: center;
-
-    & > :deep(.app-input) {
-      padding: 8px 12px;
-      margin-right: 16px;
-      border-bottom: 1px solid var(--lowest-text-color);
-      color: var(--second-text-color);
-    }
-  }
 
   .tag-wrapper {
     -webkit-user-select: none;
@@ -237,8 +235,7 @@ const onClickTag = el => {
       margin-bottom: 8px;
 
       & span {
-        max-width: 95%;
-        min-width: 20px;
+        min-width: 0;
         display: -webkit-box;
         white-space: normal !important;
         overflow: hidden;
@@ -255,21 +252,43 @@ const onClickTag = el => {
     overflow: hidden;
   }
 
+  /* Mirrors Regex.vue so every action card's entry row looks the same. */
   .input-wrapper {
     display: flex;
     align-items: center;
+    gap: 8px;
+    padding: 2px 8px 2px 12px;
+    border: 1px solid var(--divider-color);
+    border-radius: var(--radius-md);
+    background: var(--background-color);
 
-    & > :deep(.app-input) {
-      padding: 8px 12px;
-      margin-right: 16px;
+    &:focus-within {
+      border-color: var(--primary-color);
     }
 
-    & > svg {
-      width: 20px;
-      height: 20px;
-      color: var(--primary-color);
-      flex: 1;
-      padding-right: 12px;
+    & > :deep(.app-input) {
+      flex: 1 1 auto;
+      min-width: 0;
+      padding: 8px 0;
+    }
+  }
+
+  .action-add {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--primary-color);
+    cursor: pointer;
+
+    &:hover {
+      background: color-mix(in srgb, var(--primary-color) 12%, transparent);
     }
   }
 </style>

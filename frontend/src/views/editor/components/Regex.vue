@@ -73,7 +73,7 @@
       />
       <button
         type="button"
-        class="regex-add"
+        class="action-add"
         :aria-label="$t('specificWord.add')"
         :title="$t('specificWord.add')"
         @click="addItem"
@@ -317,7 +317,8 @@
     }
   }
 
-  .regex-add {
+  /* Mirrors HandleDuplicate.vue so every action card's entry row looks the same. */
+  .action-add {
     display: inline-flex;
     align-items: center;
     justify-content: center;
