@@ -542,7 +542,7 @@ const collectionDetail = computed(() => {
     const sub = subsStore.getOneSub(name);
     return sub?.displayName || sub?.["display-name"] || sub?.name || `${name}(🚫)`;
   });
-  return `${t("subPage.collectionItem.contain")}: ${displayNameList.join(", ")}`;
+  return `${t("subPage.collectionItem.contain")}${t("specificWord.labelSeparator")}${displayNameList.join(", ")}`;
 });
 const appendRemarkToSimpleDetailLine = (value: string) => {
   if (!shouldInlineRemarkInSecondLine.value) {
@@ -650,15 +650,15 @@ const flow = computed(() => {
         };
       } else {
         secondLine = remainingDays
-          ? `${t("subPage.subItem.remainingDays")}: ${remainingDays}${t(
-              "subPage.subItem.remainingDaysUnit",
-            )}`
+          ? `${t("subPage.subItem.remainingDays")}${t(
+              "specificWord.labelSeparator",
+            )}${remainingDays}${t("subPage.subItem.remainingDaysUnit")}`
           : "";
         let expiresInfo = !expires
           ? t("subPage.subItem.noExpiresInfo")
-          : `${t("subPage.subItem.expires")}: ${dayjs
-              .unix(expires)
-              .format("YYYY-MM-DD HH:mm")}`;
+          : `${t("subPage.subItem.expires")}${t(
+              "specificWord.labelSeparator",
+            )}${dayjs.unix(expires).format("YYYY-MM-DD HH:mm")}`;
         if (target.hideExpire) {
           expiresInfo = "";
         }
@@ -674,7 +674,7 @@ const flow = computed(() => {
             target.showRemaining
               ? "subPage.subItem.showRemainingFlow"
               : "subPage.subItem.flow",
-          )}: ${getString(
+          )}${t("specificWord.labelSeparator")}${getString(
             target.showRemaining
               ? total - upload - download
               : upload + download,

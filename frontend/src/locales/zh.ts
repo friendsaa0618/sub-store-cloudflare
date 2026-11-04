@@ -1,6 +1,7 @@
 export default {
   specificWord: {
     metaSeparator: "，",
+    labelSeparator: "：",
     singleSub: "订阅源",
     collectionSub: "组合订阅",
     unknownType: "未知类型",

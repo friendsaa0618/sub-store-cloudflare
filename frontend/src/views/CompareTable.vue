@@ -559,8 +559,10 @@
       min-width: 0;
       max-width: 100%;
       white-space: normal;
+      /* Break long endpoints, but never mid-token when a natural break fits:
+         `break-all` split `kr-chuncheon-1` into two lines on phones. */
       overflow-wrap: anywhere;
-      word-break: break-all;
+      word-break: normal;
     }
   }
 
@@ -594,6 +596,11 @@
     padding: 0 var(--safe-area-side);
     width: 100%;
     cursor: pointer;
+
+    @media screen and (max-width: 767px) {
+      padding-top: 12px;
+      padding-bottom: 12px;
+    }
   }
 
   .compare-table-head {
@@ -605,6 +612,12 @@
     margin: 0;
     display: grid;
     grid-template-columns: 46% 1fr 1fr 1fr 1fr;
+
+    /* On phones the four flag columns only hold a check mark; give the name the
+       room it needs instead of 46% of a 390px screen. */
+    @media screen and (max-width: 767px) {
+      grid-template-columns: minmax(0, 1fr) 40px 40px 40px 40px;
+    }
 
     & li,
     & td {

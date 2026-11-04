@@ -1,6 +1,7 @@
 export default {
   specificWord: {
     metaSeparator: ", ",
+    labelSeparator: ": ",
     singleSub: "Source",
     collectionSub: "Collection",
     unknownType: "Unknown Type",
