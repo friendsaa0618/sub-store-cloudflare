@@ -410,6 +410,7 @@ import { useBackend } from "@/hooks/useBackend";
 import { useAppNotifyStore } from "@/store/appNotify";
 import { useCodeStore } from "@/store/codeStore";
 import { useSettingsStore } from "@/store/settings";
+import { useSubsStore } from "@/store/subs";
 import { TEMPLATE_TARGET_OPTIONS, getTargetLabel } from "@/constants/subscriptionTargets";
 import { getThemeCatalog } from "@/hooks/useThemes";
 import { useDesktopLayout } from "@/hooks/useDesktopLayout";
@@ -417,6 +418,7 @@ import { useDesktopLayout } from "@/hooks/useDesktopLayout";
 const CmView = defineAsyncComponent(() => import("@/views/editCode/cmView.vue"));
 
 const settingsStore = useSettingsStore();
+const subsStore = useSubsStore();
 const settingsApi = useSettingsApi();
 const cloudflareApi = useCloudflareApi();
 const cmStore = useCodeStore();
@@ -813,7 +815,13 @@ const restoreFromFile = async (event: Event) => {
         const content = await file.text();
         const res = await settingsApi.restoreSettings({ content });
         if (res?.data?.status !== "success") throw new Error("restore failed");
-        await settingsStore.fetchSettings();
+        /* A backup carries sources, collections and templates too, so refresh
+           everything instead of leaving the lists on their pre-restore data. */
+        await Promise.all([
+          settingsStore.fetchSettings(),
+          subsStore.fetchSubsData(),
+          fetchTemplates(),
+        ]);
         showNotify({ type: "success", title: t("myPage.notify.restore.succeed") });
       } catch (error) {
         showNotify({ type: "danger", title: t("myPage.notify.restore.failedWithError", { e: errorMessage(error) }) });
