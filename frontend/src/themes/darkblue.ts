@@ -18,7 +18,7 @@ export default {
 
     // icon色
     'icon-nav-bar-right': '#606266',
-    'unimportant-icon-color': '#FFFFFF34',
+    'unimportant-icon-color': '#FFFFFF88',
 
     // 组件色
     'status-bar-background-color': '#141416',
@@ -39,7 +39,9 @@ export default {
     'primary-text-color': '#bcbac1',
     'second-text-color': '#FFFFFFBB',
     'comment-text-color': '#FFFFFF88',
-    'lowest-text-color': '#FFFFFF36',
+    // Merged into the comment level: three text steps, and the lightest one
+    // no longer sits at 2.5:1 on the card surface.
+    'lowest-text-color': '#FFFFFF88',
 
     // 其他
     'img-brightness': '100',

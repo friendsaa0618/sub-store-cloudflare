@@ -32,8 +32,10 @@ export default {
     // 文字色
     'primary-text-color': '#443623',
     'second-text-color': '#606266',
-    'comment-text-color': '#909399',
-    'lowest-text-color': '#c0c4cc',
+    'comment-text-color': '#67635C',
+    // Merged into the comment level: three text steps, and the lightest one
+    // no longer sits at 2.5:1 on the card surface.
+    'lowest-text-color': '#67635C',
 
     // 其他
     'nav-bar-blur': '100px',

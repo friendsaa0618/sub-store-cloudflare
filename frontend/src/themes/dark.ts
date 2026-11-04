@@ -18,7 +18,7 @@ export default {
 
     // icon色
     'icon-nav-bar-right': '#A1A1AA',
-    'unimportant-icon-color': 'rgba(255, 255, 255, 0.35)',
+    'unimportant-icon-color': '#8A8A93',
 
     // Surface & Fills (Zinc Scale - #09090b base, #18181b card/surface, #27272a hover/borders)
     'status-bar-background-color': '#09090B',
@@ -38,8 +38,10 @@ export default {
     // Text (Zinc hierarchy)
     'primary-text-color': '#F4F4F5',
     'second-text-color': '#A1A1AA',
-    'comment-text-color': '#71717A',
-    'lowest-text-color': '#52525B',
+    'comment-text-color': '#8A8A93',
+    // Merged into the comment level: three text steps, and the lightest one
+    // no longer sits at 2.5:1 on the card surface.
+    'lowest-text-color': '#8A8A93',
 
     // Other
     'img-brightness': '100',

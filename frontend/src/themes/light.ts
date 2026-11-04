@@ -18,7 +18,7 @@ export default {
 
     // icon色
     'icon-nav-bar-right': '#334155',
-    'unimportant-icon-color': '#94A3B8',
+    'unimportant-icon-color': '#64748B',
 
     // Surface & Fills (Slate Scale - #ffffff base/card, #f8fafc surface, #f1f5f9 muted, #e2e8f0 borders)
     'status-bar-background-color': '#FFFFFF',
@@ -39,7 +39,9 @@ export default {
     'primary-text-color': '#0F172A',
     'second-text-color': '#334155',
     'comment-text-color': '#64748B',
-    'lowest-text-color': '#94A3B8',
+    // Merged into the comment level: three text steps, and the lightest one
+    // no longer sits at 2.5:1 on the card surface.
+    'lowest-text-color': '#64748B',
 
     // Other
     'img-brightness': '0',

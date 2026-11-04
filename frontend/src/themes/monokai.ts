@@ -19,9 +19,9 @@ export default {
 
     // 文字色
     'primary-text-color': '#fcf9f4',
-    'second-text-color': '#908e8f',
-    'comment-text-color': '#908e8f',
-    'lowest-text-color': '#908e8f',
+    'second-text-color': '#b9b6b7',
+    'comment-text-color': '#9a9899',
+    'lowest-text-color': '#9a9899',
 
     'compare-tag-text-color': '#aaa',
     'compare-tag-background-color': '#404244',
