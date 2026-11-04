@@ -143,7 +143,10 @@
                 v-if="isProcessedVisible"
                 class="compare-table-row processed-tr"
                 :class="{ 'processed-tr--unpaired': !hasNodeDisplayInfo(original) }"
+                tabindex="0"
                 @click="openNodeInfoPanel(processed)"
+                @keydown.enter.prevent="openNodeInfoPanel(processed)"
+                @keydown.space.prevent="openNodeInfoPanel(processed)"
               >
                 <td class="processed-item">
                   <div class="name-wrapper">
@@ -191,7 +194,10 @@
               <tr
                 v-if="isOriginalVisible && hasNodeDisplayInfo(original)"
                 class="compare-table-row original-tr"
+                tabindex="0"
                 @click="openNodeInfoPanel(original)"
+                @keydown.enter.prevent="openNodeInfoPanel(original)"
+                @keydown.space.prevent="openNodeInfoPanel(original)"
               >
                 <td class="original-item">
                   <div class="name-wrapper">
@@ -267,7 +273,10 @@
             <template v-for="node in filteredOriginalData" :key="node.id">
               <tr
                 class="compare-table-row original-tr"
+                tabindex="0"
                 @click="openNodeInfoPanel(node)"
+                @keydown.enter.prevent="openNodeInfoPanel(node)"
+                @keydown.space.prevent="openNodeInfoPanel(node)"
               >
                 <td class="original-item">
                   <div class="name-wrapper">
@@ -626,6 +635,12 @@
     padding: 0 var(--safe-area-side);
     width: 100%;
     cursor: pointer;
+
+    /* Rows open the node panel; keyboard focus needs to be visible. */
+    &:focus-visible {
+      outline: 2px solid var(--focus-ring-color);
+      outline-offset: -2px;
+    }
 
     @media screen and (max-width: 767px) {
       padding-top: 12px;

@@ -1,17 +1,29 @@
 <template>
   <div class="node-info-overlay" @click="closePanel"></div>
-  <div class="tab-panel-wrapper">
+  <div
+    ref="panelEl"
+    class="tab-panel-wrapper"
+    role="dialog"
+    aria-modal="true"
+    :aria-label="$t('comparePage.nodeInfo.node.title')"
+    tabindex="-1"
+  >
     <div class="auto-tab-panel">
       <div class="node-tabs" role="tablist">
         <button
           v-for="(tab, index) in tabs"
           :key="tab"
+          :ref="(el) => setTabEl(el as HTMLElement | null, index)"
+          :id="`node-info-tab-${index}`"
           type="button"
           role="tab"
           class="node-tab"
           :class="{ 'is-active': currentTab === index }"
           :aria-selected="currentTab === index"
+          :aria-controls="`node-info-pane-${index}`"
+          :tabindex="currentTab === index ? 0 : -1"
           @click="currentTab = index"
+          @keydown="onTabKeydown($event, index)"
         >
           {{ tab }}
         </button>
@@ -26,7 +38,13 @@
         </button>
       </div>
       <div class="node-tab-content">
-        <div v-show="currentTab === 0" class="node-tab-pane">
+        <div
+          v-show="currentTab === 0"
+          id="node-info-pane-0"
+          class="node-tab-pane"
+          role="tabpanel"
+          aria-labelledby="node-info-tab-0"
+        >
           <ul class="info-ul">
             <li>
               <strong class="node-name">
@@ -40,12 +58,24 @@
             </li>
           </ul>
         </div>
-        <div v-show="currentTab === 1" class="node-tab-pane">
+        <div
+          v-show="currentTab === 1"
+          id="node-info-pane-1"
+          class="node-tab-pane"
+          role="tabpanel"
+          aria-labelledby="node-info-tab-1"
+        >
           <div class="input-wrapper">
             <AppTextarea :model-value="JSON.stringify(props.nodeInfo, null, 2)" :rows="15" readonly />
           </div>
         </div>
-        <div v-show="currentTab === 2" class="node-tab-pane">
+        <div
+          v-show="currentTab === 2"
+          id="node-info-pane-2"
+          class="node-tab-pane"
+          role="tabpanel"
+          aria-labelledby="node-info-tab-2"
+        >
           <div v-if="ipLoading" class="ip-api-state ip-api-loading">{{ $t('comparePage.nodeInfo.ipApi.loading') }}</div>
           <div v-else-if="ipError" class="ip-api-state">
             <span class="state-title">{{ $t('comparePage.nodeInfo.ipApi.loadFailed') }}</span>
@@ -64,7 +94,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+  import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
   import { useI18n } from 'vue-i18n';
   import { useCloudflareApi } from '@/api/app';
 
@@ -137,12 +167,60 @@
     emit('close');
   };
 
-  /* Not a <dialog>, so Escape is wired by hand like the compare overlay. */
+  /* Not a <dialog>, so Escape and focus are wired by hand like the compare
+     overlay: take focus on open, give it back to the node that opened us. */
+  const panelEl = ref<HTMLElement | null>(null);
+  const tabEls = ref<(HTMLElement | null)[]>([]);
+  let opener: HTMLElement | null = null;
+
+  const setTabEl = (el: HTMLElement | null, index: number) => {
+    tabEls.value[index] = el;
+  };
+
+  /** Tabs follow the WAI-ARIA pattern: arrows move and activate. */
+  const selectTab = (index: number) => {
+    const count = tabs.value.length;
+    if (!count) return;
+    const next = (index + count) % count;
+    currentTab.value = next;
+    void nextTick(() => tabEls.value[next]?.focus());
+  };
+
+  const onTabKeydown = (event: KeyboardEvent, index: number) => {
+    switch (event.key) {
+      case 'ArrowRight':
+      case 'ArrowDown':
+        event.preventDefault();
+        selectTab(index + 1);
+        break;
+      case 'ArrowLeft':
+      case 'ArrowUp':
+        event.preventDefault();
+        selectTab(index - 1);
+        break;
+      case 'Home':
+        event.preventDefault();
+        selectTab(0);
+        break;
+      case 'End':
+        event.preventDefault();
+        selectTab(tabs.value.length - 1);
+        break;
+    }
+  };
+
   const onKeydown = (event: KeyboardEvent) => {
     if (event.key === 'Escape') closePanel();
   };
-  onMounted(() => window.addEventListener('keydown', onKeydown));
-  onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
+  onMounted(() => {
+    opener = document.activeElement as HTMLElement | null;
+    window.addEventListener('keydown', onKeydown);
+    void nextTick(() => panelEl.value?.focus({ preventScroll: true }));
+  });
+  onBeforeUnmount(() => {
+    window.removeEventListener('keydown', onKeydown);
+    opener?.focus?.({ preventScroll: true });
+  });
 
   onMounted(loadIpInfo);
 </script>
