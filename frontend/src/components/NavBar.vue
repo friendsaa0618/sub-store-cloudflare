@@ -2,7 +2,7 @@
   <div class="nav-bar-wrapper">
     <nav
       class="nav-bar"
-      :class="{ 'is-desktop': isDesktop, 'is-secondary': isNeedBack }"
+      :class="{ 'is-secondary': isNeedBack }"
     >
       <div class="nav-bar__left">
         <!-- Secondary: back + compact page title (home tabs stay in center) -->
@@ -123,7 +123,6 @@ import brandLogo from "@/assets/icons/logo.png";
 import LanguageSwitcherButton from "@/components/LanguageSwitcherButton.vue";
 import { useListSearchStore } from "@/store/listSearch";
 import { getThemeCatalog } from "@/hooks/useThemes";
-import { useDesktopLayout } from "@/hooks/useDesktopLayout";
 import { useSettingsStore } from "@/store/settings";
 import { SIDEBAR_BREAKPOINT, useSystemStore } from "@/store/system";
 import { initStores } from "@/utils/initApp";
@@ -137,7 +136,6 @@ const listSearchStore = useListSearchStore();
 const { appearanceSetting } = storeToRefs(settingsStore);
 const { navBarHeight, navBartop } = storeToRefs(systemStore);
 
-const isDesktop = useDesktopLayout();
 
 /** Search lives on the subscription list only; the route opts in. */
 const showListSearch = computed(() => Boolean(route.meta.supportsListSearch));

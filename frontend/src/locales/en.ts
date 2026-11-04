@@ -807,7 +807,7 @@ export default {
       showIcon: "Show subscription icons",
       showRemark: "Show remarks in simple mode",
       narrowMode: "Narrow layout on wide screens",
-      narrowModeHint: "Keep the single-column phone width on desktop",
+      narrowModeHint: "Cards, action menus and dialogs use the phone layout",
       floatingRefresh: "Floating refresh button",
       floatingAdd: "Floating create button",
       previewInPage: "Preview inside the page",
