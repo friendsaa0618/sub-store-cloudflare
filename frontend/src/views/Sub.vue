@@ -1,65 +1,5 @@
 <template>
   <div style="overflow: hidden">
-    <!-- 添加订阅弹窗 -->
-    <!-- lock-scroll -->
-    <div>
-      <AppPopup
-        v-model:visible="addSubBtnIsVisible"
-        :position="addSubPopupPosition"
-        :pop-class="addSubPopupClass"
-        :round="!isDesktop"
-        closeable
-        :panel-style="addSubPopupStyle"
-      >
-        <div class="add-sub-panel">
-          <div v-if="!isDesktop" class="preview-sheet-handle" aria-hidden="true" />
-          <div class="title-btn">
-            <p class="add-sub-panel-title">{{ $t(`subPage.addSubTitle`) }}</p>
-            <p class="add-sub-panel-title or">{{ $t(`specificWord.or`) }}</p>
-            <input ref="fileInput" type="file" accept="application/json,text/json,.json" style="display: none" @change="fileChange">
-            <AppButton
-              class="upload-btn"
-              plain
-              type="primary"
-              size="small"
-              :disabled="restoreIsLoading"
-              :loading="restoreIsLoading"
-              @click="upload()"
-            >
-              <font-awesome-icon
-                v-if="!uploadIsLoading"
-                icon="fa-solid fa-file-import"
-                aria-hidden="true"
-              />
-              {{ $t(`subPage.import.label`) }}
-            </AppButton>
-            <button
-              type="button"
-              class="import-tips-btn"
-              :aria-label="$t(`subPage.import.tipsTitle`)"
-              :title="$t(`subPage.import.tipsTitle`)"
-              @click="importTips"
-            >
-              <font-awesome-icon icon="fa-solid fa-circle-question" aria-hidden="true" />
-            </button>
-          </div>
-          <ul class="add-sub-panel-list">
-            <li>
-              <router-link to="/edit/subs/UNTITLED" class="router-link">
-                <svg-icon name="singleSubs" />
-                <span>{{ $t(`specificWord.singleSub`) }}</span>
-              </router-link>
-            </li>
-            <li>
-              <router-link to="/edit/collections/UNTITLED" class="router-link">
-                <svg-icon name="collectionSubs" />
-                <span>{{ $t(`specificWord.collectionSub`) }}</span>
-              </router-link>
-            </li>
-          </ul>
-        </div>
-      </AppPopup>
-    </div>
     <!-- 浮动按钮 -->
     <Teleport to="body">
       <button
@@ -242,7 +182,7 @@
       class="empty-state-wrapper"
     >
       <section class="onboarding-card onboarding-empty">
-        <img class="empty-state-image" :src="logoRedIcon" alt="" />
+        <img class="empty-state-image" :src="logoIcon" alt="" />
         <span class="onboarding-kicker">{{ $t('subPage.onboarding.welcome') }}</span>
         <h3>{{ $t('subPage.onboarding.title') }}</h3>
         <p class="onboarding-desc">{{ $t('subPage.onboarding.desc') }}</p>
@@ -267,8 +207,6 @@
 </template>
 
 <script lang="ts" setup>
-import { showDialog } from '@/utils/dialog';
-import { useMediaQuery } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 import { computed, onMounted, ref, toRaw, watch } from "vue";
 import { useI18n } from "vue-i18n";
@@ -276,7 +214,7 @@ import { useRoute } from 'vue-router';
 import draggable from "vuedraggable";
 
 import { useCloudflareApi } from "@/api/app";
-import logoRedIcon from "@/assets/icons/logo-red.png";
+import logoIcon from "@/assets/icons/logo.png";
 import HomeHero from "@/components/HomeHero.vue";
 import SubListItem from "@/components/SubListItem.vue";
 import { useFilteredDraggableList } from "@/hooks/useFilteredDraggableList";
@@ -284,7 +222,6 @@ import { useListViewMode } from "@/hooks/useListViewMode";
 import { useAppNotifyStore } from "@/store/appNotify";
 import { useGlobalStore } from "@/store/global";
 import { useListSearchStore } from "@/store/listSearch";
-import { useMethodStore } from '@/store/methodStore';
 import { useSettingsStore } from '@/store/settings';
 import { useSubsStore } from "@/store/subs";
 import { butifyDate } from "@/utils/butifyDate";
@@ -294,36 +231,8 @@ import { isMobile } from "@/utils/isMobile";
 const { showNotify } = useAppNotifyStore();
 const cloudflareApi = useCloudflareApi();
 const { t } = useI18n();
-const fileInput = ref(null);
-const uploadIsLoading = ref(false);
-const restoreIsLoading = ref(false);
-const addSubBtnIsVisible = ref(false);
-const isDesktop = useMediaQuery("(min-width: 768px)");
-const addSubPopupPosition = computed(() => (isDesktop.value ? "center" : "bottom"));
-const addSubPopupClass = computed(() =>
-  isDesktop.value ? "add-sub-modal-popup" : "add-sub-sheet-popup",
-);
-const addSubPopupStyle = computed(() => {
-  if (isDesktop.value) {
-    return {
-      width: "min(400px, 92vw)",
-      maxHeight: "min(80vh, 640px)",
-      borderRadius: "16px",
-      overflow: "hidden",
-      padding: "20px 18px",
-    };
-  }
-  return {
-    width: "100%",
-    maxHeight: "78vh",
-    borderRadius: "16px 16px 0 0",
-    overflow: "hidden",
-    padding: "12px 18px calc(18px + env(safe-area-inset-bottom))",
-  };
-});
 // const isSubFold = ref(localStorage.getItem('sub-fold') === '1');
 // const isColFold = ref(localStorage.getItem('col-fold') === '1');
-const methodStore = useMethodStore();
 const subsStore = useSubsStore();
 const globalStore = useGlobalStore();
 const settingsStore = useSettingsStore();
@@ -450,14 +359,9 @@ const refresh = async () => {
   await initStores(true, true, true);
 };
 
-const addSub = () => {
-  addSubBtnIsVisible.value = true;
-};
-
 const route = useRoute();
 
 onMounted(() => {
-  methodStore.registerMethod("addSub", addSub);
   refreshMissingFlows();
 });
 
@@ -552,65 +456,6 @@ const shouldShowElement = (element) => {
 };
 const filteredSubs = useFilteredDraggableList(subs, shouldShowElement);
 const filteredCollections = useFilteredDraggableList(collections, shouldShowElement);
-const upload = async() => {
-  try {
-    fileInput.value.click();
-  } catch (e) {
-    console.error(e);
-  }
-};
-
-const fileChange = async (event) => {
-  const file = event.target.files[0];
-  if(!file) return;
-  try {
-    restoreIsLoading.value = true;
-    const reader = new FileReader();
-    reader.readAsText(file);
-    reader.onload = async () => {
-      const item = JSON.parse(String(reader.result));
-      const suffix = new Date().getTime();
-      item.name += `_${suffix}`;
-      item.displayName += `_${suffix}`;
-      item['display-name'] = item.displayName;
-      const res = await cloudflareApi.createItem(item.subscriptions ? 'collections' : 'subs', item);
-      // await subsStore.fetchSubsData();
-      
-      if (res?.data?.status === "success") {
-        await initStores(false, true, true);
-        showNotify({
-          type: "success",
-          title: t(`subPage.import.succeed`),
-        });
-        addSubBtnIsVisible.value = false;
-      } else {
-        throw new Error('restore failed');
-      }
-    };
-
-    reader.onerror = e => {
-      throw e;
-    };
-    
-  } catch (e) {
-    showNotify({
-      type: "danger",
-      title: t(`subPage.import.failed`, { e: e.message ?? e }),
-    });
-    console.error(e);
-  } finally {
-    restoreIsLoading.value = false;
-  }
-};
-const importTips = () => {
-  addSubBtnIsVisible.value = false;
-  showDialog({
-    title: t(`subPage.import.tipsTitle`),
-    content: t(`subPage.import.tipsContent`),
-    okText: 'OK',
-    noCancelBtn: true,
-  });
-};
 </script>
 
 <style scoped>
@@ -777,90 +622,6 @@ const importTips = () => {
 
   .onboarding-steps {
     grid-template-columns: 1fr;
-  }
-}
-
-.add-sub-panel {
-  background-color: transparent;
-  color: var(--second-text-color);
-
-  & .preview-sheet-handle {
-    width: 36px;
-    height: 4px;
-    margin: 0 auto 10px;
-    border-radius: var(--radius-full);
-    background: color-mix(in srgb, var(--comment-text-color) 28%, transparent);
-  }
-
-  & .title-btn {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 12px;
-    gap: 4px;
-  }
-
-  & .import-tips-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    padding: 0;
-    border: 0;
-    border-radius: 50%;
-    background: transparent;
-    color: var(--comment-text-color);
-    cursor: pointer;
-
-    &:focus {
-      outline: none;
-    }
-
-    &:focus-visible {
-      box-shadow: 0 0 0 2px var(--focus-ring-color);
-    }
-  }
-
-  & .add-sub-panel-title {
-    width: auto;
-    text-align: center;
-    font-size: 16px;
-    color: var(--second-text-color);
-    &.or {
-      margin: 0 4px;
-      color: var(--comment-text-color);
-    }
-  }
-
-  & .add-sub-panel-list {
-    padding: 16px 0;
-    font-size: 16px;
-    font-weight: bold;
-    display: flex;
-    width: 100%;
-    color: var(--second-text-color);
-
-    & > li {
-      width: 50%;
-      display: flex;
-      justify-content: center;
-
-      & .router-link {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: space-between;
-
-        & > svg {
-          width: 44px;
-          height: 44px;
-          color: var(--primary-color);
-          margin-bottom: 12px;
-        }
-      }
-    }
   }
 }
 
