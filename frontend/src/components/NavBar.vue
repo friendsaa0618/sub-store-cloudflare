@@ -55,6 +55,7 @@
             :to="item.path"
             class="nav-segmented-item"
             :class="{ 'is-active': isTabActive(item.path) }"
+            :aria-current="isTabActive(item.path) ? 'page' : undefined"
           >
             <font-awesome-icon :icon="item.icon" class="nav-segmented-item__icon" aria-hidden="true" />
             <span class="nav-segmented-item__label">{{ item.label }}</span>

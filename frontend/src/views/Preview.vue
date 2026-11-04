@@ -8,7 +8,10 @@
       <header class="compare-page-header" :class="{ 'preview-popup-header': !url }">
         <template v-if="url">
           <h1>
-            <span class="title" @click="copyUrl"><font-awesome-icon class="copy" icon="fa-solid fa-clone" @click="copyUrl" /><span class="titleText">{{ t("comparePage.subscriptionPreviewCopyLabel") }}</span></span>
+            <button type="button" class="title" @click="copyUrl">
+              <font-awesome-icon class="copy" icon="fa-solid fa-clone" aria-hidden="true" />
+              <span class="titleText">{{ t("comparePage.subscriptionPreviewCopyLabel") }}</span>
+            </button>
             <span class="displayName">
               <a class="url" :href="url" target="_blank">{{ url }}</a>
             </span>
@@ -221,6 +224,13 @@ const copyUrl = async () => {
     white-space: nowrap;
     cursor: pointer;
     min-width: 0;
+    /* A real button now, so it needs the button resets back. */
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
 
     & .titleText {
       overflow: hidden;
