@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import { provide } from "vue";
+import { provide, useId } from "vue";
 import { RADIO_GROUP_KEY, type RadioGroupContext } from "./context";
 
 const props = withDefaults(
@@ -28,6 +28,8 @@ const emit = defineEmits<{
 }>();
 
 const context: RadioGroupContext = {
+  /* Per-instance id: a module counter would restart inside every setup(). */
+  name: `app-radio-group-${useId()}`,
   get value() {
     return props.modelValue;
   },

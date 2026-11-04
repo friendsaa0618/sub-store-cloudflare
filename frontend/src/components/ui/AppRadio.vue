@@ -9,6 +9,7 @@
     <input
       class="app-radio__input"
       type="radio"
+      :name="group?.name"
       :checked="checked"
       :disabled="disabled"
       @change="select"
