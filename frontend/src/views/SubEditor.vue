@@ -1185,14 +1185,16 @@ const fetchCompareData = async () => {
     const res = await cloudflareApi.previewItem(type, data);
     if (res?.data?.status === "success") {
       compareData.value = res.data.data;
-    } else {
-      compareData.value = null;
+      return true;
     }
   } catch (e) {
     console.error(e);
-    compareData.value = null;
+  } finally {
+    dismissNotify("compare");
   }
-  dismissNotify("compare");
+  /* Keep whatever was on screen: the interceptor already said why it failed,
+     and an empty table would read as "every node was filtered out". */
+  return false;
 };
 
 const openComparePanel = () => {
@@ -1222,7 +1224,7 @@ const compare = () => {
       });
       return;
     }
-    await fetchCompareData();
+    if (!(await fetchCompareData())) return;
     openComparePanel();
   });
 };
