@@ -10,17 +10,13 @@ export const useGlobalStore = defineStore('globalStore', {
       isLoading: true,
       isFlowFetching: true,
       fetchResult: false,
-      isDefaultIcon: localStorage.getItem('isDefaultIcon') === '1',
       isDarkMode: false,
       env: {},
       isDockerDeployment: false,
       isSimpleMode: localStorage.getItem('isSimpleMode') === null
         ? true
         : localStorage.getItem('isSimpleMode') === '1',
-      isLeftRight: localStorage.getItem('isLr') === '1',
-      isIconColor: localStorage.getItem('iconColor') === '1',
       isEditorCommon: localStorage.getItem('iseditorCommon') !== '1',
-      isSimpleReicon: localStorage.getItem('isSimpleReicon') === '1',
       showFloatingRefreshButton: localStorage.getItem('showFloatingRefreshButton') === '1',
       savedPositions: {},
     };
@@ -55,30 +51,6 @@ export const useGlobalStore = defineStore('globalStore', {
       }
       this.isSimpleMode = isSimpleMode;
     },
-    setLeftRight(isLr: boolean) {
-      if (isLr) {
-        localStorage.setItem('isLr', '1');
-      } else {
-        localStorage.removeItem('isLr');
-      }
-      this.isLeftRight = isLr;
-    },
-    setIconColor(iconColor: boolean) {
-      if (iconColor) {
-        localStorage.setItem('iconColor', '1');
-      } else {
-        localStorage.removeItem('iconColor');
-      }
-      this.isIconColor = iconColor;
-    },
-    setIsDefaultIcon(isDefaultIcon: boolean) {
-      if (isDefaultIcon) {
-        localStorage.setItem('isDefaultIcon', '1');
-      } else {
-        localStorage.removeItem('isDefaultIcon');
-      }
-      this.isDefaultIcon = isDefaultIcon;
-    },
     setEditorCommon(isEditorCommon: boolean) {
       if (!isEditorCommon) {
         localStorage.setItem('iseditorCommon', '1');
@@ -86,14 +58,6 @@ export const useGlobalStore = defineStore('globalStore', {
         localStorage.removeItem('iseditorCommon');
       }
       this.isEditorCommon = isEditorCommon;
-    },
-    setSimpleReicon(isSimpleReicon: boolean) {
-      if (isSimpleReicon) {
-        localStorage.setItem('isSimpleReicon', '1');
-      } else {
-        localStorage.removeItem('isSimpleReicon');
-      }
-      this.isSimpleReicon = isSimpleReicon;
     },
     setShowFloatingRefreshButton(showFloatingRefreshButton: boolean) {
       if (showFloatingRefreshButton) {

@@ -1,16 +1,12 @@
 interface GlobalStoreState {
   isLoading: boolean;
-  isDefaultIcon: boolean;
   isFlowFetching: boolean;
   fetchResult: boolean;
   isDarkMode: boolean;
   env: ENV;
   isDockerDeployment: boolean;
   isSimpleMode: boolean;
-  isLeftRight: boolean;
-  isIconColor: boolean;
   isEditorCommon: boolean;
-  isSimpleReicon: boolean;
   showFloatingRefreshButton: boolean;
   savedPositions: any;
   subProgressStyle: any;

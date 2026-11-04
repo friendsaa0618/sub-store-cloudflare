@@ -407,9 +407,6 @@ export default {
           label: "Icon",
           placeholder: "Click on the left or top icon, fill in the icon link from the icon library, do not use jpg."
         },
-        isIconColor: {
-          label: "Custom Icon Use Original Color"
-        },
         ignoreFailedRemoteSub: {
           label: "Source failure handling",
           disabled: "Fail the collection",

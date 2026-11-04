@@ -325,8 +325,6 @@ import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 
 import { useCloudflareApi } from "@/api/app";
-import logoIcon from "@/assets/icons/logo.png";
-import logoRedIcon from "@/assets/icons/logo-red.png";
 import PreviewPanel from "@/components/PreviewPanel.vue";
 import { useHostAPI } from "@/hooks/useHostAPI";
 import { usePopupRoute } from "@/hooks/usePopupRoute";
@@ -459,15 +457,7 @@ const cloudflareApi = useCloudflareApi();
 const settingsStore = useSettingsStore();
 const { appearanceSetting } = storeToRefs(settingsStore);
 
-const {
-  isFlowFetching,
-  // isSimpleMode,
-  // isLeftRight,
-  // isIconColor,
-  // isSimpleReicon,
-  // isDefaultIcon,
-  // subProgressStyle,
-} = storeToRefs(globalStore);
+const { isFlowFetching } = storeToRefs(globalStore);
 const { showNotify } = useAppNotifyStore();
 const { currentUrl: host } = useHostAPI();
 
@@ -515,10 +505,6 @@ const resolvedIcon = computed(() => {
     seed,
     props.type === "collection" ? "collection" : "sub",
   );
-});
-// Keep legacy logo fallback for rare offline/broken URL paths
-const icon = computed(() => {
-  return appearanceSetting.value.isDefaultIcon ? logoIcon : logoRedIcon;
 });
 const avatarSize = computed(() => {
   if (appearanceSetting.value.isSimpleMode) return "36";

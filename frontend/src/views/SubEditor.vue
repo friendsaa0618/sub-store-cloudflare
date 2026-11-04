@@ -494,7 +494,6 @@
 
 <script lang="ts" setup>
 import { useCloudflareApi } from "@/api/app";
-import logoIcon from "@/assets/icons/logo.png";
 import logoRedIcon from "@/assets/icons/logo-red.png";
 import { usePopupRoute } from "@/hooks/usePopupRoute";
 import { useAppNotifyStore } from "@/store/appNotify";
@@ -651,7 +650,7 @@ type SubSelectRow = [string, string, string | undefined, string[] | undefined, b
       return [
         item.name,
         item.displayName || item['display-name'] || item.name,
-        item.icon || (appearanceSetting.value.isDefaultIcon ? logoIcon : logoRedIcon),
+        item.icon || logoRedIcon,
         item.tag,
         item.isIconColor !== false
       ];
