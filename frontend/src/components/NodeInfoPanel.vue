@@ -36,8 +36,7 @@
             </li>
             <li v-for="(value, key) in displayNodeInfo" :key="key">
               <span class="info-key">{{ key }}</span>
-              <span class="info-value"> : </span>
-              <span class="info-value">{{ value }}</span>
+              <span class="info-value">: {{ value }}</span>
             </li>
           </ul>
         </div>
@@ -53,9 +52,9 @@
             <AppButton class="ip-api-retry-btn" plain type="primary" size="small" @click="loadIpInfo">{{ $t('comparePage.nodeInfo.ipApi.retry') }}</AppButton>
           </div>
           <ul v-else class="info-ul">
-            <li v-for="(value, key) in ipInfo" :key="key">
+            <li v-for="[key, value] in ipRows" :key="key">
               <span class="info-key">{{ key }}</span>
-              <span class="info-value"> : {{ typeof value === 'object' ? JSON.stringify(value) : value }}</span>
+              <span class="info-value">: {{ value }}</span>
             </li>
           </ul>
         </div>
@@ -99,6 +98,24 @@
     'JSON',
     t('comparePage.nodeInfo.ipApi.title'),
   ]);
+
+  /* The IP API nests groups (connection, timezone, flag); flatten them into
+     `group.field` rows instead of dumping JSON into the list. */
+  const ipRows = computed<[string, string][]>(() => {
+    const rows: [string, string][] = [];
+    const walk = (source: Record<string, unknown>, prefix = "") => {
+      Object.entries(source).forEach(([key, value]) => {
+        const label = prefix ? `${prefix}.${key}` : key;
+        if (value && typeof value === "object" && !Array.isArray(value)) {
+          walk(value as Record<string, unknown>, label);
+          return;
+        }
+        rows.push([label, Array.isArray(value) ? value.join(", ") : String(value)]);
+      });
+    };
+    walk(ipInfo.value || {});
+    return rows;
+  });
 
   const displayNodeInfo = computed(() => {
     const result = {};
