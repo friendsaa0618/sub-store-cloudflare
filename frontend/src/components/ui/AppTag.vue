@@ -109,6 +109,11 @@ const emit = defineEmits<{ (e: "close"): void }>();
     background: color-mix(in srgb, currentColor 18%, transparent);
   }
 
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--focus-ring-color);
+  }
+
   /* Keep the icon small but the tap target at ~22px. */
   &::after {
     content: "";
