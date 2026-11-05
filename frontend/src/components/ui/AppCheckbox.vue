@@ -23,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject } from "vue";
+import { computed, inject, nextTick } from "vue";
 import { CHECKBOX_GROUP_KEY, type CheckboxGroupContext } from "./context";
 
 const props = withDefaults(
@@ -56,12 +56,18 @@ const checked = computed(() => {
 const disabled = computed(() => Boolean(props.disabled || group?.isDisabled));
 
 const onChange = (event: Event) => {
-  const value = (event.target as HTMLInputElement).checked;
+  const input = event.target as HTMLInputElement;
+  const value = input.checked;
   if (group && props.label !== undefined) {
     group.toggle(props.label);
     return;
   }
   emit("update:modelValue", value);
+  /* A parent may keep the same value (e.g. "select all" clicked from a partial
+     state), and then no re-render patches the input: put it back in sync. */
+  void nextTick(() => {
+    if (input.checked !== checked.value) input.checked = checked.value;
+  });
 };
 </script>
 

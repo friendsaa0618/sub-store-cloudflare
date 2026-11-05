@@ -335,7 +335,11 @@
                   {{ i.label }}
                 </button>
               </div>
-              <AppCheckbox v-model="subCheckbox" :indeterminate="subCheckboxIndeterminate" @click="subCheckboxClick"></AppCheckbox>
+              <AppCheckbox
+                :model-value="subCheckbox"
+                :indeterminate="subCheckboxIndeterminate"
+                @update:model-value="subCheckboxClick"
+              ></AppCheckbox>
             </div>
             <AppCheckboxGroup
               v-show="!manualSubscriptionsIsFold"
@@ -1671,18 +1675,13 @@ const urlValidator = (val: string): Promise<boolean> => {
   };
   const subCheckboxIndeterminate = ref(true);
   const subCheckbox = ref(true);
-  const subCheckboxClick = () => {
+  /* Driven by the checkbox's own change event: a click on the label also
+     clicks the inner input, so a @click handler ran twice and undid itself.
+     A partially filled box renders checked, so toggling it off still means
+     "select every visible row". */
+  const subCheckboxClick = (next: boolean) => {
     const group = getCurrentVisibleRows().map(([name]) => name);
-    if (subCheckboxIndeterminate.value) {
-      visibleSelectedSubscriptions.value = group;
-    } else if (!subCheckbox.value) {
-      visibleSelectedSubscriptions.value = [];
-      // subCheckbox.value = !subCheckbox.value
-    } else {
-      visibleSelectedSubscriptions.value = group;
-      // subCheckbox.value = !subCheckbox.value
-    }
-    subCheckboxIndeterminate.value = false
+    visibleSelectedSubscriptions.value = next || subCheckboxIndeterminate.value ? group : [];
   };
   const displayedSubsSelectList = ref<SubSelectRow[]>([]);
   const isDragging = ref(false);
