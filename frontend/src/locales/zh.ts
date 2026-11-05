@@ -240,6 +240,8 @@ export default {
     deleteItem: {
       title: "删除",
       desc: "是否确认删除 {displayName}？删除的配置会进入「工具 → 回收站」，可在那里恢复。",
+      blockedTitle: "无法删除",
+      blockedDesc: "{displayName} 正被组合订阅「{collections}」使用。请先在组合订阅里移除它，再删除。",
       succeedNotify: "删除成功！",
       btn: {
         confirm: "确认删除",

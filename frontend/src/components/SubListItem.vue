@@ -961,7 +961,28 @@ const onClickEdit = () => {
   router.push(`/edit/${props.type}s/${encodeURIComponent(name)}`);
 };
 
+/* A source used by a collection cannot be deleted; the server answers 409.
+   Say which collections hold it instead of surfacing that error. */
+const collectionsUsingSource = computed(() => {
+  if (props.type !== "sub") return [];
+  return (subsStore.collections || [])
+    .filter((collection) => (collection.subscriptions || []).includes(name))
+    .map((collection) => collection.displayName || collection.name);
+});
+
 const onClickDelete = () => {
+  if (collectionsUsingSource.value.length > 0) {
+    showDialog({
+      title: t("subPage.deleteItem.blockedTitle"),
+      content: t("subPage.deleteItem.blockedDesc", {
+        displayName,
+        collections: collectionsUsingSource.value.join("、"),
+      }),
+      noCancelBtn: true,
+      okText: t("specificWord.confirm"),
+    });
+    return;
+  }
   showDialog({
     title: t("subPage.deleteItem.title"),
     content: t("subPage.deleteItem.desc", { displayName }),

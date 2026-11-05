@@ -240,6 +240,8 @@ export default {
     deleteItem: {
       title: "Delete",
       desc: "Delete {displayName}? It moves to Tools → Recycle bin, where you can restore it.",
+      blockedTitle: "Cannot delete",
+      blockedDesc: "{displayName} is used by the collection(s) {collections}. Remove it there first, then delete.",
       succeedNotify: "Successfully deleted!",
       btn: {
         confirm: "Delete",
