@@ -47,6 +47,7 @@
 <script lang="ts" setup>
   import logoIcon from '@/assets/icons/logo.png';
   import { useAppClipboard } from '@/utils/clipboard';
+  import { apiErrorMessage } from '@/utils/apiError';
   import { useAppNotifyStore } from '@/store/appNotify';
   import SvgIcon from '@/components/SvgIcon.vue';
   import { useHostAPI } from '@/hooks/useHostAPI';
@@ -136,27 +137,41 @@
     return realUrl;
   };
   const targetOpen = async (path: PlatformPath) => {
+    /* Opened up-front so the popup blocker lets it through; if the link cannot
+       be resolved, close it instead of leaving a blank tab behind. */
     const pendingWindow = window.open('about:blank', '_blank');
-    const realUrl = await getRealUrl(path);
-    const nextUrl = appearanceSetting.value.displayPreviewInWebPage
-        ? buildUrlWithQuery('/preview', {
-            url: realUrl,
-            name: displayName || name,
-            api: host.value,
-            sourceType: type,
-            sourceName: name,
-          })
-      : realUrl;
-    if (pendingWindow) {
-      pendingWindow.location.href = nextUrl;
-      return;
+    try {
+      const realUrl = await getRealUrl(path);
+      const nextUrl = appearanceSetting.value.displayPreviewInWebPage
+          ? buildUrlWithQuery('/preview', {
+              url: realUrl,
+              name: displayName || name,
+              api: host.value,
+              sourceType: type,
+              sourceName: name,
+            })
+        : realUrl;
+      if (pendingWindow) {
+        pendingWindow.location.href = nextUrl;
+        return;
+      }
+      window.open(nextUrl, '_blank');
+    } catch {
+      pendingWindow?.close();
+      /* The interceptor already reported the failed request. */
     }
-    window.open(nextUrl, '_blank');
   };
   const targetCopy = async (path: PlatformPath) => {
-    const url = await getRealUrl(path);
-    await writeClipboard(url);
-    showNotify({ type: "success", title: notify });
+    try {
+      const url = await getRealUrl(path);
+      await writeClipboard(url);
+      showNotify({ type: "success", title: notify });
+    } catch (error) {
+      showNotify({
+        type: "danger",
+        title: t("subPage.copyNotify.failed", { e: apiErrorMessage(error) }),
+      });
+    }
   };
   const platformList = [
     {
