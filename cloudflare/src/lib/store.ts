@@ -502,12 +502,22 @@ function normalizeStoragePayload(input: unknown) {
   };
 }
 
+/**
+ * A source is remote or local, never both. Keeping the field of the other mode
+ * lets a source switched to remote keep serving its old local content.
+ */
+export function withoutOtherModeField<T extends Partial<SourceRecord>>(source: T): T {
+  if (source.type === "local") return { ...source, url: "" };
+  if (source.type === "remote") return { ...source, content: "" };
+  return source;
+}
+
 function normalizeSourceInput(input: unknown): Partial<SourceRecord> | undefined {
   if (!input || typeof input !== "object") return undefined;
   const source = input as Record<string, unknown>;
   const id = stringValue(source.id || source.name, "");
   if (!id) return undefined;
-  return {
+  return withoutOtherModeField({
     id,
     name: stringValue(source.name, id),
     type: source.type === "local" ? "local" : "remote",
@@ -516,7 +526,7 @@ function normalizeSourceInput(input: unknown): Partial<SourceRecord> | undefined
     enabled: source.enabled !== false,
     filters: normalizeFilters(source.filters),
     meta: normalizeMeta(source.meta),
-  };
+  });
 }
 
 function normalizeCollectionInput(input: unknown): Partial<CollectionRecord> | undefined {

@@ -514,6 +514,14 @@ describe("Worker and D1 integration", () => {
           type: "local",
           content: "vless://00000000-0000-4000-8000-000000000001@example.com:443?security=tls#Test%20Node",
           enabled: true,
+        }, {
+          // A backup written before the type was enforced may carry both fields.
+          id: "test-remote",
+          name: "Test Remote",
+          type: "remote",
+          url: "https://remote.example/sub",
+          content: "vless://00000000-0000-4000-8000-000000000002@example.com:443#Stale%20Node",
+          enabled: true,
         }],
         templates: [{
           id: "test-template",
@@ -534,7 +542,10 @@ describe("Worker and D1 integration", () => {
       }),
     });
     expect(restoreResponse.status).toBe(200);
-    expect(getPath(await jsonObject(restoreResponse), "data", "sources")).toBe(1);
+    expect(getPath(await jsonObject(restoreResponse), "data", "sources")).toBe(2);
+
+    const restoredRemote = await workerRequest("/api/sources/test-remote");
+    expect(getPath(await jsonObject(restoredRemote), "data", "content")).toBe("");
 
     const customCount = await env.DB.prepare("SELECT COUNT(*) AS count FROM templates WHERE id = 'test-template'").first("count");
     expect(customCount).toBe(1);

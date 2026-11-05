@@ -37,6 +37,7 @@ import {
   upsertCollection,
   upsertSource,
   upsertTemplate,
+  withoutOtherModeField,
 } from "../lib/store";
 import { convertSubscriptionContent, normalizeTargetAlias, previewSourceContent, previewSubscription } from "../lib/subscription";
 import type {
@@ -533,16 +534,6 @@ function fromApiSource(input: JsonMap, partial = false): Partial<SourceRecord> {
   if (!partial || "filters" in input || "process" in input) output.filters = filterList(input.filters, input.process);
   if (!partial || "meta" in input) output.meta = objectValue(input.meta);
   return output;
-}
-
-/**
- * A source is remote or local, never both. Keeping the field of the other mode
- * let a source switched to remote keep serving its old local content.
- */
-function withoutOtherModeField<T extends Partial<SourceRecord>>(source: T): T {
-  if (source.type === "local") return { ...source, url: "" };
-  if (source.type === "remote") return { ...source, content: "" };
-  return source;
 }
 
 function mergeSource(existing: SourceRecord, next: Partial<SourceRecord>) {
