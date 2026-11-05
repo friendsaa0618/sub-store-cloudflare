@@ -213,6 +213,57 @@ test("saving a disabled source keeps it disabled", async ({ page }) => {
   await expect.poll(() => saved?.enabled, { timeout: 10_000 }).toBe(false);
 });
 
+test("a new local source saves after switching from remote", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await prepareVisualPage(page);
+  await installVisualMocks(page, "populated");
+
+  let created: { name?: string; type?: string; content?: string } | null = null;
+  await page.route("**/api/sources", async (route) => {
+    if (route.request().method() !== "POST") {
+      await route.fallback();
+      return;
+    }
+    created = route.request().postDataJSON();
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ status: "success", data: created }),
+    });
+  });
+  await page.route("**/api/preview/source", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: "success",
+        data: {
+          processed: [{ id: "n", type: "trojan", name: "Local", server: "example.com", port: 443 }],
+          original: [{ id: "n", type: "trojan", name: "Local", server: "example.com", port: 443 }],
+          filtered: [],
+          renamed: [],
+        },
+      }),
+    }),
+  );
+
+  await page.goto("/edit/subs/UNTITLED", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".submit-btn")).toBeVisible({ timeout: 10_000 });
+  await page.locator(".app-input-text").first().fill("local-only");
+  await page.locator(".radio-wrapper .app-radio").nth(1).click();
+  const editor = page.locator(".cm-content").first();
+  await expect(editor).toBeVisible();
+  await editor.click();
+  await page.keyboard.type("trojan://password@example.com:443#Local");
+
+  // The hidden remote URL field used to stay registered, so this save failed
+  // with "订阅链接不能为空" even though the form showed the local editor.
+  await page.locator(".submit-btn").click();
+  await expect(page).toHaveURL(/\/subs$/, { timeout: 10_000 });
+  expect(created?.type).toBe("local");
+  expect(created?.content).toContain("#Local");
+});
+
 test("a touch drag reorders the list", async ({ page, context }) => {
   /* SortableJS only starts on touch when the device advertises touch. */
   await context.addInitScript(() => {

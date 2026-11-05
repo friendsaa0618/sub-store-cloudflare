@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { provide, ref } from "vue";
+import { provide, shallowRef } from "vue";
 import { FORM_KEY } from "./context";
 
 export type FormValidationResult = {
@@ -23,11 +23,14 @@ const props = defineProps<{
   modelValue?: Record<string, unknown>;
 }>();
 
-const items = ref<FormItemInstance[]>([]);
+/* A plain reactive array wraps each entry in a proxy on read, so `unregister`'s
+   identity check never matched and a removed field kept validating. Shallow
+   tracking keeps the registered instances raw and comparable. */
+const items = shallowRef<FormItemInstance[]>([]);
 
 const register = (item: FormItemInstance) => {
   if (!items.value.includes(item)) {
-    items.value.push(item);
+    items.value = [...items.value, item];
   }
 };
 
