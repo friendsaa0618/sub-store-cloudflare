@@ -41,6 +41,7 @@ interface Sub {
   subUserinfo?: string;
   tag?: string[];
   process: Process[];
+  enabled?: boolean;
 }
 
 interface Collection {
@@ -53,6 +54,7 @@ interface Collection {
   icon?: string;
   isIconColor?: boolean;
   tag?: string[];
+  enabled?: boolean;
 }
 
 interface Flow {

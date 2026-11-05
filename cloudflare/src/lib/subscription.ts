@@ -69,17 +69,27 @@ export async function buildSubscription(options: BuildOptions) {
 export async function buildSubscriptionResult(options: BuildOptions) {
   const internal: InternalBuildOptions = { ...options, responseMetadata: new Map() };
   const proxies = await loadProxyNodes(internal);
-  if (proxies.length === 0) throw new Error("No available nodes found");
+  if (proxies.length === 0) {
+    const selected = getSources(internal);
+    if (selected.length > 0 && selected.every((source) => source.enabled === false)) {
+      throw new Error("Every selected source is disabled");
+    }
+    throw new Error("No available nodes found");
+  }
   const body = renderBuildTarget(proxies, options);
   return { body, metadata: selectResponseMetadata(internal), nodes: proxies.length };
 }
 
 export async function previewSubscription(options: Pick<BuildOptions, "source" | "collection" | "sources" | "settings" | "requestUserAgent">) {
-  const sources = getSources({
+  const selected = getSources({
     ...options,
     requestUrl: new URL("https://sub-store.local/preview"),
     target: "json",
   });
+  /* A collection preview has to show what the download would serve, so a
+     disabled source is skipped here too. A single source stays visible: the
+     user asked for that one. */
+  const sources = options.collection ? selected.filter((sub) => sub.enabled !== false) : selected;
   const originalLists = await runWithConcurrency(
     sources.map((sub) => async () => parseProxies(await loadSubscriptionRaw(sub, options.settings, options.requestUserAgent))),
     getRequestConcurrency(options.settings),

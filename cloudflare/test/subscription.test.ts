@@ -6,7 +6,7 @@ import {
   MAX_REMOTE_SOURCE_URLS,
 } from "../src/lib/limits";
 import { readResponseText } from "../src/lib/read";
-import { buildSubscription, buildSubscriptionResult, convertSubscriptionContent, normalizeTargetAlias, singBoxSupportsDnsSplit, singBoxSupportsHttpClients, validateSubscriptionContent } from "../src/lib/subscription";
+import { buildSubscription, buildSubscriptionResult, convertSubscriptionContent, normalizeTargetAlias, previewSubscription, singBoxSupportsDnsSplit, singBoxSupportsHttpClients, validateSubscriptionContent } from "../src/lib/subscription";
 
 describe("subscription parsing and limits", () => {
   afterEach(() => vi.restoreAllMocks());
@@ -39,6 +39,43 @@ describe("subscription parsing and limits", () => {
       });
       expect(output.length, `${target} output`).toBeGreaterThan(0);
     }
+  });
+
+  it("previews a collection exactly as the download builds it", async () => {
+    const localSource = (id: string, enabled: boolean, name: string) => ({
+      id,
+      name,
+      type: "local" as const,
+      url: "",
+      content: `trojan://password@example.com:443#${name}`,
+      enabled,
+      filters: [],
+    });
+    const collection = { id: "mix", name: "Mix", sourceIds: [], filters: [], enabled: true };
+    const sources = [localSource("on", true, "On"), localSource("off", false, "Off")];
+
+    const preview = await previewSubscription({
+      collection: collection as any,
+      sources: sources as any,
+      settings: {} as any,
+    });
+    expect(preview.original.map((node: any) => node.name)).toEqual(["On"]);
+
+    const download = await buildSubscription({
+      collection: collection as any,
+      sources: sources as any,
+      requestUrl: new URL("https://example.com/download/collection/mix/uri"),
+      target: "uri",
+    });
+    expect(String(download)).toContain("On");
+    expect(String(download)).not.toContain("Off");
+
+    await expect(buildSubscription({
+      collection: collection as any,
+      sources: [sources[1]] as any,
+      requestUrl: new URL("https://example.com/download/collection/mix/uri"),
+      target: "uri",
+    })).rejects.toThrow("Every selected source is disabled");
   });
 
   it("fetches a remote source even when it still carries local content", async () => {

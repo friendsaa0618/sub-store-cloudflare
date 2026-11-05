@@ -187,6 +187,7 @@ export default {
       about: "查看项目文档"
     },
     collectionItem: {
+      disabledSource: "{name}（已停用）",
       noSub: "全部已启用订阅源",
       contain: "包含的订阅源",
       missingSource: "{name}（已删除）"

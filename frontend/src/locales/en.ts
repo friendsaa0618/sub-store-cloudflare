@@ -187,6 +187,7 @@ export default {
       about: "Open project docs"
     },
     collectionItem: {
+      disabledSource: "{name} (disabled)",
       noSub: "All enabled sources",
       contain: "Included sources",
       missingSource: "{name} (deleted)"

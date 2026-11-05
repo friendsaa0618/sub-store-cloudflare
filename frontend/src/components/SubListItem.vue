@@ -628,12 +628,16 @@ const collectionDetail = computed(() => {
   }
   const displayNameList = nameList.map((name) => {
     const sub = subsStore.getOneSub(name);
-    return (
+    const label =
       sub?.displayName
       || sub?.["display-name"]
       || sub?.name
-      || t("subPage.collectionItem.missingSource", { name })
-    );
+      || t("subPage.collectionItem.missingSource", { name });
+    /* A disabled source contributes nothing to the output, so the line has to
+       say so instead of listing it like an active one. */
+    return sub && sub.enabled === false
+      ? t("subPage.collectionItem.disabledSource", { name: label })
+      : label;
   });
   return `${t("subPage.collectionItem.contain")}${t("specificWord.labelSeparator")}${displayNameList.join(", ")}`;
 });
