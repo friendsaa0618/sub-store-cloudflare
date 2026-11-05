@@ -512,6 +512,7 @@ import { useCloudflareApi } from "@/api/app";
 import logoRedIcon from "@/assets/icons/logo-red.png";
 import { usePopupRoute } from "@/hooks/usePopupRoute";
 import { apiErrorMessage } from "@/utils/apiError";
+import { isOversizedImport } from "@/utils/importLimits";
 import { useAppNotifyStore } from "@/store/appNotify";
 import { useGlobalStore } from "@/store/global";
 import { useSettingsStore } from '@/store/settings';
@@ -1218,6 +1219,11 @@ const validateLocalContent = async (content = localContentText.value, options?: 
 const fileChange = async (event) => {
   const file = event.target.files[0];
   if(!file) return
+  if (isOversizedImport(file)) {
+    showNotify({ type: "danger", title: t("specificWord.fileTooLarge") });
+    event.target.value = "";
+    return;
+  }
   try {
     const content = await readTextFile(file);
     cmStore.setEditCode("SubEditer", content);

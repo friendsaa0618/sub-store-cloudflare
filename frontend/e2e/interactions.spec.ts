@@ -294,3 +294,24 @@ test("a slow backend still lands on the list", async ({ page }) => {
   await page.goto("/subs", { waitUntil: "domcontentloaded" });
   await expect(page.locator(".sub-item-wrapper").first()).toBeVisible({ timeout: 12_000 });
 });
+
+test("an oversized backup is refused before it uploads", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await prepareVisualPage(page);
+  await installVisualMocks(page, "populated");
+  await page.goto("/my", { waitUntil: "domcontentloaded" });
+  await page.waitForTimeout(1200);
+
+  let posted = false;
+  page.on("request", (request) => {
+    if (request.method() === "POST" && request.url().includes("/api/storage")) posted = true;
+  });
+  await page.setInputFiles("input[type=file]", {
+    name: "backup.json",
+    mimeType: "application/json",
+    buffer: Buffer.alloc(5 * 1024 * 1024, "x"),
+  });
+  await expect(page.locator(".Toastify__toast")).toContainText("文件超过 4 MB");
+  await expect(page.locator(".app-dialog__content")).toHaveCount(0);
+  expect(posted).toBe(false);
+});

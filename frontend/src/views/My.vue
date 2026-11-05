@@ -415,6 +415,7 @@ import { TEMPLATE_TARGET_OPTIONS, getTargetLabel } from "@/constants/subscriptio
 import { getThemeCatalog } from "@/hooks/useThemes";
 import { useDesktopLayout } from "@/hooks/useDesktopLayout";
 import { apiErrorMessage, isHttpError } from "@/utils/apiError";
+import { isOversizedImport } from "@/utils/importLimits";
 
 const CmView = defineAsyncComponent(() => import("@/views/editCode/cmView.vue"));
 
@@ -726,6 +727,10 @@ const importTemplateFromFile = async (event: Event) => {
   const file = target.files?.[0];
   target.value = "";
   if (!file) return;
+  if (isOversizedImport(file)) {
+    showNotify({ type: "danger", title: t("specificWord.fileTooLarge") });
+    return;
+  }
 
   templateEditingId.value = "";
   templateForm.id = file.name.replace(/\.(json|ya?ml)$/i, "").toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "");
@@ -805,6 +810,10 @@ const restoreFromFile = async (event: Event) => {
   const file = target.files?.[0];
   target.value = "";
   if (!file) return;
+  if (isOversizedImport(file)) {
+    showNotify({ type: "danger", title: t("specificWord.fileTooLarge") });
+    return;
+  }
 
   showDialog({
     title: t("myPage.backup.restoreTitle"),

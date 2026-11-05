@@ -1,5 +1,6 @@
 export default {
   specificWord: {
+    fileTooLarge: "The file is larger than 4 MB and cannot be imported",
     metaSeparator: ", ",
     labelSeparator: ": ",
     singleSub: "Source",

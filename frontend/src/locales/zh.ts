@@ -1,5 +1,6 @@
 export default {
   specificWord: {
+    fileTooLarge: "文件超过 4 MB，无法导入",
     metaSeparator: "，",
     labelSeparator: "：",
     singleSub: "订阅源",
