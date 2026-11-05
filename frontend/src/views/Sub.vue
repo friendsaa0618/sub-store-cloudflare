@@ -309,6 +309,7 @@ import logoIcon from "@/assets/icons/logo.png";
 import HomeHero from "@/components/HomeHero.vue";
 import SubListItem from "@/components/SubListItem.vue";
 import { useFilteredDraggableList } from "@/hooks/useFilteredDraggableList";
+import { usePopupRoute } from "@/hooks/usePopupRoute";
 import { useListViewMode } from "@/hooks/useListViewMode";
 import { useAppNotifyStore } from "@/store/appNotify";
 import { useGlobalStore } from "@/store/global";
@@ -370,6 +371,17 @@ onBeforeUnmount(() => {
 });
 
 const closeListSearch = () => listSearchStore.close();
+
+/* The search bar replaces the page header, so Back should close it first —
+   the same treatment as the compare overlay and the preview sheet. */
+const isListSearchOpen = computed({
+  get: () => listSearchStore.isSearchOpen,
+  set: (value: boolean) => {
+    if (value) listSearchStore.open(route.path);
+    else listSearchStore.close();
+  },
+});
+usePopupRoute(isListSearchOpen, { rewindOnClose: true });
 const handleListSearchClose = () => {
   if (listSearchStore.hasQuery) listSearchStore.setQuery("");
   else listSearchStore.close();
