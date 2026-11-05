@@ -8,14 +8,14 @@
     <ol class="home-hero__flow">
       <li class="flow-node">
         <span class="flow-node__value">{{ sourceCount }}</span>
-        <span class="flow-node__label">{{ t("subPage.hero.sources") }}</span>
+        <span class="flow-node__label">{{ t("subPage.hero.sources", sourceCount) }}</span>
       </li>
 
       <li class="flow-link" aria-hidden="true"><span class="flow-link__dot"></span></li>
 
       <li class="flow-node flow-node--accent">
         <span class="flow-node__value">{{ collectionCount }}</span>
-        <span class="flow-node__label">{{ t("subPage.hero.collections") }}</span>
+        <span class="flow-node__label">{{ t("subPage.hero.collections", collectionCount) }}</span>
       </li>
 
       <li class="flow-link" aria-hidden="true"><span class="flow-link__dot"></span></li>

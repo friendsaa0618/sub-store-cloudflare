@@ -143,8 +143,8 @@ export default {
     hero: {
       title: "Subscription pipeline",
       desc: "Sources feed a collection, which becomes a config your client understands.",
-      sources: "Sources",
-      collections: "Collections",
+      sources: "source | sources",
+      collections: "collection | collections",
       targets: "Output formats",
     },
     overview: {
