@@ -802,12 +802,12 @@ export default {
       listViewMode: "列表布局",
       singleColumn: "单列",
       dualColumn: "双列",
-      editorCommon: "编辑页常用配置",
-      manualSubs: "编辑页手动选择的订阅",
+      editorCommon: "常用配置",
+      manualSubs: "手动选择的订阅",
       expanded: "展开",
       collapsed: "折叠",
       hidden: "隐藏",
-      editorGrouping: "编辑页分组",
+      editorGrouping: "分组显示",
       groupingAlways: "始终",
       groupingEditOnly: "仅编辑时",
       groupingDisabled: "关闭"
@@ -822,7 +822,7 @@ export default {
       remoteCacheTtl: "远程订阅边缘缓存秒数，0 表示关闭",
       remoteCacheStaleOnError: "远程订阅失败时允许使用最近的边缘缓存",
       nodeInfoApiUrl: "节点信息 HTTPS API，必须包含 {'{ip}'}",
-      summary: "当前远程订阅拉取并发 {concurrency}，超时 {timeout}ms。"
+      summary: "当前远程订阅并发 {concurrency}，超时 {seconds} 秒。"
     },
     btn: {
       cancel: "取消",

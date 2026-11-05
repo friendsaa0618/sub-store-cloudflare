@@ -618,9 +618,11 @@ const setAppearance = (key: string, value: boolean | string) => {
 };
 
 const requestSummary = computed(() => {
+  const timeoutMs = Number(settingsStore.defaultTimeout) || 30000;
   return t("myPage.request.summary", {
     concurrency: settingsStore.backendRequestConcurrency || "3",
-    timeout: settingsStore.defaultTimeout || "30000",
+    // Milliseconds are an implementation detail here; the field above keeps the raw value.
+    seconds: String(Math.round((timeoutMs / 1000) * 10) / 10),
   });
 });
 

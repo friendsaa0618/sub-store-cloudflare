@@ -802,12 +802,12 @@ export default {
       listViewMode: "List layout",
       singleColumn: "Single column",
       dualColumn: "Two columns",
-      editorCommon: "Editor quick options",
-      manualSubs: "Editor manual source picker",
+      editorCommon: "Quick options",
+      manualSubs: "Manual source picker",
       expanded: "Expanded",
       collapsed: "Collapsed",
       hidden: "Hidden",
-      editorGrouping: "Editor sections",
+      editorGrouping: "Section grouping",
       groupingAlways: "Always",
       groupingEditOnly: "Only while editing",
       groupingDisabled: "Off"
@@ -822,7 +822,7 @@ export default {
       remoteCacheTtl: "Remote subscription edge-cache TTL in seconds; 0 disables it",
       remoteCacheStaleOnError: "Use the latest edge cache when a remote source fails",
       nodeInfoApiUrl: "HTTPS node-info API URL containing {'{ip}'}",
-      summary: "Remote subscription concurrency is {concurrency}; timeout is {timeout}ms."
+      summary: "Remote subscription concurrency is {concurrency}; timeout is {seconds}s."
     },
     btn: {
       cancel: "Cancel",
