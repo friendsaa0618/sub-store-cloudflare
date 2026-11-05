@@ -38,10 +38,12 @@ export default {
     // Text (Slate hierarchy)
     'primary-text-color': '#0F172A',
     'second-text-color': '#334155',
-    'comment-text-color': '#64748B',
+    // #5C6A7E keeps 4.5:1 on the compare surface (#F1F5F9), where 12px
+    // secondary text lives; slate-500 landed at 4.34:1.
+    'comment-text-color': '#5C6A7E',
     // Merged into the comment level: three text steps, and the lightest one
     // no longer sits at 2.5:1 on the card surface.
-    'lowest-text-color': '#64748B',
+    'lowest-text-color': '#5C6A7E',
 
     // Other
     'img-brightness': '0',

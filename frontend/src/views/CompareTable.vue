@@ -775,6 +775,9 @@
 
     &.processed-item.is-active {
       color: var(--third-color);
+      /* The accent is a fill color; as 12px text on the pill it needs the
+         contrast of the theme's text, so pull it toward the primary text. */
+      color: color-mix(in srgb, var(--third-color) 55%, var(--primary-text-color));
     }
 
     &:focus-visible {

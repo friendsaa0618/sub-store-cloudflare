@@ -38,10 +38,12 @@ export default {
     // Text (Zinc hierarchy)
     'primary-text-color': '#F4F4F5',
     'second-text-color': '#A1A1AA',
-    'comment-text-color': '#8A8A93',
+    // #93939D keeps 4.5:1 on the compare surface (#27272A), where 12px
+    // secondary text lives; the earlier #8A8A93 landed at 4.35:1.
+    'comment-text-color': '#93939D',
     // Merged into the comment level: three text steps, and the lightest one
     // no longer sits at 2.5:1 on the card surface.
-    'lowest-text-color': '#8A8A93',
+    'lowest-text-color': '#93939D',
 
     // Other
     'img-brightness': '100',
