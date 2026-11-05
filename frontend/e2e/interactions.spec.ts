@@ -315,3 +315,58 @@ test("an oversized backup is refused before it uploads", async ({ page }) => {
   await expect(page.locator(".app-dialog__content")).toHaveCount(0);
   expect(posted).toBe(false);
 });
+
+test("the editor keeps undo history per source", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await prepareVisualPage(page);
+  await installVisualMocks(page, "populated");
+
+  const localSource = (id: string, node: string) => ({
+    id,
+    name: id,
+    type: "local",
+    url: "",
+    content: `trojan://password@example.com:443#${node}`,
+    filters: [],
+    enabled: true,
+    meta: {},
+  });
+  const first = localSource("a-one", "NodeA");
+  const second = localSource("b-two", "NodeB");
+  await page.route("**/api/bootstrap", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: "success",
+        data: { env: ENV_PAYLOAD, settings: SETTINGS_PAYLOAD, sources: [first, second], collections: [] },
+      }),
+    }),
+  );
+  for (const item of [first, second]) {
+    await page.route(`**/api/sources/${item.id}`, (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ status: "success", data: item }),
+      }),
+    );
+  }
+
+  await page.goto("/edit/subs/a-one", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".submit-btn")).toBeVisible({ timeout: 10_000 });
+  await page.waitForTimeout(900);
+  await page.locator(".cm-content").first().click();
+  await page.keyboard.press("Control+End");
+  await page.keyboard.type("\ntrojan://password@example.com:444#EditedA");
+
+  await page.goto("/edit/subs/b-two", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".submit-btn")).toBeVisible({ timeout: 10_000 });
+  await page.waitForTimeout(900);
+  await page.locator(".cm-content").first().click();
+  await page.keyboard.press("Control+z");
+
+  const content = await page.locator(".cm-content").first().innerText();
+  expect(content).toContain("NodeB");
+  expect(content).not.toContain("EditedA");
+});

@@ -58,8 +58,12 @@ const getResponseTitle = (e: AxiosError<ErrorResponse>) => {
 const getResponseContent = (e: AxiosError<ErrorResponse>) => {
   const error = e.response?.data?.error;
   const statusLine = e.response?.status ? `status: ${e.response.status}` : undefined;
+  const code = getText(error?.code);
+  /* The API puts the HTTP status in `code`; repeating it under the status line
+     just makes the toast longer. */
+  const codeLine = code && code !== String(e.response?.status) ? `code: ${code}` : undefined;
   const backendErrorLines = [
-    getText(error?.code) ? `code: ${getText(error?.code)}` : undefined,
+    codeLine,
     getText(error?.type) ? `type: ${getText(error?.type)}` : undefined,
     getText(error?.details),
   ].filter(Boolean);
