@@ -34,7 +34,11 @@
         <div class="btn-groups preview-trailing" />
       </header>
       <div class="compare-page-body">
-        <div class="block-wrapper">
+        <div v-if="isEmptyCompare" class="compare-empty">
+          <p class="compare-empty__title">{{ $t(`comparePage.empty.title`) }}</p>
+          <p class="compare-empty__hint">{{ $t(`comparePage.empty.hint`) }}</p>
+        </div>
+        <div v-if="!isEmptyCompare" class="block-wrapper">
           <!--块标题-->
           <div class="sticky-title-wrapperse compare-title">
             <p>{{ $t(`comparePage.remain.title`) }}({{ remainDesc }}) <small v-if="filteredOriginalData.length > 0" @click="goToFilterRef">{{ $t(`comparePage.filter.title`) }}({{ filterDesc }})</small></p>
@@ -428,6 +432,8 @@
   const originalData = computed(() => props.compareData?.original || []);
   const hasProcessedData = computed(() => processedData.value.length > 0);
   const hasOriginalData = computed(() => originalData.value.length > 0);
+  /* A failed preview leaves both lists empty; headers alone look broken. */
+  const isEmptyCompare = computed(() => !hasProcessedData.value && !hasOriginalData.value);
 
   watch(
     () => props.compareData,
@@ -849,6 +855,8 @@
   }
 
   .compare-page-body {
+    display: flex;
+    flex-direction: column;
     font-size: 12px;
     background: inherit;
     color: var(--comment-text-color);
@@ -1048,4 +1056,29 @@
     color: var(--lowest-text-color);
     border-color: var(--lowest-text-color);
   }
+
+.compare-empty {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.compare-empty__title {
+  margin: 0;
+  color: var(--primary-text-color);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.compare-empty__hint {
+  margin: 0;
+  color: var(--comment-text-color);
+  font-size: 13px;
+  line-height: 1.6;
+}
 </style>

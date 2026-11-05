@@ -876,6 +876,10 @@ export default {
       count: "共 {count} 个节点",
       copyFailed: "复制失败\n{e}"
     },
+    empty: {
+      title: "预览没有返回节点",
+      hint: "检查订阅源是否可用，或点左上角刷新重试。"
+    },
     divider: "以下为被过滤的节点",
     filter: {
       title: "被过滤的节点"

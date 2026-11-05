@@ -876,6 +876,10 @@ export default {
       count: "{count} nodes",
       copyFailed: "Failed to copy\n{e}"
     },
+    empty: {
+      title: "Preview returned no nodes",
+      hint: "Check the source is reachable, or retry with the refresh button above."
+    },
     divider: "Following is filtered nodes",
     filter: {
       title: "filtered nodes"
