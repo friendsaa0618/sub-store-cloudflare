@@ -260,6 +260,8 @@ export default {
     },
     panel: {
       general: "General",
+      quickTargetInUse: "The card's copy button uses {target}",
+      quickTargetReset: "Reset to default",
       tips: {
         ok: "View Document",
         cancel: "Cancel",

@@ -4,6 +4,12 @@
       <font-awesome-icon icon="fa-solid fa-circle-question" aria-hidden="true" />
       <span>{{ desc }}</span>
     </button>
+    <p v-if="quickTarget" class="quick-target-note">
+      <span>{{ t('subPage.panel.quickTargetInUse', { target: quickTargetLabel }) }}</span>
+      <button type="button" class="quick-target-reset" @click="resetQuickTarget">
+        {{ t('subPage.panel.quickTargetReset') }}
+      </button>
+    </p>
     <ul class="preview-list">
       <li v-for="platform in platformList" :key="platform.name">
         <div class="infos">
@@ -45,9 +51,10 @@
 </template>
 
 <script lang="ts" setup>
+  import { computed, ref } from 'vue';
   import logoIcon from '@/assets/icons/logo.png';
   import { useAppClipboard } from '@/utils/clipboard';
-  import { rememberQuickTarget } from '@/utils/quickTarget';
+  import { clearQuickTarget, readQuickTarget, rememberQuickTarget } from '@/utils/quickTarget';
   import { apiErrorMessage } from '@/utils/apiError';
   import { useAppNotifyStore } from '@/store/appNotify';
   import SvgIcon from '@/components/SvgIcon.vue';
@@ -137,8 +144,23 @@
       : getUrl(path);
     return realUrl;
   };
-  const targetOpen = async (path: PlatformPath) => {
+  const quickTarget = ref<string | undefined>(readQuickTarget());
+  const quickTargetLabel = computed(() => {
+    const value = quickTarget.value;
+    if (!value) return '';
+    return DOWNLOAD_TARGET_OPTIONS.find((option) => option.value === value)?.label || value;
+  });
+  const resetQuickTarget = () => {
+    clearQuickTarget();
+    quickTarget.value = undefined;
+  };
+  const rememberTarget = (path: PlatformPath) => {
     rememberQuickTarget(path);
+    quickTarget.value = path || undefined;
+  };
+
+  const targetOpen = async (path: PlatformPath) => {
+    rememberTarget(path);
     /* Opened up-front so the popup blocker lets it through; if the link cannot
        be resolved, close it instead of leaving a blank tab behind. */
     const pendingWindow = window.open('about:blank', '_blank');
@@ -164,7 +186,7 @@
     }
   };
   const targetCopy = async (path: PlatformPath) => {
-    rememberQuickTarget(path);
+    rememberTarget(path);
     try {
       const url = await getRealUrl(path);
       await writeClipboard(url);
@@ -322,4 +344,23 @@
       }
     }
   }
+.quick-target-note {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: baseline;
+  margin: 0 0 10px;
+  color: var(--comment-text-color);
+  font-size: var(--text-xs, 12px);
+}
+
+.quick-target-reset {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--primary-color);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
 </style>

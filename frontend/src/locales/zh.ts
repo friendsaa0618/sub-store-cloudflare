@@ -260,6 +260,8 @@ export default {
     },
     panel: {
       general: "通用订阅",
+      quickTargetInUse: "卡片复制按钮当前使用 {target}",
+      quickTargetReset: "恢复默认",
       tips: {
         ok: "查看文档",
         cancel: "取消",

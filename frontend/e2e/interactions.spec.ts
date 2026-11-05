@@ -405,3 +405,37 @@ test("the copy button reuses the target picked in the panel", async ({ page, con
   await expect(page.locator(".Toastify__toast").last()).toContainText("已复制 sing-box 订阅链接");
   expect(requested.at(-1)).toBe("sing-box");
 });
+
+test("the remembered target can be reset from the panel", async ({ page, context }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await prepareVisualPage(page);
+  await installVisualMocks(page, "populated");
+  const requested: string[] = [];
+  await page.route("**/api/link/source/hk-nodes*", (route) => {
+    const target = new URL(route.request().url()).searchParams.get("target");
+    requested.push(String(target));
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ status: "success", data: { url: `https://example.com/x/${target ?? "default"}` } }),
+    });
+  });
+
+  await page.goto("/subs", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".sub-item-wrapper").first()).toBeVisible({ timeout: 10_000 });
+  await page.waitForTimeout(600);
+
+  await page.locator('.sub-item-action[aria-label="订阅链接"]').first().click();
+  await expect(page.locator(".quick-target-note")).toHaveCount(0);
+  await page.locator(".preview-list li", { hasText: "sing-box" }).locator("button").last().click();
+  await expect(page.locator(".quick-target-note")).toContainText("sing-box");
+
+  await page.locator(".quick-target-reset").click();
+  await expect(page.locator(".quick-target-note")).toHaveCount(0);
+
+  await page.locator(".app-popup__close").first().click();
+  await page.waitForTimeout(300);
+  await page.locator('.sub-item-action[aria-label="复制订阅链接"]').first().click();
+  await expect.poll(() => requested.at(-1)).toBe("null");
+});

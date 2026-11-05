@@ -18,3 +18,11 @@ export const rememberQuickTarget = (target: string | null | undefined) => {
     /* Private mode: the card button just keeps using the server default. */
   }
 };
+
+export const clearQuickTarget = () => {
+  try {
+    localStorage.removeItem(KEY);
+  } catch {
+    /* Nothing stored, nothing to clear. */
+  }
+};
