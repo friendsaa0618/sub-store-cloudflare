@@ -2364,7 +2364,9 @@ const handleEditGlobalClick = () => {
   }
 
   & .subs-checkbox-wrapper {
-    flex-direction: row-reverse;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 0;
 
     &.is-dragging {
       & .subs-checkbox,
@@ -2415,6 +2417,7 @@ const handleEditGlobalClick = () => {
     }
 
     & .subs-checkbox {
+      width: 100%;
       justify-content: space-between;
       /* margin-left: 16px; */
       padding: 16px 0 0 0;
@@ -2425,7 +2428,17 @@ const handleEditGlobalClick = () => {
         border-color: var(--divider-color);
       }
 
+      &:deep(.app-checkbox__label) {
+        flex: 1;
+        min-width: 0;
+      }
+
       & .sub-img-wrapper {
+        flex: 1;
+        width: 100%;
+        min-width: 0;
+        /* Keep the name and tags clear of the absolutely placed drag handle. */
+        padding-right: 32px;
         max-width: 100%;
         display: flex;
         align-items: center;
@@ -2474,7 +2487,7 @@ const handleEditGlobalClick = () => {
           transform: translateY(-50%);
           color: var(--second-text-color);
           font-size: 16px;
-          padding: 10px;
+          padding: 8px;
         }
       }
     }

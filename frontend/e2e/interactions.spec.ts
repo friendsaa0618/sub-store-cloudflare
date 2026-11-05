@@ -66,6 +66,47 @@ test("collection source picker keeps icons at avatar size", async ({ page }) => 
   expect(box!.height).toBeLessThanOrEqual(32);
 });
 
+test("collection source picker lists sources in a column", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await prepareVisualPage(page);
+  await installVisualMocks(page, "populated");
+
+  const sources = ["a-one", "b-two", "c-three"].map((id) => ({
+    id,
+    name: id,
+    type: "local",
+    url: "",
+    content: "",
+    filters: [],
+    enabled: true,
+    meta: { tag: [] },
+  }));
+  await page.route("**/api/bootstrap", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: "success",
+        data: { env: ENV_PAYLOAD, settings: SETTINGS_PAYLOAD, sources, collections: [] },
+      }),
+    }),
+  );
+
+  await page.goto("/edit/collections/UNTITLED", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".page-wrapper").first()).toBeVisible({ timeout: 10_000 });
+  await page.locator(".include-subs-trigger .picker-trigger").click();
+
+  const rows = page.locator(".subs-checkbox");
+  await expect(rows).toHaveCount(3);
+  const boxes = await rows.evaluateAll((elements) =>
+    elements.map((element) => element.getBoundingClientRect().toJSON()),
+  );
+  // Chips used to wrap onto one line; each source now owns a full-width row.
+  expect(boxes[1].top).toBeGreaterThanOrEqual(boxes[0].bottom - 1);
+  expect(boxes[2].top).toBeGreaterThanOrEqual(boxes[1].bottom - 1);
+  expect(boxes[0].width).toBeGreaterThan(600);
+});
+
 test("code editor toolbar stays on one row at 320px", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 780 });
   await prepareVisualPage(page);
