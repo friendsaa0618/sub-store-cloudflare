@@ -95,6 +95,7 @@
 
 <script lang="ts" setup>
   import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+  import { useFocusTrap } from '@/hooks/useFocusTrap';
   import { useI18n } from 'vue-i18n';
   import { useCloudflareApi } from '@/api/app';
 
@@ -170,6 +171,9 @@
   /* Not a <dialog>, so Escape and focus are wired by hand like the compare
      overlay: take focus on open, give it back to the node that opened us. */
   const panelEl = ref<HTMLElement | null>(null);
+
+  /* Tab must stay in the panel; the page behind it is hidden from readers. */
+  useFocusTrap(panelEl);
   const tabEls = ref<(HTMLElement | null)[]>([]);
   let opener: HTMLElement | null = null;
 

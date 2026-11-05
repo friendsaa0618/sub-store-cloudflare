@@ -362,6 +362,7 @@
   import { useSubsStore } from '@/store/subs';
   import { extractPreviewNodeInfos, PreviewNodeNameSide } from '@/utils/previewNodeNames';
   import { computed, nextTick, onBeforeUnmount, onMounted, ref, toRaw, watch } from 'vue';
+  import { useFocusTrap } from '@/hooks/useFocusTrap';
 
   const subsStore = useSubsStore();
   const props = defineProps<{
@@ -545,6 +546,9 @@
      walks the invisible list behind it. Focus goes back to the opener on close. */
   const wrapperEl = ref<HTMLElement | null>(null);
   let opener: HTMLElement | null = null;
+
+  /* The node panel is its own modal, so the overlay stops trapping while it is open. */
+  useFocusTrap(wrapperEl, () => !nodeInfoIsVisible.value);
 
   onMounted(() => {
     opener = document.activeElement as HTMLElement | null;
