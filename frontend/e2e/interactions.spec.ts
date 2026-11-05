@@ -212,3 +212,71 @@ test("saving a disabled source keeps it disabled", async ({ page }) => {
   await page.locator(".submit-btn").first().click({ force: true });
   await expect.poll(() => saved?.enabled, { timeout: 10_000 }).toBe(false);
 });
+
+test("a touch drag reorders the list", async ({ page, context }) => {
+  /* SortableJS only starts on touch when the device advertises touch. */
+  await context.addInitScript(() => {
+    Object.defineProperty(window, "ontouchstart", { value: () => {} });
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await prepareVisualPage(page);
+  await installVisualMocks(page, "populated");
+
+  const sources = ["a-one", "b-two", "c-three"].map((id, index) => ({
+    id,
+    name: id,
+    type: "local",
+    url: "",
+    content: `trojan://password@example.com:443#Node${index}`,
+    filters: [],
+    enabled: true,
+    meta: { tag: [], icon: "/logo.png", remark: "" },
+  }));
+  await page.route("**/api/bootstrap", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: "success",
+        data: { env: ENV_PAYLOAD, settings: SETTINGS_PAYLOAD, sources, collections: [] },
+      }),
+    }),
+  );
+  let sorted: string[] | null = null;
+  await page.route("**/api/sort/sources", async (route) => {
+    sorted = route.request().postDataJSON();
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ status: "success", data: sources }),
+    });
+  });
+
+  await page.goto("/subs", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".sub-item-wrapper").first()).toBeVisible({ timeout: 10_000 });
+  await page.waitForTimeout(600);
+
+  const first = await page.locator(".sub-item-wrapper").nth(0).boundingBox();
+  const second = await page.locator(".sub-item-wrapper").nth(1).boundingBox();
+  const startX = (first?.x ?? 0) + 40;
+  const startY = (first?.y ?? 0) + 30;
+  const endY = (second?.y ?? 0) + (second?.height ?? 0);
+
+  const client = await context.newCDPSession(page);
+  const touch = (type: string, x: number, y: number) =>
+    client.send("Input.dispatchTouchEvent", {
+      type,
+      touchPoints: type === "touchEnd" ? [] : [{ x, y, radiusX: 12, radiusY: 12, force: 1 }],
+    });
+
+  await touch("touchStart", startX, startY);
+  await page.waitForTimeout(350);
+  for (let step = 1; step <= 6; step += 1) {
+    await touch("touchMove", startX, startY + ((endY - startY) * step) / 6);
+    await page.waitForTimeout(80);
+  }
+  await touch("touchEnd", startX, endY);
+
+  await expect.poll(() => sorted, { timeout: 5_000 }).not.toBeNull();
+  expect(sorted![0]).toBe("b-two");
+});
