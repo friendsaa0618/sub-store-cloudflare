@@ -42,6 +42,7 @@ import { convertSubscriptionContent, normalizeTargetAlias, previewSourceContent,
 import type {
   CollectionRecord,
   FilterRule,
+  RecycleBinRecord,
   SourceRecord,
   SubscriptionCollection,
   SubscriptionSource,
@@ -323,7 +324,10 @@ apiRoutes.delete("/shares/:id", async (c) => {
   return success(c, { deleted: true });
 });
 
-apiRoutes.get("/recycle-bin", async (c) => success(c, await listRecycleBin(c.env)));
+apiRoutes.get("/recycle-bin", async (c) => {
+  const entries = await listRecycleBin(c.env);
+  return success(c, entries.map(toRecycleSummary));
+});
 apiRoutes.delete("/recycle-bin/:id", async (c) => {
   const existing = await getRecycleBinEntry(c.env, c.req.param("id"));
   if (!existing) return failed(c, "Recycle entry not found", 404);
@@ -543,6 +547,18 @@ function withoutOtherModeField<T extends Partial<SourceRecord>>(source: T): T {
 
 function mergeSource(existing: SourceRecord, next: Partial<SourceRecord>) {
   return { ...existing, ...next, id: existing.id, meta: { ...existing.meta, ...next.meta } };
+}
+
+/** A snapshot can hold a whole subscription's node list; the list only shows
+ *  these fields and restore reads the snapshot on the server. */
+function toRecycleSummary(entry: RecycleBinRecord) {
+  return {
+    id: entry.id,
+    resourceType: entry.resourceType,
+    resourceId: entry.resourceId,
+    name: stringValue(entry.snapshot?.name) || undefined,
+    deletedAt: entry.deletedAt,
+  };
 }
 
 function toApiCollection(collection: CollectionRecord) {

@@ -221,7 +221,12 @@
         <div v-for="entry in recycleEntries" :key="entry.id" class="list-row">
           <div class="list-row__main">
             <strong class="list-row__title">{{ resourceTypeLabel(entry.resourceType) }}/{{ entry.resourceId }}</strong>
-            <div class="list-row__meta mono-time">{{ formatDateTime(entry.deletedAt) }}</div>
+            <div class="list-row__meta mono-time">
+              <span v-if="entry.name && entry.name !== entry.resourceId">
+                {{ entry.name }} · {{ formatDateTime(entry.deletedAt) }}
+              </span>
+              <span v-else>{{ formatDateTime(entry.deletedAt) }}</span>
+            </div>
           </div>
           <div class="list-row__actions">
             <AppButton plain type="primary" size="mini" @click="restoreEntry(entry.id)">

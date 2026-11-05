@@ -120,6 +120,7 @@ export const POPULATED_RECYCLE = [
     id: "recycle-fixture",
     resourceType: "source",
     resourceId: "old-source",
+    name: "Old Source",
     deletedAt: "2026-01-15T00:00:00.000Z",
   },
 ];

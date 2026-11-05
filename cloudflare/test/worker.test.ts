@@ -633,6 +633,9 @@ describe("Worker and D1 integration", () => {
     const entries = getPath(await jsonObject(recycle), "data");
     const entry = Array.isArray(entries) ? entries.find((item) => getPath(item, "resourceId") === "recycled-source") : undefined;
     expect(entry).toBeTruthy();
+    // The list is what the Tools page renders: no snapshot, but the display name.
+    expect(getPath(entry, "snapshot")).toBeUndefined();
+    expect(getPath(entry, "name")).toBe("Recycled Source");
     const entryId = String(getPath(entry, "id"));
     expect((await workerRequest(`/api/recycle-bin/${entryId}/restore`, { method: "POST" })).status).toBe(200);
     expect((await workerRequest("/api/sources/recycled-source")).status).toBe(200);
