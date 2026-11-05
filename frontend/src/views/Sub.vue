@@ -953,8 +953,10 @@ const filteredCollections = useFilteredDraggableList(collections, shouldShowElem
   align-items: center;
   gap: 6px;
   min-width: 0;
-  margin: 0;
-  padding: 2px 0;
+  /* The negative margin keeps the label in place while the target grows past
+     the 24px minimum a thumb needs. */
+  margin: -6px -4px;
+  padding: 8px 4px;
   border: 0;
   background: transparent;
   color: inherit;
