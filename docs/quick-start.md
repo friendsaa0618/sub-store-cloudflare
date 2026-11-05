@@ -96,11 +96,13 @@ Migration 会预置一个包含全部已启用 Source 的 `Daily` Collection。�
 
 只有需要不同来源组合或不同模板时，才新建其他 Collection。
 
+不想让某个 Source 参与组合时，在卡片上点「停用」即可：停用后它不进入任何 Collection，它自己的下载链接也会返回 404，随时可以再点「启用」。只有确实不再需要时才删除。
+
 区域 include 过滤器会删除其他地区节点，第一次使用不要急着添加。
 
 ## 第六步：复制客户端链接
 
-在 Collection 卡片打开快捷操作，选择需要的目标：
+在卡片上点眼睛图标（手机上在「更多」菜单里的「订阅链接」），逐个目标打开或复制：
 
 - Mihomo / Clash Meta：`mihomo`
 - sing-box：`sing-box`
