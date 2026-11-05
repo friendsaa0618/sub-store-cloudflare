@@ -2,7 +2,13 @@
   <div class="form-block-wrapper">
     <div class="sticky-title-wrapper">
       <div class="common-title-row">
-        <button type="button" class="title" @click="toggleFold">
+        <button
+          type="button"
+          class="title"
+          aria-controls="editor-common-options"
+          :aria-expanded="!isFold"
+          @click="toggleFold"
+        >
           <p>
             {{ $t(`editorPage.subConfig.commonOptions.label`) }}
           </p>
@@ -14,7 +20,7 @@
         <!-- Tips dialog available via long-form docs; remove always-on chrome -->
       </div>
     </div>
-    <AppForm v-if="!isFold" class="form common-options-form">
+    <AppForm v-if="!isFold" id="editor-common-options" class="form common-options-form">
       <div class="quick-option-palette">
         <button
           v-for="option in quickOptions"

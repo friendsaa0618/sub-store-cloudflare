@@ -5,6 +5,7 @@
       <button
         type="button"
         class="toggle-btn"
+        :aria-expanded="!isCollapsed"
         :aria-label="isCollapsed
           ? $t('editorPage.subConfig.actions.expandSection')
           : $t('editorPage.subConfig.actions.collapseSection')"
@@ -54,6 +55,7 @@
               <button
                 type="button"
                 class="collapsed"
+                :aria-expanded="!collapsedElements.includes(element.id)"
                 :aria-label="collapsedElements.includes(element.id)
                   ? $t('editorPage.subConfig.actions.expandItem')
                   : $t('editorPage.subConfig.actions.collapseItem')"
