@@ -3,7 +3,7 @@
     <div
       class="compare-page-wrapper"
       :class="{ 'compare-page-wrapper-overlay': !url }"
-      :style="{ height: url ? 'calc(100vh - 80px)' : '100vh' }"
+      :style="{ height: url ? 'calc(100dvh - 80px)' : '100dvh' }"
     >
       <header class="compare-page-header" :class="{ 'preview-popup-header': !url }">
         <template v-if="url">
@@ -157,6 +157,7 @@ const copyUrl = async () => {
   align-items: center;
   justify-content: center;
   min-height: calc(100vh - var(--compare-header-offset, 56px) - 80px);
+  min-height: calc(100dvh - var(--compare-header-offset, 56px) - 80px);
   padding: var(--space-4);
   box-sizing: border-box;
 }
@@ -366,6 +367,7 @@ const copyUrl = async () => {
   --compare-header-offset: calc(var(--compare-header-height) + env(safe-area-inset-top));
   width: 100%;
   height: 100vh;
+  height: 100dvh;
   z-index: 1000;
   overflow-x: hidden;
   overflow-y: auto;

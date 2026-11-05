@@ -205,6 +205,7 @@ onBeforeUnmount(() => {
   transform: translate(-50%, -50%);
   width: min(560px, 94vw);
   max-height: min(86vh, 720px);
+  max-height: min(86dvh, 720px);
   padding: 20px;
   border-radius: var(--radius-lg);
 }
@@ -215,6 +216,7 @@ onBeforeUnmount(() => {
   left: 0;
   width: 100%;
   max-height: 88vh;
+  max-height: 88dvh;
   padding: 12px 18px calc(18px + env(safe-area-inset-bottom));
   border-bottom: 0;
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;

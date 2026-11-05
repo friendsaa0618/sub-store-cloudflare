@@ -1023,6 +1023,9 @@
     inset: 0;
     width: 100%;
     height: 100vh;
+    /* Mobile browsers report 100vh taller than the visible area, so the
+       overlay would run under the URL bar; dvh follows the real viewport. */
+    height: 100dvh;
     z-index: 1000;
     overflow-x: hidden;
     overflow-y: auto;
