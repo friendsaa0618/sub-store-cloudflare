@@ -5,7 +5,6 @@ export default {
     singleSub: "Source",
     collectionSub: "Collection",
     unknownType: "Unknown Type",
-    unknown: "Unknown",
     all: "All",
     untagged: "Untagged",
     or: "or",
@@ -159,18 +158,7 @@ export default {
       lastRefresh: "Last refresh",
       emDash: "—"
     },
-    import: {
-      label: "Import",
-      succeed: "Successfully imported!",
-      failed: "Failed to import!\n{e}",
-      tipsTitle: "Import subscription config",
-    },
     previewTitle: "Copy/Preview a subscription",
-    emptySub: {
-      title: "You have no Subscription yet",
-      desc: "Add a remote subscription or local node text to start aggregating.",
-      btn: "Create Subscription Now"
-    },
     onboarding: {
       welcome: "First run",
       title: "Create your first subscription link in three steps",
@@ -286,11 +274,6 @@ export default {
         compare: "Preview",
         saveShortcut: "Save (Ctrl/⌘ + S)",
         save: "Save"
-      },
-      editorTabs: {
-        display: "Display",
-        content: "Content",
-        actions: "Actions"
       },
       pop: {
         helpTitle: "Help",

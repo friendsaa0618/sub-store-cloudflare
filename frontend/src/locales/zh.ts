@@ -5,7 +5,6 @@ export default {
     singleSub: "订阅源",
     collectionSub: "组合订阅",
     unknownType: "未知类型",
-    unknown: "未知",
     all: "全部",
     untagged: "未分组",
     or: "或",
@@ -159,18 +158,7 @@ export default {
       lastRefresh: "上次刷新",
       emDash: "—"
     },
-    import: {
-      label: "导入",
-      succeed: "导入成功",
-      failed: "导入失败\n{e}",
-      tipsTitle: "导入订阅配置",
-    },
     previewTitle: "预览/拷贝订阅",
-    emptySub: {
-      title: "你还没有添加订阅",
-      desc: "添加远程订阅或本地节点后开始聚合",
-      btn: "立即添加"
-    },
     onboarding: {
       welcome: "首次使用",
       title: "三步生成你的第一个订阅链接",
@@ -286,11 +274,6 @@ export default {
         compare: "即时预览",
         save: "保存",
         saveShortcut: "保存（Ctrl/⌘ + S）"
-      },
-      editorTabs: {
-        display: "显示",
-        content: "内容",
-        actions: "操作"
       },
       pop: {
         helpTitle: "节点操作帮助",
