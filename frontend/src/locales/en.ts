@@ -207,6 +207,8 @@ export default {
       edit: "Edit",
       cloneConfig: "Clone",
       openDownload: "Open download link",
+      disable: "Disable",
+      enable: "Enable",
       delete: "Delete",
       openTarget: "Open {name} subscription",
       copyTarget: "Copy {name} subscription",
@@ -215,6 +217,7 @@ export default {
     },
     subItem: {
       local: "Local subscription",
+      disabled: "Disabled",
       loading: "Loading…",
       flow: "Usage / Total",
       showRemainingFlow: "Remaining / Total",

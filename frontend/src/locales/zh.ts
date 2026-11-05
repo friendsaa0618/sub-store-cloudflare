@@ -207,6 +207,8 @@ export default {
       edit: "编辑",
       cloneConfig: "克隆",
       openDownload: "打开下载链接",
+      disable: "停用",
+      enable: "启用",
       delete: "删除",
       openTarget: "打开 {name} 订阅",
       copyTarget: "复制 {name} 订阅",
@@ -215,6 +217,7 @@ export default {
     },
     subItem: {
       local: "本地订阅",
+      disabled: "已停用",
       loading: "加载中…",
       flow: "已用/总流量",
       showRemainingFlow: "剩余/总流量",

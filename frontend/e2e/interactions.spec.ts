@@ -115,3 +115,41 @@ test("card name survives a long tag run", async ({ page }) => {
   expect(tagsBox!.width).toBeLessThan(titleBox!.width * 0.6);
 });
 
+
+test("a source can be disabled and enabled again", async ({ page }) => {
+  await open(page, "/subs", ".sub-item-wrapper");
+  let enabled = true;
+  const bodies: unknown[] = [];
+  await page.route("**/api/sources/hk-nodes", async (route) => {
+    if (route.request().method() === "PATCH") {
+      const body = route.request().postDataJSON();
+      bodies.push(body);
+      enabled = body.enabled;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: "success",
+        data: {
+          id: "hk-nodes",
+          name: "HK Nodes",
+          type: "local",
+          url: "",
+          content: "",
+          filters: [],
+          enabled,
+          meta: { tag: ["hk"], icon: "/logo.png", remark: "Visual fixture" },
+        },
+      }),
+    });
+  });
+
+  await page.locator('.sub-item-action[aria-label="停用"]').first().click();
+  await expect(page.locator(".sub-item-state").first()).toHaveText("已停用");
+  await expect(page.locator('.sub-item-action[aria-label="启用"]').first()).toBeVisible();
+
+  await page.locator('.sub-item-action[aria-label="启用"]').first().click();
+  await expect(page.locator(".sub-item-state")).toHaveCount(0);
+  expect(bodies).toEqual([{ enabled: false }, { enabled: true }]);
+});

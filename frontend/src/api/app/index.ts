@@ -659,6 +659,14 @@ export function useCloudflareApi() {
         data: toApiPayload(type, data),
       }).then(response => adaptResponseData(response, result => fromApiPayload(apiListType, result)));
     },
+    setItemEnabled: (type: string, name: string, enabled: boolean): AxiosPromise<MyAxiosRes> => {
+      const apiListType = toApiListType(type);
+      return request({
+        url: `/api/${apiListType}/${encodeURIComponent(name)}`,
+        method: 'patch',
+        data: { enabled },
+      }).then(response => adaptResponseData(response, result => fromApiPayload(apiListType, result)));
+    },
     editItem: (
       type: string,
       name: string,

@@ -53,6 +53,9 @@
               class="sub-item-name"
               :title="displayName"
             >{{ displayName }}</button>
+            <span v-if="!isEnabled" class="sub-item-state">
+              <AppTag>{{ t('subPage.subItem.disabled') }}</AppTag>
+            </span>
             <span v-if="visibleTags.length" class="sub-item-tags">
               <span v-for="i in visibleTags" :key="i" class="tag">
                 <AppTag>{{ i }}</AppTag>
@@ -74,6 +77,9 @@
               class="sub-item-name"
               :title="displayName"
             >{{ displayName }}</button>
+            <span v-if="!isEnabled" class="sub-item-state">
+              <AppTag>{{ t('subPage.subItem.disabled') }}</AppTag>
+            </span>
             <span v-if="visibleTags.length" class="sub-item-tags">
               <span v-for="i in visibleTags" :key="i" class="tag">
                 <AppTag>{{ i }}</AppTag>
@@ -133,6 +139,14 @@
                 @click.stop="onClickRefresh"
               >
                 <font-awesome-icon icon="fa-solid fa-arrow-rotate-right" />
+              </button>
+              <button
+                class="sub-item-action"
+                :aria-label="t(isEnabled ? 'subPage.actions.disable' : 'subPage.actions.enable')"
+                :title="t(isEnabled ? 'subPage.actions.disable' : 'subPage.actions.enable')"
+                @click.stop="onClickToggleEnabled"
+              >
+                <font-awesome-icon :icon="isEnabled ? 'fa-solid fa-toggle-on' : 'fa-solid fa-toggle-off'" />
               </button>
               <button
                 class="sub-item-action sub-item-action--danger"
@@ -212,6 +226,15 @@
                   >
                     <font-awesome-icon icon="fa-solid fa-arrow-rotate-right" />
                     <span>{{ t('subPage.actions.refresh') }}</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="sub-item-overflow__item"
+                    role="menuitem"
+                    @click.stop="runOverflowAction(onClickToggleEnabled)"
+                  >
+                    <font-awesome-icon :icon="isEnabled ? 'fa-solid fa-toggle-on' : 'fa-solid fa-toggle-off'" />
+                    <span>{{ t(isEnabled ? 'subPage.actions.disable' : 'subPage.actions.enable') }}</span>
                   </button>
                   <button
                     type="button"
@@ -1049,6 +1072,20 @@ const onClickOpenDownload = async () => {
   }
 };
 
+/* The API and the card's status dot already know about `enabled`, but nothing
+   in the UI could set it — a source imported as disabled stayed that way. */
+const isEnabled = computed(() => (props[props.type] as { enabled?: boolean } | undefined)?.enabled !== false);
+
+const onClickToggleEnabled = async () => {
+  const next = !isEnabled.value;
+  try {
+    await cloudflareApi.setItemEnabled(props.type, name, next);
+    await subsStore.updateOneData(props.type === 'collection' ? 'collections' : 'subs', name);
+  } catch {
+    /* Reported by the interceptor; the row keeps the server's state. */
+  }
+};
+
 const onClickRefresh = async () => {
   notifyLoading(t("globalNotify.refresh.loading"), "refresh");
   let failed = false;
@@ -1182,6 +1219,11 @@ const refreshSubFlowsIfNeeded = async () => {
           }
         }
       }
+      /* The state badge outranks the tag run: it explains why the row is grey. */
+      & .sub-item-state {
+        flex-shrink: 0;
+      }
+
       & .sub-item-name {
         /* The name must stay readable; the tag run clips first. It is a real
            button so the preview panel is reachable by keyboard, but it keeps
