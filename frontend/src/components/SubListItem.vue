@@ -951,11 +951,16 @@ const onClickCopyConfig = async () => {
   data.name += `-copy-${crypto.randomUUID().slice(0, 8)}`;
 
   notifyLoading(t("subPage.copyConfigNotify.loading"), "copyConfig");
-  await cloudflareApi.createItem(`${props.type}s`, data);
-  await subsStore.fetchSubsData();
-  dismissNotify("copyConfig");
-  showNotify({ type: "success", title: t("subPage.copyConfigNotify.succeed") });
-  closeExpandedMenu();
+  try {
+    await cloudflareApi.createItem(`${props.type}s`, data);
+    await subsStore.fetchSubsData();
+    showNotify({ type: "success", title: t("subPage.copyConfigNotify.succeed") });
+  } catch {
+    /* Reported by the interceptor; the loading toast must not stay behind. */
+  } finally {
+    dismissNotify("copyConfig");
+    closeExpandedMenu();
+  }
 };
 const onClickEdit = () => {
   router.push(`/edit/${props.type}s/${encodeURIComponent(name)}`);
