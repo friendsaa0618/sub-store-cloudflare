@@ -414,7 +414,7 @@ import { useSubsStore } from "@/store/subs";
 import { TEMPLATE_TARGET_OPTIONS, getTargetLabel } from "@/constants/subscriptionTargets";
 import { getThemeCatalog } from "@/hooks/useThemes";
 import { useDesktopLayout } from "@/hooks/useDesktopLayout";
-import { apiErrorMessage } from "@/utils/apiError";
+import { apiErrorMessage, isHttpError } from "@/utils/apiError";
 
 const CmView = defineAsyncComponent(() => import("@/views/editCode/cmView.vue"));
 
@@ -675,7 +675,9 @@ const exportBackup = async () => {
     anchor.click();
     URL.revokeObjectURL(objectUrl);
   } catch (error) {
-    showNotify({ type: "danger", title: t("myPage.notify.backup.failedWithError", { e: errorMessage(error) }) });
+    if (!isHttpError(error)) {
+      showNotify({ type: "danger", title: t("myPage.notify.backup.failedWithError", { e: errorMessage(error) }) });
+    }
   } finally {
     exportIsLoading.value = false;
   }
@@ -760,13 +762,19 @@ const saveTemplate = async () => {
     const res = templateEditingId.value
       ? await cloudflareApi.updateTemplate(templateEditingId.value, payload)
       : await cloudflareApi.createTemplate(payload);
-    if (res?.data?.status !== "success") throw new Error("import failed");
+    if (res?.data?.status !== "success") {
+      throw new Error(res?.data?.error?.message || "import failed");
+    }
     await fetchTemplates();
     templateImportVisible.value = false;
     templateEditingId.value = "";
     showNotify({ type: "success", title: t("myPage.templates.saveSucceed") });
   } catch (error) {
-    showNotify({ type: "danger", title: t("myPage.templates.saveFailed", { e: errorMessage(error) }) });
+    /* HTTP failures are reported by the interceptor; this covers the
+       "200 but failed" case that never reaches it. */
+    if (!isHttpError(error)) {
+      showNotify({ type: "danger", title: t("myPage.templates.saveFailed", { e: errorMessage(error) }) });
+    }
   } finally {
     templateImporting.value = false;
   }
@@ -807,7 +815,9 @@ const restoreFromFile = async (event: Event) => {
       try {
         const content = await file.text();
         const res = await settingsApi.restoreSettings({ content });
-        if (res?.data?.status !== "success") throw new Error("restore failed");
+        if (res?.data?.status !== "success") {
+          throw new Error(res?.data?.error?.message || "restore failed");
+        }
         /* A backup carries sources, collections and templates too, so refresh
            everything instead of leaving the lists on their pre-restore data. */
         await Promise.all([
@@ -817,7 +827,9 @@ const restoreFromFile = async (event: Event) => {
         ]);
         showNotify({ type: "success", title: t("myPage.notify.restore.succeed") });
       } catch (error) {
-        showNotify({ type: "danger", title: t("myPage.notify.restore.failedWithError", { e: errorMessage(error) }) });
+        if (!isHttpError(error)) {
+          showNotify({ type: "danger", title: t("myPage.notify.restore.failedWithError", { e: errorMessage(error) }) });
+        }
       } finally {
         restoreIsLoading.value = false;
       }

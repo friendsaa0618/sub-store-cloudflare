@@ -8,3 +8,8 @@ export const apiErrorMessage = (error: unknown) => {
   }
   return error instanceof Error ? error.message : String(error);
 };
+
+/** Did the request reach the server and come back with an error status?
+ *  Those are already reported by the axios interceptor. */
+export const isHttpError = (error: unknown) =>
+  Boolean((error as { response?: unknown })?.response);
