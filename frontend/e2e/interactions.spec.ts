@@ -280,3 +280,17 @@ test("a touch drag reorders the list", async ({ page, context }) => {
   await expect.poll(() => sorted, { timeout: 5_000 }).not.toBeNull();
   expect(sorted![0]).toBe("b-two");
 });
+
+test("a slow backend still lands on the list", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await prepareVisualPage(page);
+  await installVisualMocks(page, "populated");
+  /* The boot timeout is 3s; answering after it used to leave the failure
+     panel up even though the data had arrived. */
+  await page.route("**/api/bootstrap", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 4500));
+    await route.fallback();
+  });
+  await page.goto("/subs", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".sub-item-wrapper").first()).toBeVisible({ timeout: 12_000 });
+});

@@ -40,17 +40,19 @@ export const initStores = async (
 
     // 一次请求取回 env + settings + sources + collections，替代原先
     // /env → /sources + /collections → /settings 的串行四连。
+    let timedOut = false;
+    const bootPromise = useCloudflareApi().getBootstrap();
     try {
       const timeoutMs = localStorage.getItem("timeout")
         ? parseInt(localStorage.getItem("timeout") as string, 10)
         : 3000;
       const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(() => {
+          timedOut = true;
           reject(new Error("Backend connection timeout"));
         }, timeoutMs);
       });
 
-      const bootPromise = useCloudflareApi().getBootstrap();
       const res = await Promise.race([bootPromise, timeoutPromise]);
       const boot = res?.data?.status === "success" ? res.data.data : null;
 
@@ -70,6 +72,25 @@ export const initStores = async (
       console.error("Error getting backend environment:", bootError);
       globalStore.setFetchResult(false);
       isSucceed = false;
+      /* A slow network can outlast the timeout. When the answer finally
+         arrives, show the app instead of leaving the failure panel up until
+         the user finds the retry button. */
+      if (timedOut) {
+        void bootPromise
+          .then((late) => {
+            const boot = late?.data?.status === "success" ? late.data.data : null;
+            if (!boot?.env?.backend) return;
+            globalStore.applyEnv(boot.env);
+            writeCachedEnv(boot.env);
+            subsStore.applySubsData(boot.sources, boot.collections);
+            settingsStore.applySettings(boot.settings);
+            globalStore.setFetchResult(true);
+            globalStore.setLoading(false);
+          })
+          .catch(() => {
+            /* The failure panel stays; the retry button is still there. */
+          });
+      }
       throw bootError; // 重新抛出异常，中断后续操作
     }
 
