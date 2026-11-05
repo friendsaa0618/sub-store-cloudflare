@@ -306,7 +306,8 @@ export default {
           label: "ID",
           placeholder: "小写字母、数字、下划线或连字符",
           isEmpty: "ID 不能为空",
-          isInvalid: "ID 已存在，或不符合 1–64 位格式要求"
+          isInvalid: "只能使用小写字母、数字、下划线或连字符，最多 64 位",
+          isDuplicate: "该 ID 已被使用",
         },
         remark: {
           label: "备注",

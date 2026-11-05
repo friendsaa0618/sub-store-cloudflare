@@ -23,6 +23,8 @@ import { FORM_KEY } from "./context";
 export type FormRule = {
   required?: boolean;
   message?: string;
+  /** Fails when a string value does not match. */
+  pattern?: RegExp;
   validator?: (value: unknown) => boolean | Promise<boolean>;
 };
 
@@ -87,6 +89,10 @@ const validate = async () => {
 
   for (const rule of rules) {
     if (rule.required && isEmpty(value)) {
+      error.value = rule.message || "";
+      return { valid: false, message: error.value, prop: props.prop };
+    }
+    if (rule.pattern instanceof RegExp && typeof value === "string" && !rule.pattern.test(value)) {
       error.value = rule.message || "";
       return { valid: false, message: error.value, prop: props.prop };
     }

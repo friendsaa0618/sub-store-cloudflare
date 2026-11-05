@@ -18,8 +18,12 @@
               message: $t(`editorPage.subConfig.basic.name.isEmpty`),
             },
             {
-              validator: nameValidator,
+              pattern: /^[a-z0-9_-]{1,64}$/,
               message: $t(`editorPage.subConfig.basic.name.isInvalid`),
+            },
+            {
+              validator: nameValidator,
+              message: $t(`editorPage.subConfig.basic.name.isDuplicate`),
             },
           ]"
         >
@@ -1442,9 +1446,10 @@ onBeforeUnmount(() => {
 });
 
 // 名称验证器
+/* Format is checked by a pattern rule so the message can name the real problem;
+   this one only looks for an existing record with the same id. */
 const nameValidator = (val: string): Promise<boolean> => {
   return new Promise((resolve) => {
-    if (!/^[a-z0-9_-]{1,64}$/.test(val) || val === "UNTITLED") return resolve(false);
     const nameList = [
       ...subsStore.subs.map((item) => item.name),
       ...subsStore.collections.map((item) => item.name),

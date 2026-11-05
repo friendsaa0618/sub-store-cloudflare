@@ -306,7 +306,8 @@ export default {
           label: "ID",
           placeholder: "Lowercase letters, numbers, underscores, or hyphens",
           isEmpty: "ID is required",
-          isInvalid: "ID is already used or does not match the 1–64 character format"
+          isInvalid: "Use lowercase letters, digits, underscores or hyphens, up to 64 characters",
+          isDuplicate: "This ID is already in use",
         },
         remark: {
           label: "Remarks",
