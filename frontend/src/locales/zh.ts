@@ -501,6 +501,7 @@ export default {
           limit: "每个订阅源或组合订阅最多添加两个脚本操作"
         }
       },
+      invalidRegex: "正则表达式无效",
       nodeActions: {
         "Flag Operator": {
           label: "旗帜操作",

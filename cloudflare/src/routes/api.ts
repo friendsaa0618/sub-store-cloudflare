@@ -643,11 +643,32 @@ function getPublicBaseUrl(c: ApiContext) {
   return publicHost ? `https://${publicHost}` : new URL(c.req.url).origin;
 }
 
+/**
+ * A filter pattern reaches `new RegExp` at download time, so a typo would only
+ * surface as a broken subscription URL long after saving.
+ */
+function validateFilterRegexes(filters: FilterRule[] = []) {
+  for (const [index, filter] of filters.entries()) {
+    const patterns = [filter.pattern, ...(filter.patterns || []), ...(filter.expressions || [])];
+    for (const pattern of patterns) {
+      if (typeof pattern !== "string" || !pattern) continue;
+      try {
+        new RegExp(pattern.startsWith("(?i)") ? pattern.slice(4) : pattern);
+      } catch {
+        return `Filter ${index + 1} has an invalid regular expression: ${pattern}`;
+      }
+    }
+  }
+  return undefined;
+}
+
 function validateSource(input: Partial<SourceRecord>) {
   const idError = validateRecordId(input.id, "Source");
   if (idError) return idError;
   const scriptError = validateScriptActions(input.filters || []);
   if (scriptError) return scriptError;
+  const regexError = validateFilterRegexes(input.filters || []);
+  if (regexError) return regexError;
   if (input.type === "local") {
     return stringValue(input.content) ? undefined : "Local source content is required";
   }
@@ -669,6 +690,8 @@ async function validateCollection(env: SubStoreEnv, input: Partial<CollectionRec
   if (idError) return idError;
   const scriptError = validateScriptActions(input.filters || []);
   if (scriptError) return scriptError;
+  const regexError = validateFilterRegexes(input.filters || []);
+  if (regexError) return regexError;
   const sourceIds = input.sourceIds || [];
   const sourceIdSet = new Set((await listSources(env)).map((source) => source.id));
   const missingSources = sourceIds.filter((id) => !sourceIdSet.has(id));

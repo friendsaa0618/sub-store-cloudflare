@@ -86,6 +86,7 @@
 
 <script lang="ts" setup>
   import { showDialog } from '@/utils/dialog';
+  import { notify } from '@/utils/notify';
   import { inject, onMounted, ref, watch, computed } from 'vue';
   import { useI18n } from 'vue-i18n';
   import { onBeforeRouteLeave, useRouter } from 'vue-router';
@@ -161,8 +162,26 @@
     value.value.splice(index, 1);
   };
 
+  /** The engine compiles these patterns at download time, so a typo must not be saved. */
+  const patternIsInvalid = (pattern: string) => {
+    try {
+      new RegExp(pattern.startsWith('(?i)') ? pattern.slice(4) : pattern);
+      return false;
+    } catch {
+      return true;
+    }
+  };
+
   const addItem = () => {
     if (!input1.value) return;
+    if (patternIsInvalid(input1.value)) {
+      notify({
+        type: 'danger',
+        title: t('editorPage.subConfig.invalidRegex'),
+        content: input1.value,
+      });
+      return;
+    }
     if (type === 'Regex Rename Operator') {
       value.value.push({
         expr: input1.value,

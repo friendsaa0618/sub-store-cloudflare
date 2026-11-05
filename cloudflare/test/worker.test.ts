@@ -341,6 +341,38 @@ describe("Worker and D1 integration", () => {
     expect(getPath(await jsonObject(blockedDelete), "error", "message")).toContain("patch-collection");
   });
 
+  it("rejects a filter whose regular expression does not compile", async () => {
+    const create = await workerRequest("/api/sources", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        id: "regex-source",
+        name: "Regex Source",
+        type: "local",
+        content: "trojan://password@example.com:443#Node",
+        filters: [{ type: "exclude", field: "name", pattern: "(" }],
+      }),
+    });
+    expect(create.status).toBe(400);
+    expect(getPath(await jsonObject(create), "error", "message")).toContain("invalid regular expression: (");
+
+    const valid = await workerRequest("/api/sources", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        id: "regex-source-ok",
+        name: "Regex Source OK",
+        type: "local",
+        content: "trojan://password@example.com:443#Node",
+        filters: [
+          { type: "exclude", field: "name", pattern: "(?i)官网" },
+          { type: "rename", pattern: "^(.)", replacement: "[$1]" },
+        ],
+      }),
+    });
+    expect(valid.status).toBe(200);
+  });
+
   it("keeps only the field that matches the source type", async () => {
     const create = await workerRequest("/api/sources", {
       method: "POST",

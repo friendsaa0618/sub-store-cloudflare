@@ -501,6 +501,7 @@ export default {
           limit: "A source or collection can use at most two script actions"
         }
       },
+      invalidRegex: "Invalid regular expression",
       nodeActions: {
         "Flag Operator": {
           label: "Flags Options",
