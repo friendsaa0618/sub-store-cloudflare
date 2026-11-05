@@ -562,6 +562,32 @@ describe("Worker and D1 integration", () => {
     expect(await download.text()).toContain("Test Node");
   });
 
+  it("explains a download link that points at a disabled record", async () => {
+    await workerRequest("/api/sources", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        id: "disabled-source",
+        name: "Disabled Source",
+        type: "local",
+        content: "trojan://password@example.com:443#Node",
+        enabled: false,
+      }),
+    });
+    const source = await workerRequest(`/download/source/disabled-source/mihomo/${DOWNLOAD_TOKEN}`, {}, false);
+    expect(source.status).toBe(404);
+    expect(getPath(await jsonObject(source), "error", "message")).toBe("Subscription is disabled");
+
+    await workerRequest("/api/collections", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ id: "disabled-collection", name: "Disabled Collection", sourceIds: [], templateId: "mihomo-basic", enabled: false }),
+    });
+    const collection = await workerRequest(`/download/collection/disabled-collection/mihomo/${DOWNLOAD_TOKEN}`, {}, false);
+    expect(collection.status).toBe(404);
+    expect(getPath(await jsonObject(collection), "error", "message")).toBe("Collection is disabled");
+  });
+
   it("rejects oversized API bodies", async () => {
     const response = await workerRequest("/api/storage", {
       method: "POST",

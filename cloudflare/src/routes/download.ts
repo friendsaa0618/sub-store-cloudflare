@@ -4,7 +4,7 @@ import { failed, isTokenValid } from "../lib/http";
 import { authorizeScopedDownload } from "../lib/compatibility-resources";
 import { loadConvertedRuleSet } from "../lib/ruleset";
 import { buildSubscriptionResult, getTargetContentType, normalizeTarget, normalizeTargetAlias } from "../lib/subscription";
-import { getRoutingTemplate, getSettings, getSource, getSubscriptionCollection, getSubscriptionSources } from "../lib/store";
+import { getCollection, getRoutingTemplate, getSettings, getSource, getSubscriptionCollection, getSubscriptionSources } from "../lib/store";
 import type { RoutingTemplateConfig, SubscriptionCollection, SubscriptionSource, SubscriptionTarget } from "../types";
 
 export const downloadRoutes = new Hono<{ Bindings: SubStoreEnv }>();
@@ -39,7 +39,12 @@ downloadRoutes.get("/download/collection/:name/:target?/:token?", async (c) => {
   if (invalidToken) return invalidToken;
 
   const collection = await getSubscriptionCollection(c.env, c.req.param("name"));
-  if (!collection) return failed(c, "Collection not found", 404);
+  if (!collection) {
+    /* A disabled collection is still there; saying "not found" hides why the
+       link stopped working. */
+    const existing = await getCollection(c.env, c.req.param("name"));
+    return failed(c, existing ? "Collection is disabled" : "Collection not found", 404);
+  }
 
   return renderDownload(c, {
     collection,
@@ -56,7 +61,8 @@ downloadRoutes.get("/download/source/:name/:target?/:token?", async (c) => {
   if (invalidToken) return invalidToken;
 
   const source = await getSource(c.env, c.req.param("name"));
-  if (!source || !source.enabled) return failed(c, "Subscription not found", 404);
+  if (!source) return failed(c, "Subscription not found", 404);
+  if (!source.enabled) return failed(c, "Subscription is disabled", 404);
   const subscriptionSource: SubscriptionSource = {
     id: source.id,
     name: source.name,
