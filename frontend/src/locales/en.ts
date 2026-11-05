@@ -271,9 +271,6 @@ export default {
         title: "Subscription Link Parameters",
         content: "https://github.com/realchendahuang/sub-store-cloudflare#deployment"
       }
-    },
-    sort: {
-      failed: "Failed to save sort order"
     }
   },
   editorPage: {

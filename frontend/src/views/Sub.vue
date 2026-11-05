@@ -154,8 +154,6 @@
               handle: 'div',
             }"
             @change="changeSort('subs', subs)"
-            @start="handleDragStart(subs)"
-            @end="handleDragEnd(subs)"
           >
             <template #item="{ element }">
               <div :key="element.name" class="draggable-item">
@@ -220,8 +218,6 @@
               handle: 'div',
             }"
             @change="changeSort('collections', collections)"
-            @start="handleDragStart(collections)"
-            @end="handleDragEnd(collections)"
           >
             <template #item="{ element }">
               <div :key="element.name" class="draggable-item">
@@ -410,7 +406,6 @@ const lastRefreshAt = ref<number | null>(null);
 const isDualColumnMode = computed(() => {
   return effectiveListViewMode.value === "dual-column";
 });
-const sortFailed = ref(false);
 // Tag filter strip removed from UI — always show full list.
 // Keep a stable "all" key so fold state (localStorage sub-fold) stays compatible.
 const tag = ref("all");
@@ -532,7 +527,6 @@ const refreshMissingFlows = async () => {
   }
 };
 
-let dragData = null;
 const changeSort = async (
   subColl: "subs" | "collections",
   dataValue: any[]
@@ -544,27 +538,12 @@ const changeSort = async (
       JSON.parse(JSON.stringify(toRaw(nameSortArray)))
     );
     if (sortDataRes?.data?.status !== "success") {
-      sortFailed.value = true;
-      showNotify({
-        title: t("subPage.sort.failed"),
-        type: "danger",
-        content: JSON.stringify(sortDataRes),
-      });
+      throw new Error("Sort rejected");
     }
-  } catch (error) {
-    sortFailed.value = true;
-  }
-};
-
-const handleDragStart = (dataValue: any) => {
-  dragData = dataValue.value;
-};
-
-const handleDragEnd = (dataValue: any) => {
-  if (sortFailed.value) {
-    dataValue.value = dragData;
-  } else {
-    dragData = null;
+  } catch {
+    /* The card already moved on screen but the server kept the old order, so
+       reload it — otherwise the list lies until the next refresh. */
+    await subsStore.fetchSubsData();
   }
 };
 function getFoldState() {

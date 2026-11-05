@@ -271,9 +271,6 @@ export default {
         title: "订阅链接参数",
         content: "https://github.com/realchendahuang/sub-store-cloudflare#%E9%83%A8%E7%BD%B2"
       }
-    },
-    sort: {
-      failed: "排序保存失败"
     }
   },
   editorPage: {
