@@ -4,7 +4,6 @@ export const skippedCurrentFiles = new Set([
   "scripts/check-open-source.mjs",
   "scripts/check-git-history.mjs",
   "scripts/open-source-denylist.mjs",
-  "cloudflare/pnpm-lock.yaml",
 ]);
 
 export const skippedHistoryPaths = [

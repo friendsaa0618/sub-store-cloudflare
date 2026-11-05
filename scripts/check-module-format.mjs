@@ -3,8 +3,6 @@ import { existsSync, readFileSync } from "node:fs";
 
 const skippedFiles = new Set([
   "scripts/check-module-format.mjs",
-  "frontend/pnpm-lock.yaml",
-  "cloudflare/pnpm-lock.yaml",
   "pnpm-lock.yaml",
 ]);
 
