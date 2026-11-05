@@ -125,7 +125,8 @@ export default {
       desc: "Keeps at most 50 deleted configuration records. Restore never overwrites an existing ID.",
       empty: "Recycle bin is empty",
       restore: "Restore",
-      purge: "Delete permanently"
+      purge: "Delete permanently",
+      purgeConfirm: "Delete {name} permanently? This cannot be undone."
     },
     notify: {
       converted: "Conversion complete",
@@ -238,7 +239,7 @@ export default {
     },
     deleteItem: {
       title: "Delete",
-      desc: "Are you sure to delete {displayName}? \nDeleted cannot be restored!",
+      desc: "Delete {displayName}? It moves to Tools → Recycle bin, where you can restore it.",
       succeedNotify: "Successfully deleted!",
       btn: {
         confirm: "Delete",

@@ -125,7 +125,8 @@ export default {
       desc: "最多保留 50 条已删除配置。恢复不会覆盖同名资源。",
       empty: "回收站为空",
       restore: "恢复",
-      purge: "彻底删除"
+      purge: "彻底删除",
+      purgeConfirm: "彻底删除 {name}？这一步不可撤销，配置将无法恢复。"
     },
     notify: {
       converted: "转换完成",
@@ -238,7 +239,7 @@ export default {
     },
     deleteItem: {
       title: "删除",
-      desc: "是否确认删除 {displayName}？删除后不可恢复！",
+      desc: "是否确认删除 {displayName}？删除的配置会进入「工具 → 回收站」，可在那里恢复。",
       succeedNotify: "删除成功！",
       btn: {
         confirm: "确认删除",

@@ -412,7 +412,9 @@ const restoreEntry = async (id: string) => {
 const purgeEntry = (entry: { id: string; resourceType: string; resourceId: string }) => {
   showDialog({
     title: t('toolsPage.recycle.purge'),
-    content: `${resourceTypeLabel(entry.resourceType)}/${entry.resourceId}`,
+    content: t('toolsPage.recycle.purgeConfirm', {
+      name: `${resourceTypeLabel(entry.resourceType)}/${entry.resourceId}`,
+    }),
     cancelText: t('myPage.btn.cancel'),
     okText: t('toolsPage.recycle.purge'),
     okType: 'danger',
