@@ -507,6 +507,7 @@
 import { useCloudflareApi } from "@/api/app";
 import logoRedIcon from "@/assets/icons/logo-red.png";
 import { usePopupRoute } from "@/hooks/usePopupRoute";
+import { apiErrorMessage } from "@/utils/apiError";
 import { useAppNotifyStore } from "@/store/appNotify";
 import { useGlobalStore } from "@/store/global";
 import { useSettingsStore } from '@/store/settings';
@@ -1188,7 +1189,7 @@ const validateLocalContent = async (content = localContentText.value, options?: 
     }
     return true;
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
+    const message = apiErrorMessage(error);
     localPreviewSummary.value = {
       status: "danger",
       title: t("editorPage.subConfig.basic.content.validation.failed"),

@@ -242,6 +242,7 @@ import { useI18n } from 'vue-i18n';
 import { useCloudflareApi } from '@/api/app';
 import { useAppNotifyStore } from '@/store/appNotify';
 import { useSubsStore } from '@/store/subs';
+import { apiErrorMessage } from '@/utils/apiError';
 
 const { t, locale } = useI18n();
 const api = useCloudflareApi();
@@ -322,8 +323,8 @@ const runConversion = async () => {
       skipped: data?.skipped || 0,
     });
     showNotify({ type: 'success', title: t('toolsPage.notify.converted') });
-  } catch (error) {
-    notifyError(error);
+  } catch {
+    /* Reported by the shared axios interceptor; a second toast only repeats it. */
   } finally {
     converting.value = false;
   }
@@ -370,8 +371,8 @@ const createShare = async () => {
     createdShareEl.value?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     await loadShares();
     showNotify({ type: 'success', title: t('toolsPage.notify.shareCreated') });
-  } catch (error) {
-    notifyError(error);
+  } catch {
+    /* Reported by the shared axios interceptor; a second toast only repeats it. */
   } finally {
     shareCreating.value = false;
   }
@@ -433,7 +434,7 @@ const copyText = async (value: string) => {
     notifyError(error);
   }
 };
-const notifyError = (error: unknown) => showNotify({ type: 'danger', title: t('toolsPage.notify.failed', { e: error instanceof Error ? error.message : String(error) }) });
+const notifyError = (error: unknown) => showNotify({ type: 'danger', title: t('toolsPage.notify.failed', { e: apiErrorMessage(error) }) });
 
 onMounted(() => Promise.all([loadShares(), loadRecycle()]));
 </script>

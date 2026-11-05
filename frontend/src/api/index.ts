@@ -67,6 +67,11 @@ const getResponseContent = (e: AxiosError<ErrorResponse>) => {
   if (backendErrorLines.length > 0)
     return [statusLine, ...backendErrorLines].filter(Boolean).join('\n');
 
+  /* The title already carries the backend message; dumping the response body
+     under it only adds JSON noise. */
+  if (getText(error?.message))
+    return statusLine;
+
   const responseData = stringifyUnknown(e.response?.data);
   if (responseData)
     return [statusLine, responseData].filter(Boolean).join('\n');

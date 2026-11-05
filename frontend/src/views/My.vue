@@ -414,6 +414,7 @@ import { useSubsStore } from "@/store/subs";
 import { TEMPLATE_TARGET_OPTIONS, getTargetLabel } from "@/constants/subscriptionTargets";
 import { getThemeCatalog } from "@/hooks/useThemes";
 import { useDesktopLayout } from "@/hooks/useDesktopLayout";
+import { apiErrorMessage } from "@/utils/apiError";
 
 const CmView = defineAsyncComponent(() => import("@/views/editCode/cmView.vue"));
 
@@ -824,7 +825,7 @@ const restoreFromFile = async (event: Event) => {
   });
 };
 
-const errorMessage = (error: unknown) => error instanceof Error ? error.message : String(error);
+const errorMessage = apiErrorMessage;
 
 onMounted(fetchTemplates);
 </script>
