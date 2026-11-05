@@ -534,7 +534,7 @@ const setThemeSlot = (kind: "light" | "dark", value: string) => {
 const listToggles: { key: string; label: string; hint?: string }[] = [
   { key: "isSimpleMode", label: "myPage.appearance.simpleMode", hint: "myPage.appearance.simpleModeHint" },
   { key: "isShowIcon", label: "myPage.appearance.showIcon" },
-  { key: "isSimpleShowRemark", label: "myPage.appearance.showRemark" },
+  { key: "isSimpleShowRemark", label: "myPage.appearance.showRemark", hint: "myPage.appearance.showRemarkHint" },
   { key: "useNarrowModeOnWideScreen", label: "myPage.appearance.narrowMode", hint: "myPage.appearance.narrowModeHint" },
   { key: "showFloatingRefreshButton", label: "myPage.appearance.floatingRefresh" },
   { key: "showFloatingAddButton", label: "myPage.appearance.floatingAdd" },
