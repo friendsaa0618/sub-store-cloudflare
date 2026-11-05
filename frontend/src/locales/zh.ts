@@ -865,7 +865,7 @@ export default {
     },
     nodeNames: {
       entry: "全部节点名",
-      title: "{side}全部节点名",
+      title: "{side}的全部节点名",
       descriptionBefore: "可复制全部节点名，也可复制提示词让 AI 帮你整理通用命名规则，再按结果配置正则重命名。",
       aiLink: "建议先保留地区、倍率、协议和入口编号，再用正则重命名统一格式。",
       copyAll: "复制全部节点名",

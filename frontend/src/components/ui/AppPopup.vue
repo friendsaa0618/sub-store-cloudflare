@@ -10,6 +10,7 @@
       @close="onNativeClose"
     >
       <div
+        ref="panelEl"
         class="app-popup__panel"
         :class="[popClass, { 'is-round': round }]"
         :style="panelStyle"
@@ -30,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, ref, watch } from "vue";
+import { nextTick, onBeforeUnmount, ref, useId, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
 const props = withDefaults(
@@ -61,6 +62,8 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const dialogEl = ref<HTMLDialogElement | null>(null);
+const panelEl = ref<HTMLElement | null>(null);
+const titleId = `app-popup-title-${useId()}`;
 let lockCount = 0;
 let locked = false;
 
@@ -86,6 +89,18 @@ const unlockScroll = () => {
   }
 };
 
+/** A native <dialog> has no accessible name, so label it with the heading it shows. */
+const labelFromHeading = () => {
+  const heading = panelEl.value?.querySelector<HTMLElement>("h1, h2, h3");
+  if (!heading || !dialogEl.value) {
+    return;
+  }
+  if (!heading.id) {
+    heading.id = titleId;
+  }
+  dialogEl.value.setAttribute("aria-labelledby", heading.id);
+};
+
 const open = async () => {
   await nextTick();
   const el = dialogEl.value;
@@ -93,6 +108,7 @@ const open = async () => {
     return;
   }
   el.showModal();
+  labelFromHeading();
   lockScroll();
   emit("opened");
 };

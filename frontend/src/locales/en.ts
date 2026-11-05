@@ -865,7 +865,7 @@ export default {
     },
     nodeNames: {
       entry: "All names",
-      title: "{side} all node names",
+      title: "All node names ({side})",
       descriptionBefore: "Copy all node names, or copy a prompt that asks AI to summarize reusable naming rules. Apply the result with regex rename rules.",
       aiLink: "Keep region, multiplier, protocol, and entry number first, then normalize with regex rename rules.",
       copyAll: "Copy all names",

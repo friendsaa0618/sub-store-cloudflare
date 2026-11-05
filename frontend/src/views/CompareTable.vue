@@ -67,6 +67,11 @@
               <button
                 type="button"
                 :aria-disabled="!hasOriginalData"
+                :aria-label="
+                  $t('comparePage.nodeNames.title', {
+                    side: $t('comparePage.remain.beforeIndicator'),
+                  })
+                "
                 :class="['node-names-action', !hasOriginalData && 'is-disabled']"
                 :title="
                   !hasOriginalData
@@ -107,6 +112,11 @@
               <button
                 type="button"
                 :aria-disabled="!hasProcessedData"
+                :aria-label="
+                  $t('comparePage.nodeNames.title', {
+                    side: $t('comparePage.remain.afterIndicator'),
+                  })
+                "
                 :class="['node-names-action', !hasProcessedData && 'is-disabled']"
                 :title="
                   !hasProcessedData
