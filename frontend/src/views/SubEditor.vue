@@ -815,6 +815,15 @@ const selectedSubsDisplay = computed(() => selectedSubs.value.replace(/^:\s*/, "
   };
   const compareTableIsVisible = ref(false);
   usePopupRoute(compareTableIsVisible);
+  /* 全屏编辑 is a full-screen mode like the compare overlay: Back should leave
+     the mode, not the editor. */
+  const isFullscreenEditing = computed({
+    get: () => !isDis.value,
+    set: (value: boolean) => {
+      isDis.value = !value;
+    },
+  });
+  usePopupRoute(isFullscreenEditing, { rewindOnClose: true });
   const compareData = ref();
   const templateOptions = ref<any[]>([]);
   const showTemplatePicker = ref(false);
