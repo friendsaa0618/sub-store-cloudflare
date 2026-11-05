@@ -200,7 +200,8 @@ export default {
     },
     collectionItem: {
       noSub: "All enabled sources",
-      contain: "Included sources"
+      contain: "Included sources",
+      missingSource: "{name} (deleted)"
     },
     sectionEmpty: {
       source: "No sources yet. Tap + to create one.",

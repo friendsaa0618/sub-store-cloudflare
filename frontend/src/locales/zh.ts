@@ -200,7 +200,8 @@ export default {
     },
     collectionItem: {
       noSub: "全部已启用订阅源",
-      contain: "包含的订阅源"
+      contain: "包含的订阅源",
+      missingSource: "{name}（已删除）"
     },
     sectionEmpty: {
       source: "还没有订阅源，点击右侧 + 创建",

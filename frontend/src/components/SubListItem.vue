@@ -588,7 +588,12 @@ const collectionDetail = computed(() => {
   }
   const displayNameList = nameList.map((name) => {
     const sub = subsStore.getOneSub(name);
-    return sub?.displayName || sub?.["display-name"] || sub?.name || `${name}(🚫)`;
+    return (
+      sub?.displayName
+      || sub?.["display-name"]
+      || sub?.name
+      || t("subPage.collectionItem.missingSource", { name })
+    );
   });
   return `${t("subPage.collectionItem.contain")}${t("specificWord.labelSeparator")}${displayNameList.join(", ")}`;
 });
