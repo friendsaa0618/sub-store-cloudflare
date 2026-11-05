@@ -108,6 +108,9 @@
               max="8760"
               :placeholder="t('toolsPage.shares.expiresHint')"
             />
+            <p v-if="!Number(shareForm.expiresHours)" class="field-hint">
+              {{ t('toolsPage.shares.expiresHint') }}
+            </p>
           </div>
         </div>
 
@@ -538,6 +541,15 @@ onMounted(() => Promise.all([loadShares(), loadRecycle()]));
     font-family: var(--font-mono);
     line-height: 1.5;
   }
+}
+
+/* The placeholder disappears once the field holds "0", so the meaning of 0
+   needs a line of its own. */
+.field-hint {
+  margin: 6px 0 0;
+  color: var(--comment-text-color);
+  font-size: var(--text-xs, 12px);
+  line-height: 1.4;
 }
 
 .field-control--mono {
