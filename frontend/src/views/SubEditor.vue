@@ -963,6 +963,8 @@ watchEffect(() => {
     }
     // 标记 加载完成
     isInit.value = true;
+    /* Filling the form trips the dirty watcher; that is loading, not editing. */
+    void nextTick(markClean);
     return;
   }
 
@@ -1064,6 +1066,8 @@ watchEffect(() => {
   }
   // 标记 加载完成
   isInit.value = true;
+  /* Filling the form trips the dirty watcher; that is loading, not editing. */
+  void nextTick(markClean);
   return;
 });
 
