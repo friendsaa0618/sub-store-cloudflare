@@ -48,6 +48,8 @@ const isEditorGroupingMode = (value: unknown): value is EditorGroupingMode => {
   return value === "edit-only" || value === "disabled" || value === "always";
 };
 
+/* Rows written before the mode existed fall back to what the editor used to
+   do — show the block expanded — so nobody's editor changes on upgrade. */
 const normalizeEditorCommonDisplayMode = (
   appearanceSetting?: SettingsPostData["appearanceSetting"],
 ): EditorCommonDisplayMode => {
@@ -55,11 +57,7 @@ const normalizeEditorCommonDisplayMode = (
     return appearanceSetting.editorCommonDisplayMode;
   }
 
-  if (typeof appearanceSetting?.isEditorCommon === "boolean") {
-    return appearanceSetting.isEditorCommon ? "expanded" : "hidden";
-  }
-
-  return "collapsed";
+  return "expanded";
 };
 
 const normalizeManualSubscriptionsDisplayMode = (
@@ -79,7 +77,7 @@ const normalizeEditorGroupingMode = (
     return appearanceSetting.editorGroupingMode;
   }
 
-  return "edit-only";
+  return "always";
 };
 
 export const useSettingsStore = defineStore("settingsStore", {
@@ -104,13 +102,11 @@ export const useSettingsStore = defineStore("settingsStore", {
         isSimpleMode: true,
         isShowIcon: true,
         isSimpleShowRemark: false,
-        isEditorCommon: true,
-        editorCommonDisplayMode: "collapsed",
+        editorCommonDisplayMode: "expanded",
         manualSubscriptionsDisplayMode: "collapsed",
-        editorGroupingMode: "edit-only",
+        editorGroupingMode: "always",
         showFloatingRefreshButton: false,
         showFloatingAddButton: false,
-        createItemPosition: "bottom",
         displayPreviewInWebPage: true,
         subProgressStyle: "hidden",
         listPageViewMode: getCachedListPageViewMode(LIST_PAGE_VIEW_MODE_STORAGE_KEY),
@@ -137,10 +133,8 @@ export const useSettingsStore = defineStore("settingsStore", {
       this.appearanceSetting.editorCommonDisplayMode = editorCommonDisplayMode;
       this.appearanceSetting.manualSubscriptionsDisplayMode = manualSubscriptionsDisplayMode;
       this.appearanceSetting.editorGroupingMode = editorGroupingMode;
-      this.appearanceSetting.isEditorCommon = editorCommonDisplayMode !== "hidden";
       this.appearanceSetting.showFloatingRefreshButton = appearanceSetting?.showFloatingRefreshButton ?? false;
       this.appearanceSetting.showFloatingAddButton = appearanceSetting?.showFloatingAddButton ?? false;
-      this.appearanceSetting.createItemPosition = appearanceSetting?.createItemPosition ?? "bottom";
       this.appearanceSetting.displayPreviewInWebPage = appearanceSetting?.displayPreviewInWebPage ?? true;
       this.appearanceSetting.subProgressStyle = appearanceSetting?.subProgressStyle ?? "hidden";
       this.appearanceSetting.listPageViewMode = appearanceSetting?.listPageViewMode;

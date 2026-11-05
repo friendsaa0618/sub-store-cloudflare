@@ -6,7 +6,7 @@
       <AppForm class="form" :model-value="form" ref="ruleForm">
         <div class="editor-paper">
         <div class="editor-tab-content editor-group">
-        <p class="editor-group__title">{{ $t(`editorPage.subConfig.groups.basic`) }}</p>
+        <p v-if="showEditorGroupTitles" class="editor-group__title">{{ $t(`editorPage.subConfig.groups.basic`) }}</p>
         <!-- name -->
         <AppFormItem
           required
@@ -126,7 +126,7 @@
         </AppFormItem>
         </div>
         <div class="editor-tab-content editor-group">
-        <p class="editor-group__title">
+        <p v-if="showEditorGroupTitles" class="editor-group__title">
           {{ editType === 'collections' ? $t(`editorPage.subConfig.groups.collection`) : $t(`editorPage.subConfig.groups.source`) }}
         </p>
         <template v-if="editType === 'subs'">
@@ -422,7 +422,10 @@
 
     <!-- 节点操作 — same page, continuous scroll -->
     <div class="editor-tab-content editor-actions-content">
-      <CommonBlock />
+      <CommonBlock
+        v-if="appearanceSetting.editorCommonDisplayMode !== 'hidden'"
+        :default-folded="appearanceSetting.editorCommonDisplayMode === 'collapsed'"
+      />
       <ActionBlock
         ref="actionBlockRef"
         :checked="actionsChecked"
@@ -609,6 +612,15 @@ const focusPendingValidationField = () => {
   pendingValidationProp = null;
   if (prop) nextTick(() => revealField(prop));
 };
+/** 编辑页分组: always shows the section titles, edit-only hides them while
+ *  creating, disabled never shows them. */
+const showEditorGroupTitles = computed(() => {
+  const mode = appearanceSetting.value.editorGroupingMode || "always";
+  if (mode === "disabled") return false;
+  if (mode === "edit-only") return isEditMode.value;
+  return true;
+});
+
 const manualSubscriptionsDefaultFolded = computed(() => {
   return (appearanceSetting.value.manualSubscriptionsDisplayMode || "collapsed") === "collapsed";
 });

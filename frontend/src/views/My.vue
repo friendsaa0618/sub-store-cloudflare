@@ -557,14 +557,6 @@ const listChoices: AppearanceChoice[] = [
     ],
   },
   {
-    key: "createItemPosition",
-    label: "myPage.appearance.createPosition",
-    options: [
-      { value: "top", label: "myPage.appearance.top" },
-      { value: "bottom", label: "myPage.appearance.bottom" },
-    ],
-  },
-  {
     key: "subProgressStyle",
     label: "myPage.appearance.progressStyle",
     options: [
