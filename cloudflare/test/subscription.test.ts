@@ -41,6 +41,35 @@ describe("subscription parsing and limits", () => {
     }
   });
 
+  it("fetches a remote source even when it still carries local content", async () => {
+    const remoteBody = Buffer.from(
+      "trojan://password@remote.example:443?sni=remote.example#Remote%20Node",
+    ).toString("base64");
+    const fetchMock = vi.fn(
+      async () => new Response(remoteBody, { status: 200, headers: { "content-type": "text/plain" } }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    try {
+      const output = await buildSubscription({
+        source: {
+          id: "switched-to-remote",
+          name: "Switched To Remote",
+          type: "remote",
+          url: "https://remote.example/sub",
+          content: "trojan://password@stale.example:443?sni=stale.example#Stale%20Node",
+        },
+        sources: [],
+        requestUrl: new URL("https://example.com/download/source/switched-to-remote/uri"),
+        target: "uri",
+      });
+      expect(fetchMock).toHaveBeenCalled();
+      expect(String(output)).toContain("Remote");
+      expect(String(output)).not.toContain("Stale");
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it("renders a sing-box profile without legacy inbound fields or WireGuard outbounds", async () => {
     const output = await buildSubscription({
       source: {

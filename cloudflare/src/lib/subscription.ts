@@ -204,7 +204,9 @@ async function loadSubscriptionRaw(
   requestUserAgent?: string,
   runtime?: Pick<InternalBuildOptions, "responseMetadata" | "forceRefresh" | "waitUntil">,
 ) {
-  if (sub.type === "local" || sub.content) {
+  // Rows written before the type was enforced may carry content on a remote
+  // source; the type decides, so those rows fetch again instead of going stale.
+  if (sub.type === "local" || (!sub.type && sub.content)) {
     runtime?.responseMetadata.set(sub.id, metadataFromSource(sub));
     return String(sub.content || sub.url || "");
   }

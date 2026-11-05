@@ -341,6 +341,42 @@ describe("Worker and D1 integration", () => {
     expect(getPath(await jsonObject(blockedDelete), "error", "message")).toContain("patch-collection");
   });
 
+  it("keeps only the field that matches the source type", async () => {
+    const create = await workerRequest("/api/sources", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        id: "mode-source",
+        name: "Mode Source",
+        type: "local",
+        url: "https://leftover.example/sub",
+        content: "trojan://password@example.com:443#Local%20Node",
+      }),
+    });
+    expect(create.status).toBe(200);
+    const created = getPath(await jsonObject(create), "data") as Record<string, unknown>;
+    expect(created.url).toBe("");
+
+    const toRemote = await workerRequest("/api/sources/mode-source", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ type: "remote", url: "https://remote.example/sub" }),
+    });
+    const remote = getPath(await jsonObject(toRemote), "data") as Record<string, unknown>;
+    expect(remote.type).toBe("remote");
+    expect(remote.content).toBe("");
+
+    const backToLocal = await workerRequest("/api/sources/mode-source", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ type: "local", content: "trojan://password@example.com:443#Back%20Local" }),
+    });
+    const local = getPath(await jsonObject(backToLocal), "data") as Record<string, unknown>;
+    expect(local.type).toBe("local");
+    expect(local.url).toBe("");
+    expect(String(local.content)).toContain("Back%20Local");
+  });
+
   it("treats an empty sourceIds list as all enabled sources", async () => {
     for (const [id, nodeName] of [["all-source-a", "All Node A"], ["all-source-b", "All Node B"]]) {
       const response = await workerRequest("/api/sources", {

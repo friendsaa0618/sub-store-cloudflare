@@ -145,7 +145,7 @@ apiRoutes.post("/sources", async (c) => {
   if (payloadError) return failed(c, payloadError);
   const idError = validateRecordId(input.id || input.name, "Source");
   if (idError) return failed(c, idError);
-  const source = fromApiSource(input);
+  const source = withoutOtherModeField(fromApiSource(input));
   if (await getSource(c.env, source.id || "")) return failed(c, "Source id already exists", 409);
   const validationError = validateSource(source);
   if (validationError) return failed(c, validationError);
@@ -169,7 +169,7 @@ apiRoutes.patch("/sources/:name", async (c) => {
   const input = await c.req.json<JsonMap>();
   const payloadError = validateSourcePayload(input, true);
   if (payloadError) return failed(c, payloadError);
-  const source = mergeSource(existing, fromApiSource(input, true));
+  const source = withoutOtherModeField(mergeSource(existing, fromApiSource(input, true)));
   const validationError = validateSource(source);
   if (validationError) return failed(c, validationError);
   return success(c, toApiSource(await upsertSource(c.env, source)));
@@ -386,10 +386,10 @@ apiRoutes.post("/utils/node-info", async (c) => {
 apiRoutes.post("/preview/source", async (c) => {
   const input = await c.req.json<JsonMap>();
   try {
-    if (input.source === "local" || input.content) {
-      return success(c, await previewSourceContent(toSubscriptionSource(input), await getSettings(c.env)));
-    }
     const source = toSubscriptionSource(input);
+    if (source.type === "local") {
+      return success(c, await previewSourceContent(source, await getSettings(c.env)));
+    }
     return success(c, await previewSubscription({ source, sources: [source], settings: await getSettings(c.env) }));
   } catch (error) {
     return failed(c, error instanceof Error ? error.message : String(error), 400);
@@ -529,6 +529,16 @@ function fromApiSource(input: JsonMap, partial = false): Partial<SourceRecord> {
   if (!partial || "filters" in input || "process" in input) output.filters = filterList(input.filters, input.process);
   if (!partial || "meta" in input) output.meta = objectValue(input.meta);
   return output;
+}
+
+/**
+ * A source is remote or local, never both. Keeping the field of the other mode
+ * let a source switched to remote keep serving its old local content.
+ */
+function withoutOtherModeField<T extends Partial<SourceRecord>>(source: T): T {
+  if (source.type === "local") return { ...source, url: "" };
+  if (source.type === "remote") return { ...source, content: "" };
+  return source;
 }
 
 function mergeSource(existing: SourceRecord, next: Partial<SourceRecord>) {

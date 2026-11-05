@@ -456,12 +456,16 @@ const toApiSource = (data: JsonMap) => {
     ]),
   };
 
+  const type = data.source === 'local' || data.type === 'local' ? 'local' : 'remote';
+
   return {
     id: data.id || data.name,
     name: data.displayName || data['display-name'] || data.id || data.name,
-    type: data.source === 'local' || data.type === 'local' ? 'local' : 'remote',
-    url: data.url || '',
-    content: data.content || '',
+    type,
+    // A source is one mode or the other; sending the leftover field of the
+    // other mode made a source switched to remote keep serving stale content.
+    url: type === 'local' ? '' : data.url || '',
+    content: type === 'local' ? data.content || '' : '',
     filters: toApiFilters(data.process),
     enabled: data.enabled !== false,
     meta,
