@@ -201,6 +201,7 @@ export default {
       openApp: "Open subscription website",
       compare: "Compare nodes",
       preview: "Preview",
+      openPreview: "Subscription links",
       copyLink: "Copy subscription link",
       refresh: "Refresh usage info",
       edit: "Edit",

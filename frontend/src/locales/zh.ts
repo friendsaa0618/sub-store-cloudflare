@@ -201,6 +201,7 @@ export default {
       openApp: "打开订阅官网",
       compare: "节点对比",
       preview: "即时预览",
+      openPreview: "订阅链接",
       copyLink: "复制订阅链接",
       refresh: "刷新流量信息",
       edit: "编辑",

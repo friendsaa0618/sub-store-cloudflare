@@ -103,6 +103,14 @@
             <template v-if="isDesktop">
               <button
                 class="sub-item-action"
+                :aria-label="t('subPage.actions.openPreview')"
+                :title="t('subPage.actions.openPreview')"
+                @click.stop="openPreviewPanel"
+              >
+                <font-awesome-icon icon="fa-solid fa-eye" />
+              </button>
+              <button
+                class="sub-item-action"
                 :aria-label="t('subPage.actions.edit')"
                 :title="t('subPage.actions.edit')"
                 @click.stop="onClickEdit"
@@ -159,6 +167,15 @@
                   @click.stop
                   @keydown="onOverflowMenuKeydown"
                 >
+                  <button
+                    type="button"
+                    class="sub-item-overflow__item"
+                    role="menuitem"
+                    @click.stop="runOverflowAction(openPreviewPanel)"
+                  >
+                    <font-awesome-icon icon="fa-solid fa-eye" />
+                    <span>{{ t('subPage.actions.openPreview') }}</span>
+                  </button>
                   <button
                     type="button"
                     class="sub-item-overflow__item"
