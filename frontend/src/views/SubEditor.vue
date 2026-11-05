@@ -1425,8 +1425,21 @@ const onSaveShortcut = (event: KeyboardEvent) => {
   if (dialogState.visible) return;
   submit();
 };
-onMounted(() => window.addEventListener("keydown", onSaveShortcut));
-onBeforeUnmount(() => window.removeEventListener("keydown", onSaveShortcut));
+/* Every other overlay closes on Escape; the full-screen editor should too.
+   A key CodeMirror already handled (its search panel) is left alone. */
+const onFullscreenEscape = (event: KeyboardEvent) => {
+  if (event.key !== "Escape" || isDis.value || event.defaultPrevented) return;
+  isDis.value = true;
+};
+
+onMounted(() => {
+  window.addEventListener("keydown", onSaveShortcut);
+  window.addEventListener("keydown", onFullscreenEscape);
+});
+onBeforeUnmount(() => {
+  window.removeEventListener("keydown", onSaveShortcut);
+  window.removeEventListener("keydown", onFullscreenEscape);
+});
 
 // 名称验证器
 const nameValidator = (val: string): Promise<boolean> => {
