@@ -142,6 +142,7 @@
                 class="sub-item-action"
                 :aria-label="t('navBar.actions.more')"
                 :title="t('navBar.actions.more')"
+                aria-haspopup="menu"
                 :aria-expanded="overflowMenuOpen"
                 @click.stop="toggleOverflowMenu"
               >
@@ -151,10 +152,12 @@
               <Teleport to="body">
                 <div
                   v-if="overflowMenuOpen"
+                  ref="overflowMenuEl"
                   class="sub-item-overflow-portal"
                   :style="overflowMenuStyle"
                   role="menu"
                   @click.stop
+                  @keydown="onOverflowMenuKeydown"
                 >
                   <button
                     type="button"
@@ -352,6 +355,7 @@ const { t } = useI18n();
 /** Mobile: collapse secondary card actions into a compact overflow menu */
 const overflowMenuOpen = ref(false);
 const overflowTriggerRef = ref<HTMLElement | null>(null);
+const overflowMenuEl = ref<HTMLElement | null>(null);
 const overflowMenuStyle = ref<CSSProperties>({});
 
 const updateOverflowMenuPosition = () => {
@@ -377,17 +381,62 @@ const updateOverflowMenuPosition = () => {
   };
 };
 
+const overflowMenuItems = () =>
+  Array.from(overflowMenuEl.value?.querySelectorAll<HTMLElement>("[role=menuitem]") ?? []);
+
+const focusOverflowItem = (index: number) => {
+  const items = overflowMenuItems();
+  if (!items.length) return;
+  items[(index + items.length) % items.length].focus();
+};
+
 const toggleOverflowMenu = async () => {
   if (overflowMenuOpen.value) {
-    overflowMenuOpen.value = false;
+    closeOverflowMenu(true);
     return;
   }
   overflowMenuOpen.value = true;
   await nextTick();
   updateOverflowMenuPosition();
+  /* The menu is teleported to the end of the body, so Tab would leave it
+     behind; focus moves in instead. */
+  focusOverflowItem(0);
 };
-const closeOverflowMenu = () => {
+const closeOverflowMenu = (returnFocus = false) => {
+  if (!overflowMenuOpen.value) return;
   overflowMenuOpen.value = false;
+  if (returnFocus) overflowTriggerRef.value?.focus();
+};
+
+/** Menu-button keys: arrows walk the items, Escape returns to the trigger. */
+const onOverflowMenuKeydown = (event: KeyboardEvent) => {
+  const items = overflowMenuItems();
+  const current = items.indexOf(document.activeElement as HTMLElement);
+  switch (event.key) {
+    case "ArrowDown":
+      event.preventDefault();
+      focusOverflowItem(current + 1);
+      break;
+    case "ArrowUp":
+      event.preventDefault();
+      focusOverflowItem(current - 1);
+      break;
+    case "Home":
+      event.preventDefault();
+      focusOverflowItem(0);
+      break;
+    case "End":
+      event.preventDefault();
+      focusOverflowItem(items.length - 1);
+      break;
+    case "Escape":
+      event.preventDefault();
+      closeOverflowMenu(true);
+      break;
+    case "Tab":
+      closeOverflowMenu();
+      break;
+  }
 };
 const runOverflowAction = (action: () => void) => {
   closeOverflowMenu();
