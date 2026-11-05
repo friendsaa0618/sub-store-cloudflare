@@ -1,7 +1,10 @@
 <template>
   <div ref="dropdownRef" class="language-dropdown-wrapper">
     <button
+      ref="triggerEl"
       type="button"
+      aria-haspopup="menu"
+      :aria-expanded="isOpen"
       :class="[
         'language-switch-button',
         `language-switch-button--${props.variant}`,
@@ -19,9 +22,11 @@
 
     <div
       v-if="isOpen"
+      ref="menuEl"
       class="language-dropdown-menu"
       role="menu"
       @click.stop
+      @keydown="onMenuKeydown"
     >
       <button
         v-for="lang in langList"
@@ -44,7 +49,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
 import {
@@ -68,26 +73,82 @@ const props = withDefaults(
 const { t, locale } = useI18n();
 const isOpen = ref(false);
 const dropdownRef = ref<HTMLElement | null>(null);
+const triggerEl = ref<HTMLElement | null>(null);
+const menuEl = ref<HTMLElement | null>(null);
 const langList = SUPPORTED_LOCALES;
 
 const currentLocale = computed(() => {
   return normalizeLocale(String(locale.value || ""));
 });
 
-const toggleMenu = () => {
-  isOpen.value = !isOpen.value;
+const menuItems = () =>
+  Array.from(menuEl.value?.querySelectorAll<HTMLElement>("[role=menuitem]") ?? []);
+
+const focusItem = (index: number) => {
+  const items = menuItems();
+  if (!items.length) return;
+  items[(index + items.length) % items.length].focus();
+};
+
+const closeMenu = (returnFocus = false) => {
+  if (!isOpen.value) return;
+  isOpen.value = false;
+  if (returnFocus) triggerEl.value?.focus();
+};
+
+const toggleMenu = async () => {
+  if (isOpen.value) {
+    closeMenu(true);
+    return;
+  }
+  isOpen.value = true;
+  await nextTick();
+  /* Land on the active language so the menu opens where the user is. */
+  const current = menuItems().findIndex((el) => el.classList.contains("is-selected"));
+  focusItem(current >= 0 ? current : 0);
+};
+
+/** Menu-button keys, same as the card menu and the floating add button. */
+const onMenuKeydown = (event: KeyboardEvent) => {
+  const items = menuItems();
+  const current = items.indexOf(document.activeElement as HTMLElement);
+  switch (event.key) {
+    case "ArrowDown":
+      event.preventDefault();
+      focusItem(current + 1);
+      break;
+    case "ArrowUp":
+      event.preventDefault();
+      focusItem(current - 1);
+      break;
+    case "Home":
+      event.preventDefault();
+      focusItem(0);
+      break;
+    case "End":
+      event.preventDefault();
+      focusItem(items.length - 1);
+      break;
+    case "Escape":
+      event.preventDefault();
+      closeMenu(true);
+      break;
+    case "Tab":
+      closeMenu();
+      break;
+  }
 };
 
 const changeLang = (type: SupportedLocale) => {
   locale.value = type;
   localStorage.setItem("locale", type);
   syncDocumentLang(type);
-  isOpen.value = false;
+  closeMenu(true);
 };
 
 const handleDocumentClick = (e: MouseEvent) => {
   if (dropdownRef.value && !dropdownRef.value.contains(e.target as Node)) {
-    isOpen.value = false;
+    closeMenu();
   }
 };
 
