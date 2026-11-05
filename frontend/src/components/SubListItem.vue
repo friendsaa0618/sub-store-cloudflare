@@ -378,6 +378,8 @@ import { useGlobalStore } from "@/store/global";
 import { useSettingsStore } from "@/store/settings";
 import { useSubsStore } from "@/store/subs";
 import { getString } from "@/utils/flowTransfer";
+import { readQuickTarget } from "@/utils/quickTarget";
+import { DOWNLOAD_TARGET_OPTIONS } from "@/constants/subscriptionTargets";
 import { buildSubscriptionIconUrl } from "@/utils/subscriptionIcon";
 import CompareTable from "@/views/CompareTable.vue";
 
@@ -1047,8 +1049,11 @@ const onClickDelete = () => {
   });
 };
 
-const resolveDownloadUrl = async () => {
-  const res = await cloudflareApi.getDownloadLink(props.type, name);
+const targetLabel = (value: string) =>
+  DOWNLOAD_TARGET_OPTIONS.find((option) => option.value === value)?.label || value;
+
+const resolveDownloadUrl = async (target?: string) => {
+  const res = await cloudflareApi.getDownloadLink(props.type, name, target);
   return res?.data?.status === "success" && res.data.data?.url
     ? res.data.data.url
     : `${host.value}/download/${
@@ -1058,9 +1063,17 @@ const resolveDownloadUrl = async () => {
 
 const onClickCopyLink = async () => {
   try {
-    const url = await resolveDownloadUrl();
+    const quickTarget = readQuickTarget();
+    const url = await resolveDownloadUrl(quickTarget);
     await writeClipboard(url);
-    showNotify({ type: "success", title: t("subPage.copyNotify.succeed") });
+    /* Name the target when it is not the server default, so a remembered
+       choice never copies something the user cannot see. */
+    showNotify({
+      type: "success",
+      title: quickTarget
+        ? t("subPage.copyNotify.succeedWithTarget", { target: targetLabel(quickTarget) })
+        : t("subPage.copyNotify.succeed"),
+    });
   } catch {
     /* Reported by the interceptor. */
   }

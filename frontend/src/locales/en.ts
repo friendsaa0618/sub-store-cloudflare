@@ -245,6 +245,7 @@ export default {
     },
     copyNotify: {
       succeed: "Successfully copied link!",
+      succeedWithTarget: "{target} subscription link copied",
       failed: "Failed to copy subscription link!\n{e}"
     },
     copyConfigNotify: {

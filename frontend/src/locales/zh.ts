@@ -245,6 +245,7 @@ export default {
     },
     copyNotify: {
       succeed: "复制订阅链接成功\n请导入代理工具使用",
+      succeedWithTarget: "已复制 {target} 订阅链接",
       failed: "复制订阅链接失败\n{e}"
     },
     copyConfigNotify: {

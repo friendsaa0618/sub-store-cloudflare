@@ -370,3 +370,38 @@ test("the editor keeps undo history per source", async ({ page }) => {
   expect(content).toContain("NodeB");
   expect(content).not.toContain("EditedA");
 });
+
+test("the copy button reuses the target picked in the panel", async ({ page, context }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await prepareVisualPage(page);
+  await installVisualMocks(page, "populated");
+
+  const requested: string[] = [];
+  await page.route("**/api/link/source/hk-nodes*", (route) => {
+    const target = new URL(route.request().url()).searchParams.get("target");
+    requested.push(String(target));
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: "success",
+        data: { url: `https://example.com/download/source/hk-nodes/${target ?? "default"}?token=t` },
+      }),
+    });
+  });
+
+  await page.goto("/subs", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".sub-item-wrapper").first()).toBeVisible({ timeout: 10_000 });
+  await page.waitForTimeout(600);
+
+  await page.locator('.sub-item-action[aria-label="订阅链接"]').first().click();
+  await page.waitForTimeout(500);
+  await page.locator(".preview-list li", { hasText: "sing-box" }).locator("button").last().click();
+  await page.locator(".app-popup__close").first().click();
+  await page.waitForTimeout(400);
+
+  await page.locator('.sub-item-action[aria-label="复制订阅链接"]').first().click();
+  await expect(page.locator(".Toastify__toast").last()).toContainText("已复制 sing-box 订阅链接");
+  expect(requested.at(-1)).toBe("sing-box");
+});

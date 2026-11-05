@@ -47,6 +47,7 @@
 <script lang="ts" setup>
   import logoIcon from '@/assets/icons/logo.png';
   import { useAppClipboard } from '@/utils/clipboard';
+  import { rememberQuickTarget } from '@/utils/quickTarget';
   import { apiErrorMessage } from '@/utils/apiError';
   import { useAppNotifyStore } from '@/store/appNotify';
   import SvgIcon from '@/components/SvgIcon.vue';
@@ -137,6 +138,7 @@
     return realUrl;
   };
   const targetOpen = async (path: PlatformPath) => {
+    rememberQuickTarget(path);
     /* Opened up-front so the popup blocker lets it through; if the link cannot
        be resolved, close it instead of leaving a blank tab behind. */
     const pendingWindow = window.open('about:blank', '_blank');
@@ -162,6 +164,7 @@
     }
   };
   const targetCopy = async (path: PlatformPath) => {
+    rememberQuickTarget(path);
     try {
       const url = await getRealUrl(path);
       await writeClipboard(url);
