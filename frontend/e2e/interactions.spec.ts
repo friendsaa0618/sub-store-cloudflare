@@ -49,6 +49,23 @@ test("local source editor fills the card", async ({ page }) => {
   expect(toolbarBox!.height).toBeLessThan(40);
 });
 
+test("collection source picker keeps icons at avatar size", async ({ page }) => {
+  await open(page, "/edit/collections/UNTITLED", ".page-wrapper");
+  await page.locator(".include-subs-trigger .picker-trigger").click();
+
+  const avatar = page.locator(".subs-checkbox .app-avatar").first();
+  await expect(avatar).toBeVisible();
+  await page.waitForFunction(() => {
+    const image = document.querySelector(".subs-checkbox .app-avatar img") as HTMLImageElement | null;
+    return Boolean(image?.complete && image.naturalWidth > 0);
+  });
+
+  // The icon URL used to render at its natural size and cover the whole row.
+  const box = await avatar.boundingBox();
+  expect(box!.width).toBeLessThanOrEqual(32);
+  expect(box!.height).toBeLessThanOrEqual(32);
+});
+
 test("code editor toolbar stays on one row at 320px", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 780 });
   await prepareVisualPage(page);

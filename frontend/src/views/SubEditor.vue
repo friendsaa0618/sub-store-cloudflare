@@ -665,7 +665,9 @@ watch(
   },
 );
 const chooserAvatarSize = computed(() => {
-  return appearanceSetting.value.isSimpleMode ? "28" : "32";
+  /* AppAvatar only appends "px" to numbers; a numeric string became an invalid
+     `width: 28` and the icon rendered at its natural size. */
+  return appearanceSetting.value.isSimpleMode ? 28 : 32;
 });
 
 type SubSelectRow = [string, string, string | undefined, string[] | undefined, boolean];
