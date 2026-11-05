@@ -889,6 +889,8 @@ const form = reactive<any>({
   // Public SVG avatars stay colored (no desaturate filter)
   isIconColor: true,
   process: [],
+  /* Saved back as-is: a disabled record must not come back to life on edit. */
+  enabled: true,
 });
 provide("form", form);
 
@@ -1008,6 +1010,7 @@ watchEffect(() => {
   form.tag = Array.isArray(sourceData.tag)
     ? sourceData.tag.join(", ")
     : sourceData.tag;
+  form.enabled = sourceData.enabled !== false;
   switch (editType) {
     case "collections":
       form.subscriptions = Array.isArray(sourceData.subscriptions)

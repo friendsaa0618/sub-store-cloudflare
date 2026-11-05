@@ -153,3 +153,62 @@ test("a source can be disabled and enabled again", async ({ page }) => {
   await expect(page.locator(".sub-item-state")).toHaveCount(0);
   expect(bodies).toEqual([{ enabled: false }, { enabled: true }]);
 });
+
+test("saving a disabled source keeps it disabled", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await prepareVisualPage(page);
+  await installVisualMocks(page, "populated");
+
+  const source = {
+    id: "hk-nodes",
+    name: "HK Nodes",
+    type: "local",
+    url: "",
+    content: "trojan://password@example.com:443#Local",
+    filters: [],
+    enabled: false,
+    meta: { tag: ["hk"], icon: "/logo.png", remark: "Visual fixture" },
+  };
+  await page.route("**/api/bootstrap", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: "success",
+        data: { env: ENV_PAYLOAD, settings: SETTINGS_PAYLOAD, sources: [source], collections: [] },
+      }),
+    }),
+  );
+  let saved: { enabled?: boolean } | null = null;
+  await page.route("**/api/sources/hk-nodes", async (route) => {
+    if (route.request().method() !== "GET") {
+      saved = route.request().postDataJSON();
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ status: "success", data: source }),
+    });
+  });
+  await page.route("**/api/preview/source", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: "success",
+        data: {
+          processed: [{ id: "n", type: "trojan", name: "Local", server: "example.com", port: 443 }],
+          original: [{ id: "n", type: "trojan", name: "Local", server: "example.com", port: 443 }],
+          filtered: [],
+          renamed: [],
+        },
+      }),
+    }),
+  );
+
+  await page.goto("/edit/subs/hk-nodes", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".submit-btn")).toBeVisible({ timeout: 10_000 });
+  await page.waitForTimeout(800);
+  await page.locator(".submit-btn").first().click({ force: true });
+  await expect.poll(() => saved?.enabled, { timeout: 10_000 }).toBe(false);
+});
