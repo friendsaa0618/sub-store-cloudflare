@@ -454,6 +454,12 @@ const toggleTheme = async () => {
     box-shadow: 0 0 0 2px var(--focus-ring-color);
   }
 
+  /* The current tab paints its own card shadow, which replaced the ring. */
+  &.is-active:focus-visible {
+    box-shadow: 0 0 0 2px var(--focus-ring-color), 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  }
+
+
   @media screen and (min-width: 768px) {
     min-height: 0;
     padding: 4px 14px;

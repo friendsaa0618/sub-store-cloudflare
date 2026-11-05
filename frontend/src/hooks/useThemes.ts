@@ -56,7 +56,8 @@ export const designTokens: Record<string, string> = {
   'z-drawer': '1100',
   'z-dialog': '1200',
   'z-toast': '1300',
-  'focus-ring-color': 'color-mix(in srgb, var(--primary-color) 20%, transparent)',
+  // 20% drew a ring nobody could see; 50% keeps ~3:1 against the surface.
+  'focus-ring-color': 'color-mix(in srgb, var(--primary-color) 50%, transparent)',
 };
 
 // Back-compat alias used elsewhere in this file
