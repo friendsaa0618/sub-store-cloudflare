@@ -459,7 +459,7 @@ const templatePopupStyle = computed(() => {
   }
   return {
     width: "100%",
-    maxHeight: "88vh",
+    maxHeight: "88dvh",
     borderRadius: "16px 16px 0 0",
     overflow: "hidden",
   };
@@ -1169,7 +1169,7 @@ onMounted(fetchTemplates);
   background: var(--background-color);
   color: var(--primary-text-color);
   font-family: inherit;
-  font-size: var(--text-base);
+  font-size: var(--text-field);
   cursor: pointer;
 
   &:focus-visible {

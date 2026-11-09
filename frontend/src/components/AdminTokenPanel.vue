@@ -199,8 +199,10 @@ const saveTokenAndRetry = async () => {
   cursor: pointer;
   transition: color 160ms ease, background-color 160ms ease;
 
-  &:hover {
-    color: var(--primary-text-color);
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      color: var(--primary-text-color);
+    }
   }
 
   &:focus-visible {

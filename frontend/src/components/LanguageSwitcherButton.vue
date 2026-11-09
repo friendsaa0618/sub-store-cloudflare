@@ -210,13 +210,18 @@ onUnmounted(() => {
 }
 
 .language-switch-button--icon {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   padding: 0;
   border: 0;
   border-radius: 50%;
   background: transparent;
   color: var(--icon-nav-bar-right);
+
+  @media screen and (min-width: 768px) {
+    width: 32px;
+    height: 32px;
+  }
 }
 
 @media (hover: hover) and (pointer: fine) {

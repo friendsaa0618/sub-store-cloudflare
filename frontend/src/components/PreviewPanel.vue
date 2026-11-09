@@ -242,9 +242,11 @@
       color: var(--primary-color);
     }
 
-    &:hover {
-      background: color-mix(in srgb, var(--primary-color) 12%, transparent);
-      color: var(--primary-color);
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+        color: var(--primary-color);
+      }
     }
   }
 
@@ -326,13 +328,21 @@
           cursor: pointer;
           transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 
-          &:hover {
-            background: color-mix(in srgb, var(--primary-color) 10%, transparent);
-            border-color: color-mix(in srgb, var(--primary-color) 22%, transparent);
-            color: var(--primary-color);
+          /* A thumb needs more than the 28px the icon needs to look right. */
+          @media (pointer: coarse) {
+            width: 36px;
+            height: 36px;
+          }
 
-            & .action-icon {
-              color: var(--primary-color) !important;
+          @media (hover: hover) and (pointer: fine) {
+            &:hover {
+              background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+              border-color: color-mix(in srgb, var(--primary-color) 22%, transparent);
+              color: var(--primary-color);
+
+              & .action-icon {
+                color: var(--primary-color) !important;
+              }
             }
           }
 

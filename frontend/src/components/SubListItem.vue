@@ -528,8 +528,9 @@ const previewPopupStyle = computed(() => {
   }
   return {
     width: "100%",
-    /* The fourteen targets fit without scrolling on a standard phone. */
-    maxHeight: "88vh",
+    /* The fourteen targets fit without scrolling on a standard phone. dvh so
+       the sheet's top stays below the URL bar when it is showing. */
+    maxHeight: "88dvh",
     borderRadius: "16px 16px 0 0",
     overflow: "hidden",
   };

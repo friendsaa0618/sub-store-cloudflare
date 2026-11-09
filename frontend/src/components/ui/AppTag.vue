@@ -105,8 +105,10 @@ const emit = defineEmits<{ (e: "close"): void }>();
   font-size: 9px;
   cursor: pointer;
 
-  &:hover {
-    background: color-mix(in srgb, currentColor 18%, transparent);
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      background: color-mix(in srgb, currentColor 18%, transparent);
+    }
   }
 
   &:focus-visible {

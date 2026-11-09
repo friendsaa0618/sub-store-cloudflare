@@ -910,7 +910,7 @@ const filteredCollections = useFilteredDraggableList(collections, shouldShowElem
   background: transparent;
   color: var(--primary-text-color);
   font: inherit;
-  font-size: var(--text-base);
+  font-size: var(--text-field);
   outline: none;
 
   &::placeholder {

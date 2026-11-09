@@ -217,7 +217,12 @@ onBeforeUnmount(() => {
   width: 100%;
   max-height: 88vh;
   max-height: 88dvh;
-  padding: 12px 18px calc(18px + env(safe-area-inset-bottom));
+  /* Landscape: keep the sheet's content off the notch, not just its bottom. */
+  padding:
+    12px
+    calc(18px + env(safe-area-inset-right, 0px))
+    calc(18px + env(safe-area-inset-bottom))
+    calc(18px + env(safe-area-inset-left, 0px));
   border-bottom: 0;
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   box-shadow: 0 -12px 40px -8px rgba(0, 0, 0, 0.22);
@@ -225,14 +230,15 @@ onBeforeUnmount(() => {
 
 .app-popup__close {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  /* 40px hit area, icon still lands where the 30px button put it */
+  top: 7px;
+  right: 7px;
   z-index: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 40px;
+  height: 40px;
   padding: 0;
   border: 0;
   border-radius: var(--radius-full);
@@ -241,9 +247,11 @@ onBeforeUnmount(() => {
   font-size: 15px;
   cursor: pointer;
 
-  &:hover {
-    background: var(--divider-color);
-    color: var(--primary-text-color);
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      background: var(--divider-color);
+      color: var(--primary-text-color);
+    }
   }
 
   &:focus-visible {

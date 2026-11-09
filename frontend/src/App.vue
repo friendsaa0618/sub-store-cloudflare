@@ -172,6 +172,7 @@ h1, h2, h3,
 }
 
 .page-body {
+  --page-inline: 14px;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -182,16 +183,22 @@ h1, h2, h3,
   margin-right: auto;
   min-width: 0;
   box-sizing: border-box;
-  /* Slightly tighter horizontal pad on phones; desktop keeps 24px */
-  padding: 12px 14px 20px;
+  /* Slightly tighter horizontal pad on phones; desktop keeps 24px. The
+     insets only bite in landscape, where the notch sits over the edge. */
+  padding:
+    12px
+    calc(var(--page-inline) + env(safe-area-inset-right, 0px))
+    20px
+    calc(var(--page-inline) + env(safe-area-inset-left, 0px));
 
   @media screen and (min-width: 600px) {
-    padding: 16px 16px 24px;
+    --page-inline: 16px;
+    padding-top: 16px;
+    padding-bottom: 24px;
   }
 
   @media screen and (min-width: 768px) {
-    padding-left: 24px;
-    padding-right: 24px;
+    --page-inline: 24px;
   }
 }
 </style>

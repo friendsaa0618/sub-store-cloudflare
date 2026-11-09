@@ -631,8 +631,10 @@ select.field-control {
     font-size: 12px;
     cursor: pointer;
 
-    &:hover {
-      color: var(--primary-text-color);
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        color: var(--primary-text-color);
+      }
     }
 
     &:focus-visible {

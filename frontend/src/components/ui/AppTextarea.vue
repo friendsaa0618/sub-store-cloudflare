@@ -140,7 +140,7 @@ defineExpose({
   background: transparent;
   color: inherit;
   font-family: inherit;
-  font-size: var(--text-base);
+  font-size: var(--text-field);
   line-height: 1.5;
   resize: vertical;
 

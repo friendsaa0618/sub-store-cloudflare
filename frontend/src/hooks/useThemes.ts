@@ -155,15 +155,16 @@ const changeVariables = (newMode: CustomTheme) => {
   document.documentElement.dataset.theme = isDark ? 'dark' : 'light';
   document.documentElement.dataset.themeName = newMode;
 
-  // Match browser chrome / theme-color to page background (not translucent nav)
-  const themeColorMeta = document.getElementById('theme__color');
-  if (themeColorMeta) {
-    const pageBg =
-      themeDef.colors['background-color']
-      || themeDef.colors['status-bar-background-color']
-      || (isDark ? '#000000' : '#F8FAFC');
-    themeColorMeta.setAttribute('content', pageBg);
-  }
+  // Match browser chrome / theme-color to page background (not translucent nav).
+  // The document ships one tag per OS scheme so the status bar is right before
+  // boot; from here on every tag carries the theme the account picked.
+  const pageBg =
+    themeDef.colors['background-color']
+    || themeDef.colors['status-bar-background-color']
+    || (isDark ? '#09090B' : '#F8FAFC');
+  document
+    .querySelectorAll('meta[name="theme-color"]')
+    .forEach(meta => meta.setAttribute('content', pageBg));
   document.body.style.backgroundColor = themeDef.colors['background-color'] || '';
 };
 

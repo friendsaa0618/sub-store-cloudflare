@@ -10,6 +10,7 @@ This project follows semantic versioning where practical.
 
 - The subscription page opens with a hero band: `订阅管道` with the live source and collection counts flowing into the client formats the app can emit (five target marks plus a `+8` counter) on a hairline card, so the page explains its own model before the list. One 340ms entrance runs on load and two dots travel the connectors; `prefers-reduced-motion` silences both.
 - Added local Playwright visual snapshots for the admin UI (`pnpm run check:visual`) so layout, overlay, and theme regressions can be compared automatically; the set now includes dark-mode settings and editor captures, and `e2e/interactions.spec.ts` covers the subscription fold toggle and the collapsible request-settings form.
+- `e2e/mobile-platform.spec.ts` runs a touch viewport and fails if any field is under 16px (the size that stops iOS from zooming the page into it) or if the `theme-color` tags stop following the applied theme.
 
 ### Changed
 
@@ -44,6 +45,13 @@ This project follows semantic versioning where practical.
 
 ### Fixed
 
+- Form fields were 14px, so iOS zoomed the page into every input and never zoomed back out — which is why the viewport used to be the place to fix it. Fields now read a `--text-field` token (14px with a mouse, 16px on `(pointer: coarse)`) and `input` / `select` / `textarea` fall back to 16px on touch, so zoom stays available.
+- The phone browser no longer takes the page over: `overscroll-behavior: none` on the root stops pull-to-refresh behind the fixed nav, `-webkit-text-size-adjust: 100%` stops font inflation in landscape, and a long press on a button or tab no longer starts a text selection or the iOS copy callout. `touch-action: manipulation` moved from `body` onto the controls themselves (a button computed `auto`), so a tap fires without waiting for a possible double tap.
+- Hover styles that used to survive a tap are gated on `(hover: hover) and (pointer: fine)`: the input clear button, the popup close button, a tag's close button, picker options, the Tools share actions and the token gate's reveal.
+- The status bar follows the theme before the app boots: the document ships one `theme-color` per `prefers-color-scheme` and `useThemes` rewrites every tag to the account's theme, instead of one fixed `#000` that painted a dark bar over the light theme.
+- Landscape safe areas cover the horizontal edges too: the nav row, `.page-body` and the bottom sheets pad by `env(safe-area-inset-left/right)`, so the brand and the last action no longer sit under the notch.
+- The copy panel and the template picker pinned their sheets with an inline `88vh`, taller than the visible area while the URL bar shows; they use `88dvh`, and the full-screen code editor `95dvh`.
+- Tap targets a thumb actually reaches on a phone: nav tabs and the language button 32→40px, the sheet close button 30→40px with its icon unmoved, and the copy sheet's row actions 28→36px.
 - The subscription card's gutter was an off-scale 9px in simple mode (12px in dual-column, 16px single-column), so on phones the avatar and the action buttons sat only 10px from the card edge. Simple mode now uses `--space-3` (12px) and single-column `--space-4` (16px), and the card stays symmetric left/right.
 - On phones the editor's field rows dropped to a 12px gutter while the other cards on the page kept 16px, so the labels and controls sat 4px left of the section cards around them. The 16px gutter now holds at every width (measured inset 17px on all cards at 390px and 320px).
 - The editor's node-action cards used a 12px gutter (and the tile grid added another 10px margin), so their header and tiles sat 4–8px right of every other card's content. The action cards and the added-action rows now share the same 16px gutter and 12px group spacing as the rest of the editor.

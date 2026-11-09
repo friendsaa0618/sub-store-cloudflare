@@ -23,6 +23,9 @@
   --text-md: 16px;
   --text-lg: 20px;
   --text-xl: 24px;
+  /* Form fields. 14px reads right with a mouse, but iOS zooms the page into
+     any field under 16px and never zooms back out — touch gets the floor. */
+  --text-field: var(--text-base);
 
   --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB",
@@ -49,5 +52,12 @@
 @media screen and (max-width: 767px) {
   :root {
     --card-gutter: var(--space-3);
+  }
+}
+
+/* Touch: fields stop at 16px so focus never zooms the page. */
+@media (pointer: coarse) {
+  :root {
+    --text-field: 16px;
   }
 }

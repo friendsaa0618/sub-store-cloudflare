@@ -248,8 +248,10 @@ const confirm = () => {
   text-align: left;
   cursor: pointer;
 
-  &:hover {
-    background: var(--divider-color);
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      background: var(--divider-color);
+    }
   }
 
   &.is-selected {

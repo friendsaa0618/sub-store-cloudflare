@@ -3,6 +3,12 @@
 html {
   color-scheme: light dark;
   background-color: var(--background-color, #f8fafc);
+  /* The app shell owns the scroll: no pull-to-refresh or page rubber band
+     behind it. Inner scroll containers keep their own bounce. */
+  overscroll-behavior: none;
+  /* No font inflation when the phone turns to landscape. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 html[data-theme="dark"] {
@@ -54,6 +60,20 @@ a {
   color: inherit;
   text-decoration: none;
   transition: color 0.2s ease;
+  /* A tap on a link never waits to see whether a second tap is coming. */
+  touch-action: manipulation;
+}
+
+/* Control text is not content: a long press on a button should not start a
+   text selection or pop the iOS copy/share callout. Body text keeps both. */
+button,
+[role="button"],
+[role="menuitem"],
+[role="tab"] {
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 /* Native form affordances shared by editor / settings forms */
@@ -66,7 +86,7 @@ a {
   background: transparent;
   color: var(--second-text-color);
   font-family: inherit;
-  font-size: var(--text-base);
+  font-size: var(--text-field);
   line-height: 20px;
   text-align: left;
 
@@ -101,8 +121,10 @@ a {
   font-size: 13px;
   cursor: pointer;
 
-  &:hover {
-    color: var(--primary-color);
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      color: var(--primary-color);
+    }
   }
 
   &:focus-visible {
@@ -163,6 +185,16 @@ button {
   font-family: inherit;
   color: inherit;
   color-scheme: inherit;
+}
+
+/* iOS zooms the page into any field under 16px and never zooms back out.
+   Size the fields on touch instead of disabling zoom in the viewport. */
+@media (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  select,
+  textarea {
+    font-size: 16px;
+  }
 }
 
 /* Shared form surface language (Tools / My / SubEditor / dialogs) */
@@ -372,6 +404,7 @@ img {
   transform: translateX(-50%) translateY(-50%);
   z-index: var(--z-drawer);
   max-height: 95vh;
+  max-height: 95dvh;
   max-width: 80vw;
   width: 80vw;
   border-radius: var(--radius-md);

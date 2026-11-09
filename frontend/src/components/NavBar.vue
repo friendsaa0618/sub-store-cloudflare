@@ -303,6 +303,7 @@ const toggleTheme = async () => {
  * max-width matches .page-body so left/right edges align with the list.
  */
 .nav-bar {
+  --nav-inline: 12px;
   display: flex !important;
   flex-direction: row !important;
   flex-wrap: nowrap !important;
@@ -317,15 +318,16 @@ const toggleTheme = async () => {
   margin-right: auto;
   padding-top: 0;
   padding-top: v-bind(navBartop);
-  padding-right: 12px;
+  /* In landscape the notch sits over the left edge; the inset keeps the
+     brand and the last action out from under it. */
+  padding-right: calc(var(--nav-inline) + env(safe-area-inset-right, 0px));
   padding-bottom: 0;
-  padding-left: 12px;
+  padding-left: calc(var(--nav-inline) + env(safe-area-inset-left, 0px));
   overflow: visible;
 
   @media screen and (min-width: 768px) {
+    --nav-inline: 24px;
     gap: 12px;
-    padding-left: 24px;
-    padding-right: 24px;
   }
 
   /* Secondary: keep left cluster compact so center tabs stay usable */
@@ -432,8 +434,8 @@ const toggleTheme = async () => {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  /* Comfortable touch targets on mobile */
-  min-height: 32px;
+  /* Comfortable touch targets on mobile: 40px inside the 56px row */
+  min-height: 40px;
   padding: 6px 12px;
   border: 0;
   border-radius: var(--radius-full);

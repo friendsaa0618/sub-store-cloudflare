@@ -471,7 +471,7 @@
     </AppButton>
   </div>
 </div>
-<div v-else style="width: 100%;max-height: 95vh;">
+<div v-else style="width: 100%;max-height: 95dvh;">
     <button class="cimg-button" @click="isDis = true">
       <font-awesome-icon icon="fa-solid fa-minimize" />
       {{ $t(`editorPage.subConfig.basic.url.tips.fullScreenEditCancel`) }}
