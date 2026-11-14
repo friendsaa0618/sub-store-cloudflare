@@ -305,9 +305,10 @@ export async function importStorage(env: SubStoreEnv, input: unknown) {
   };
 }
 
-export async function getSubscriptionSources(env: SubStoreEnv): Promise<SubscriptionSource[]> {
-  const sources = await listSources(env);
-  return sources.map((source) => ({
+const MAX_SOURCE_ID_FILTERS = 45; // 2 * 45 bound parameters stays below D1's 100-parameter limit.
+
+function subscriptionSourceFromRecord(source: SourceRecord): SubscriptionSource {
+  return {
     id: source.id,
     name: source.name,
     type: source.type,
@@ -316,7 +317,27 @@ export async function getSubscriptionSources(env: SubStoreEnv): Promise<Subscrip
     filters: source.filters,
     enabled: source.enabled,
     meta: source.meta,
-  }));
+  };
+}
+
+export async function getSubscriptionSources(env: SubStoreEnv): Promise<SubscriptionSource[]> {
+  const sources = await listSources(env);
+  return sources.map(subscriptionSourceFromRecord);
+}
+
+export async function getSubscriptionSourcesByIds(env: SubStoreEnv, ids: string[]): Promise<SubscriptionSource[]> {
+  const unique = [...new Set(ids.map((id) => String(id).trim()).filter(Boolean))];
+  if (unique.length === 0) return [];
+  // A collection that references more sources than the parameter budget falls
+  // back to the full list; it is the same data the download used to read.
+  if (unique.length > MAX_SOURCE_ID_FILTERS) return getSubscriptionSources(env);
+  const placeholders = unique.map(() => "?").join(", ");
+  const rows = await env.DB.prepare(
+    `SELECT * FROM sources WHERE id IN (${placeholders}) OR name IN (${placeholders}) ORDER BY created_at ASC`,
+  )
+    .bind(...unique, ...unique)
+    .all<SourceRow>();
+  return rows.results.map(sourceFromRow).map(subscriptionSourceFromRecord);
 }
 
 export async function getSubscriptionCollection(env: SubStoreEnv, id: string): Promise<SubscriptionCollection | undefined> {

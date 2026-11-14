@@ -4,8 +4,8 @@ import { failed, isTokenValid } from "../lib/http";
 import { authorizeScopedDownload } from "../lib/compatibility-resources";
 import { loadConvertedRuleSet } from "../lib/ruleset";
 import { buildSubscriptionResult, getTargetContentType, normalizeTarget, normalizeTargetAlias } from "../lib/subscription";
-import { getCollection, getRoutingTemplate, getSettings, getSource, getSubscriptionCollection, getSubscriptionSources } from "../lib/store";
-import type { RoutingTemplateConfig, SubscriptionCollection, SubscriptionSource, SubscriptionTarget } from "../types";
+import { getCollection, getRoutingTemplate, getSettings, getSource, getSubscriptionCollection, getSubscriptionSources, getSubscriptionSourcesByIds } from "../lib/store";
+import type { AppSettings, RoutingTemplate, RoutingTemplateConfig, SubscriptionCollection, SubscriptionSource, SubscriptionTarget } from "../types";
 
 export const downloadRoutes = new Hono<{ Bindings: SubStoreEnv }>();
 
@@ -46,11 +46,20 @@ downloadRoutes.get("/download/collection/:name/:target?/:token?", async (c) => {
     return failed(c, existing ? "Collection is disabled" : "Collection not found", 404);
   }
 
+  const [sources, template, settings] = await Promise.all([
+    collection.sourceIds?.length
+      ? getSubscriptionSourcesByIds(c.env, collection.sourceIds)
+      : getSubscriptionSources(c.env),
+    getRoutingTemplate(c.env, collection.templateId),
+    getSettings(c.env),
+  ]);
+
   return renderDownload(c, {
     collection,
-    sources: await getSubscriptionSources(c.env),
+    sources,
+    template,
+    settings,
     target,
-    templateId: collection.templateId,
   });
 });
 
@@ -60,7 +69,11 @@ downloadRoutes.get("/download/source/:name/:target?/:token?", async (c) => {
   const invalidToken = await rejectInvalidDownloadToken(c, "source", c.req.param("name"), target);
   if (invalidToken) return invalidToken;
 
-  const source = await getSource(c.env, c.req.param("name"));
+  const [source, template, settings] = await Promise.all([
+    getSource(c.env, c.req.param("name")),
+    getRoutingTemplate(c.env, undefined),
+    getSettings(c.env),
+  ]);
   if (!source) return failed(c, "Subscription not found", 404);
   if (!source.enabled) return failed(c, "Subscription is disabled", 404);
   const subscriptionSource: SubscriptionSource = {
@@ -78,6 +91,8 @@ downloadRoutes.get("/download/source/:name/:target?/:token?", async (c) => {
     source: subscriptionSource,
     sources: [subscriptionSource],
     target,
+    template,
+    settings,
   });
 });
 
@@ -88,7 +103,8 @@ async function renderDownload(
     collection?: SubscriptionCollection;
     sources: SubscriptionSource[];
     target: SubscriptionTarget;
-    templateId?: string;
+    template: RoutingTemplate | undefined;
+    settings: AppSettings;
   },
 ) {
   // `?url=` / `?content=` exist for ad-hoc links handed out by the admin. On a
@@ -100,10 +116,6 @@ async function renderDownload(
   const sourceOverride = getTemporarySourceOverride(c);
   const sources = sourceOverride ? applyTemporarySourceOverride(options.sources, sourceOverride, options.collection) : options.sources;
   const source = sourceOverride && options.source ? applyTemporarySourceOverride([options.source], sourceOverride)[0] : options.source;
-  const [template, settings] = await Promise.all([
-    getRoutingTemplate(c.env, options.templateId),
-    getSettings(c.env),
-  ]);
   try {
     const result = await buildSubscriptionResult({
       source,
@@ -111,8 +123,8 @@ async function renderDownload(
       sources,
       requestUrl: new URL(c.req.url),
       target: options.target,
-      template,
-      settings,
+      template: options.template,
+      settings: options.settings,
       requestUserAgent: c.req.header("user-agent") || "",
       forceRefresh: ["1", "true"].includes(c.req.query("refresh") || c.req.query("noCache") || ""),
       waitUntil: (promise) => c.executionCtx.waitUntil(promise),
