@@ -45,7 +45,7 @@ function provider(url: string, behavior: "domain" | "ipcidr" | "classical" = "cl
 // Rule data comes from MetaCubeX/meta-rules-dat, which is maintained for both
 // Mihomo (`meta` branch, compiled `.mrs`) and sing-box (`sing` branch, `.srs`).
 // The CDN host is a deployment setting: `settings.rulesetCdn` rewrites it at
-// render time, see `withRulesetCdn` in lib/subscription.ts.
+// render time, see `withRulesetCdn` in lib/subscription/templates.ts.
 export const DEFAULT_RULESET_CDN = "https://cdn.jsdelivr.net";
 
 function metaRuleset(kind: "geosite" | "geoip", name: string, behavior: "domain" | "ipcidr") {
