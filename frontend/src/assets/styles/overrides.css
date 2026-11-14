@@ -138,10 +138,16 @@ textarea::-webkit-input-placeholder {
   opacity: 0.6;
 }
 
-.Toastify__toast-container .Toastify__close-button--light:hover,
 .Toastify__toast-container .Toastify__close-button--light:focus-visible {
   color: var(--primary-text-color);
   opacity: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .Toastify__toast-container .Toastify__close-button--light:hover {
+    color: var(--primary-text-color);
+    opacity: 1;
+  }
 }
 
 html[data-theme="dark"] .Toastify__toast-container {

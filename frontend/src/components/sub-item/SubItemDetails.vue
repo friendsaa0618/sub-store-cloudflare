@@ -13,7 +13,7 @@
       </p>
     </template>
     <template v-else>
-      <p v-if="type === 'sub'" class="sub-item-detail">
+      <p v-if="type === 'sub'" class="sub-item-detail" :title="nonSimplePrimaryLine">
         <template v-if="typeof flow === 'string'">
           <span>
             {{ flow }}
@@ -26,17 +26,17 @@
           <span :title="flow.planName">{{ flow.secondLine }}</span>
         </template>
       </p>
-      <p v-else-if="type === 'collection'" class="sub-item-detail">
+      <p v-else-if="type === 'collection'" class="sub-item-detail" :title="collectionDetail">
         {{ collectionDetail }}
       </p>
-      <p v-if="remarkText" class="sub-item-remark">
+      <p v-if="remarkText" class="sub-item-remark" :title="remarkText">
         <span>{{ remarkText }}</span>
       </p>
     </template>
   </template>
 
   <template v-else>
-    <p v-if="type === 'sub'" class="sub-item-detail-isSimple" :class="{ 'is-dual-column': isDualColumn }">
+    <p v-if="type === 'sub'" class="sub-item-detail-isSimple" :class="{ 'is-dual-column': isDualColumn }" :title="simpleSubDetailLine">
       <template v-if="typeof flow === 'string'">
         <span style="font-weight: normal">
           {{ simpleSubDetailLine }}
@@ -52,12 +52,13 @@
         </span>
       </template>
     </p>
-    <p v-else-if="type === 'collection'" class="sub-item-detail-isSimple" :class="{ 'is-dual-column': isDualColumn }">
+    <p v-else-if="type === 'collection'" class="sub-item-detail-isSimple" :class="{ 'is-dual-column': isDualColumn }" :title="collectionDetail">
       {{ simpleCollectionDetailLine }}
     </p>
     <p
       v-if="remarkText && isSimpleShowRemark && !shouldInlineRemarkInSecondLine"
       class="sub-item-remark"
+      :title="remarkText"
     >
       <span>{{ remarkText }}</span>
     </p>
@@ -155,6 +156,8 @@ const nonSimpleSecondLine = computed(() => {
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
   line-clamp: 3;
+  /* Flex items are blockified, so line-clamp alone does not cap the box. */
+  max-height: 4.5em;
   word-wrap: break-word;
   word-break: break-all;
   overflow: hidden;
@@ -170,6 +173,7 @@ const nonSimpleSecondLine = computed(() => {
   &.is-dual-column {
     -webkit-line-clamp: 1;
     line-clamp: 1;
+    max-height: 1.5em;
   }
 }
 
@@ -178,6 +182,7 @@ const nonSimpleSecondLine = computed(() => {
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   line-clamp: 2;
+  max-height: 3em;
   word-wrap: break-word;
   word-break: break-all;
   overflow: hidden;
@@ -193,6 +198,7 @@ const nonSimpleSecondLine = computed(() => {
   &.is-dual-column {
     -webkit-line-clamp: 1;
     line-clamp: 1;
+    max-height: 1.5em;
   }
 }
 
@@ -205,6 +211,7 @@ const nonSimpleSecondLine = computed(() => {
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 1;
   line-clamp: 1;
+  max-height: 1.5em;
   word-wrap: break-word;
   word-break: break-all;
   overflow: hidden;
@@ -219,6 +226,15 @@ const nonSimpleSecondLine = computed(() => {
   }
 
   &.is-dual-column {
+    max-width: 100%;
+  }
+
+  /* Phones have no hover for a title tooltip; two lines keep the flow/expiry
+     and the collection membership readable. */
+  @media screen and (max-width: 767px) {
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    max-height: 3em;
     max-width: 100%;
   }
 }

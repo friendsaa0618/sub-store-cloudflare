@@ -9,7 +9,7 @@
     }"
   >
     <img
-      v-if="url"
+      v-if="url && !failed"
       class="app-avatar__image"
       :src="url"
       alt=""

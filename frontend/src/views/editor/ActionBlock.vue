@@ -434,7 +434,7 @@ defineExpose({ exitAllEditName });
 }
 
 .flip-list-move {
-  transition: transform 0.5s;
+  transition: transform 220ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .no-move {

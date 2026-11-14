@@ -51,7 +51,7 @@ const emit = defineEmits<{ (e: "close"): void }>();
   border-radius: var(--radius-sm);
   background: var(--app-tag-bg);
   color: var(--app-tag-color);
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: 500;
   line-height: 16px;
   vertical-align: middle;

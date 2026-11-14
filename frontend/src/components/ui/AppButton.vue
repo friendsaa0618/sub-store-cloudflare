@@ -199,6 +199,22 @@ withDefaults(
   animation: app-button-spin 0.7s linear infinite;
 }
 
+/* Touch gets a taller target than the mouse-sized toolbar buttons. */
+@media (pointer: coarse), (max-width: 767px) {
+  .app-button--normal {
+    height: 40px;
+  }
+
+  .app-button--small {
+    height: 36px;
+  }
+
+  .app-button--mini {
+    height: 36px;
+    padding: 0 12px;
+  }
+}
+
 @keyframes app-button-spin {
   to {
     transform: rotate(360deg);

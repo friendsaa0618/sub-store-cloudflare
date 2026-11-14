@@ -15,7 +15,7 @@
       <AppTag>{{ $t('subPage.subItem.disabled') }}</AppTag>
     </span>
     <span v-if="tags.length" class="sub-item-tags">
-      <span v-for="i in tags" :key="i" class="tag">
+      <span v-for="i in tags" :key="i" class="tag" :title="i">
         <AppTag>{{ i }}</AppTag>
       </span>
       <span v-if="hiddenTagCount" class="tag">
@@ -60,8 +60,16 @@ defineProps<{
     }
   }
 
+  /* 320px: the name, the disabled badge and the copy chip cannot share the
+     row. The gray status dot already says "disabled"; give the name the room. */
+  @media screen and (max-width: 360px) {
+    & .sub-item-state {
+      display: none;
+    }
+  }
+
   &.is-dual-column {
-    font-size: 15px;
+    font-size: var(--text-md);
   }
 }
 
@@ -117,7 +125,7 @@ defineProps<{
     border-radius: var(--radius-sm);
     background: color-mix(in srgb, var(--primary-text-color) 5%, transparent);
     color: var(--comment-text-color);
-    font-size: 10px;
+    font-size: var(--text-xs);
     font-weight: 600;
     line-height: 16px;
   }

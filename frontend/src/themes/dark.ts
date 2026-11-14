@@ -26,7 +26,7 @@ export default {
     'nav-bar-color': 'rgba(10, 14, 12, 0.82)',
     'tab-bar-color': 'rgba(10, 14, 12, 0.82)',
     'popup-color': '#151B17',
-    'divider-color': 'rgba(238, 243, 239, 0.09)',
+    'divider-color': 'rgba(238, 243, 239, 0.11)',
     'card-color': '#151B17',
     'dialog-color': '#151B17',
     'switch-close-background-color': 'rgba(238, 243, 239, 0.14)',
@@ -43,8 +43,8 @@ export default {
     'lowest-text-color': '#9AA79F',
 
     // The pipeline hero stays a distinct surface in dark mode: a touch
-    // lighter than the page, edged in mint.
-    'hero-bg': '#121B16',
+    // lighter than both the page and the cards, edged in mint.
+    'hero-bg': '#16211B',
     'hero-border': 'rgba(111, 227, 182, 0.24)',
     'hero-text': '#F3F8F5',
     'hero-muted': '#A7B8AF',

@@ -146,33 +146,48 @@
 }
 
 @media screen and (max-width: 700px) {
+  /* Switches and selects stay on the label's line: stacking every row doubled
+     the sheet height without making the toggle easier to hit. Only a
+     multi-option segmented control needs the full width. */
   .settings-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-2);
-    min-height: 0;
-    padding: 12px 16px;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 46px;
+    padding: 10px 16px;
   }
 
   .settings-row__control {
+    width: auto;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+  }
+
+  .settings-row--stack {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+
+  .settings-row--stack .settings-row__control {
     width: 100%;
     justify-content: flex-start;
     flex-wrap: wrap;
   }
 
-  .settings-row__control > .app-radio-group {
+  .settings-row--stack .settings-row__control > .app-radio-group {
     width: 100%;
     flex-wrap: nowrap;
     gap: 6px;
   }
 
-  .settings-row__control :deep(.app-radio) {
+  .settings-row--stack .settings-row__control :deep(.app-radio) {
     flex: 1 1 0;
     justify-content: center;
     white-space: nowrap;
   }
 
   .settings-select {
-    width: 100%;
+    width: 200px;
   }
 }

@@ -13,7 +13,7 @@
           <div class="settings-group">
             <p class="settings-group__title">{{ t("myPage.appearance.themeGroup") }}</p>
 
-            <div class="settings-row">
+            <div class="settings-row settings-row--stack">
               <span class="settings-row__text">
                 <span class="settings-row__label">{{ t("myPage.appearance.themeMode") }}</span>
               </span>
@@ -91,7 +91,7 @@
             <div
               v-for="item in visibleListChoices"
               :key="item.key"
-              class="settings-row"
+              class="settings-row settings-row--stack"
             >
               <span class="settings-row__text">
                 <span class="settings-row__label">{{ t(item.label) }}</span>
@@ -121,7 +121,7 @@
             <div
               v-for="item in editorChoices"
               :key="item.key"
-              class="settings-row"
+              class="settings-row settings-row--stack"
             >
               <span class="settings-row__text">
                 <span class="settings-row__label">{{ t(item.label) }}</span>

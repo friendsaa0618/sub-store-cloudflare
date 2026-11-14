@@ -24,43 +24,43 @@
               <option v-for="target in conversionTargets" :key="target" :value="target">{{ target }}</option>
             </select>
           </div>
-
-          <div class="converter-actions">
-            <AppButton type="primary" :loading="converting" :disabled="!conversionInput.trim()" @click="runConversion">
-              <font-awesome-icon icon="fa-solid fa-play" class="btn-icon" aria-hidden="true" />
-              {{ t('toolsPage.converter.run') }}
-            </AppButton>
-            <AppButton plain type="primary" :disabled="!conversionOutput" @click="copyText(conversionOutput)">
-              <font-awesome-icon icon="fa-solid fa-clone" class="btn-icon" aria-hidden="true" />
-              {{ t('toolsPage.converter.copy') }}
-            </AppButton>
-          </div>
         </div>
 
-        <div class="converter-workspace">
-          <div class="converter-pane">
-            <label class="field-label" for="tools-conversion-input">{{ t('toolsPage.converter.content') }}</label>
-            <textarea
-              id="tools-conversion-input"
-              v-model="conversionInput"
-              class="field-control field-control--mono"
-              :placeholder="t('toolsPage.converter.input')"
-            />
-          </div>
+        <div class="converter-pane converter-pane--input">
+          <label class="field-label" for="tools-conversion-input">{{ t('toolsPage.converter.content') }}</label>
+          <textarea
+            id="tools-conversion-input"
+            v-model="conversionInput"
+            class="field-control field-control--mono"
+            :placeholder="t('toolsPage.converter.input')"
+          />
+        </div>
 
-          <div class="converter-pane">
-            <div class="converter-pane__head">
-              <label class="field-label" for="tools-conversion-output">{{ t('toolsPage.converter.result') }}</label>
-              <span v-if="conversionStats" class="stats">{{ conversionStats }}</span>
-            </div>
-            <textarea
-              id="tools-conversion-output"
-              v-model="conversionOutput"
-              class="field-control field-control--mono"
-              readonly
-              :placeholder="t('toolsPage.converter.output')"
-            />
+        <!-- On phones this sits between input and result, so Run follows the
+             text the user just pasted instead of preceding it. -->
+        <div class="converter-actions">
+          <AppButton class="converter-run" type="primary" :loading="converting" :disabled="!conversionInput.trim()" @click="runConversion">
+            <font-awesome-icon icon="fa-solid fa-play" class="btn-icon" aria-hidden="true" />
+            {{ t('toolsPage.converter.run') }}
+          </AppButton>
+          <AppButton class="converter-copy" plain type="primary" :disabled="!conversionOutput" @click="copyText(conversionOutput)">
+            <font-awesome-icon icon="fa-solid fa-clone" class="btn-icon" aria-hidden="true" />
+            {{ t('toolsPage.converter.copy') }}
+          </AppButton>
+        </div>
+
+        <div class="converter-pane converter-pane--output">
+          <div class="converter-pane__head">
+            <label class="field-label" for="tools-conversion-output">{{ t('toolsPage.converter.result') }}</label>
+            <span v-if="conversionStats" class="stats">{{ conversionStats }}</span>
           </div>
+          <textarea
+            id="tools-conversion-output"
+            v-model="conversionOutput"
+            class="field-control field-control--mono"
+            readonly
+            :placeholder="t('toolsPage.converter.output')"
+          />
         </div>
       </div>
     </section>
@@ -126,7 +126,7 @@
           </div>
         </div>
 
-        <AppButton type="primary" :loading="shareCreating" :disabled="!shareForm.resourceId" @click="createShare">
+        <AppButton class="share-create" type="primary" :loading="shareCreating" :disabled="!shareForm.resourceId" @click="createShare">
           <font-awesome-icon icon="fa-solid fa-plus" class="btn-icon" aria-hidden="true" />
           {{ t('toolsPage.shares.create') }}
         </AppButton>
@@ -179,7 +179,7 @@
       <div v-else class="surface list-rows">
         <div v-for="share in shares" :key="share.id" class="list-row">
           <div class="list-row__main">
-            <strong class="list-row__title">{{ resourceTypeLabel(share.resourceType) }}/{{ share.resourceId }}</strong>
+            <strong class="list-row__title" :title="`${resourceTypeLabel(share.resourceType)}/${share.resourceId}`">{{ resourceTypeLabel(share.resourceType) }}/{{ share.resourceId }}</strong>
             <div class="list-row__meta">
               <span>{{ shareMeta(share) }}</span>
               <span
@@ -235,7 +235,7 @@
       <div v-else class="surface list-rows">
         <div v-for="entry in recycleEntries" :key="entry.id" class="list-row">
           <div class="list-row__main">
-            <strong class="list-row__title">{{ resourceTypeLabel(entry.resourceType) }}/{{ entry.resourceId }}</strong>
+            <strong class="list-row__title" :title="`${resourceTypeLabel(entry.resourceType)}/${entry.resourceId}`">{{ resourceTypeLabel(entry.resourceType) }}/{{ entry.resourceId }}</strong>
             <div class="list-row__meta mono-time">
               <span v-if="entry.name && entry.name !== entry.resourceId">
                 {{ entry.name }} · {{ formatDateTime(entry.deletedAt) }}
@@ -480,13 +480,21 @@ onMounted(() => Promise.all([loadShares(), loadRecycle()]));
   color: var(--second-text-color);
 }
 
-/* The converter is a workspace: controls on one line, input and output side
-   by side so the page is not two stacked textareas. */
+/* The converter is a workspace: controls and actions on the first row, input
+   and output side by side below. On phones the named areas reorder to
+   controls → input → actions → output. */
 .converter-card {
-  gap: var(--space-4);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-areas:
+    "controls actions"
+    "input output";
+  gap: var(--space-4) var(--space-3);
+  align-items: start;
 }
 
 .converter-controls {
+  grid-area: controls;
   display: flex;
   align-items: flex-end;
   flex-wrap: wrap;
@@ -502,17 +510,12 @@ onMounted(() => Promise.all([loadShares(), loadRecycle()]));
 }
 
 .converter-actions {
+  grid-area: actions;
+  align-self: end;
+  justify-self: end;
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  margin-left: auto;
-}
-
-.converter-workspace {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-3);
-  min-width: 0;
 }
 
 .converter-pane {
@@ -520,6 +523,14 @@ onMounted(() => Promise.all([loadShares(), loadRecycle()]));
   flex-direction: column;
   gap: 6px;
   min-width: 0;
+}
+
+.converter-pane--input {
+  grid-area: input;
+}
+
+.converter-pane--output {
+  grid-area: output;
 }
 
 .converter-pane__head {
@@ -569,9 +580,19 @@ onMounted(() => Promise.all([loadShares(), loadRecycle()]));
   min-width: 0;
 }
 
+/* A submit action under a form, not a page-wide banner. */
+.share-create {
+  align-self: flex-end;
+  min-width: 132px;
+}
+
 @media screen and (max-width: 600px) {
   .share-form {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .share-create {
+    align-self: stretch;
   }
 }
 
@@ -607,7 +628,8 @@ onMounted(() => Promise.all([loadShares(), loadRecycle()]));
   background: var(--card-color);
   color: var(--primary-text-color);
   font-family: var(--font-sans);
-  font-size: var(--text-sm);
+  /* 14px with a mouse, 16px on touch: iOS zooms any focused field under 16. */
+  font-size: var(--text-field);
   padding: 0 var(--space-3);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
@@ -808,8 +830,34 @@ select.field-control {
 }
 
 @media screen and (max-width: 900px) {
-  .converter-workspace {
+  .converter-card {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "controls"
+      "input"
+      "run"
+      "output"
+      "copy";
+  }
+
+  /* Let each button become its own grid item: Run follows the input, Copy
+     follows the result, instead of both preceding the output. */
+  .converter-actions {
+    display: contents;
+  }
+
+  .converter-run,
+  .converter-copy {
+    width: 100%;
+    justify-self: stretch;
+  }
+
+  .converter-run {
+    grid-area: run;
+  }
+
+  .converter-copy {
+    grid-area: copy;
   }
 
   .converter-pane .field-control--mono {
@@ -821,15 +869,6 @@ select.field-control {
   .converter-controls .form-field--kind,
   .converter-controls .form-field--target {
     flex: 1 1 100%;
-  }
-
-  .converter-actions {
-    width: 100%;
-    margin-left: 0;
-  }
-
-  .converter-actions .app-button {
-    flex: 1;
   }
 }
 

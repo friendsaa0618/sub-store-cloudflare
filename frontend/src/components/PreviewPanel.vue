@@ -262,6 +262,7 @@
 
     @media screen and (max-width: 599px) {
       grid-template-columns: minmax(0, 1fr);
+      gap: 2px;
     }
 
     & > li {
@@ -274,6 +275,11 @@
       padding: 7px 10px;
       border-radius: var(--radius-md);
       transition: background-color 160ms ease;
+
+      @media screen and (max-width: 599px) {
+        min-height: 40px;
+        padding: 5px 10px;
+      }
 
       @media (hover: hover) and (pointer: fine) {
         &:hover {
@@ -373,5 +379,11 @@
   font: inherit;
   text-decoration: underline;
   cursor: pointer;
+
+  &:focus-visible {
+    outline: none;
+    border-radius: var(--radius-sm);
+    box-shadow: 0 0 0 2px var(--focus-ring-color);
+  }
 }
 </style>

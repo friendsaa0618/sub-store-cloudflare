@@ -299,8 +299,8 @@ const toggleTheme = async () => {
 
   /* Phones: brand + utilities on top, a full-width tab row below. */
   @media screen and (max-width: 599px) {
-    height: calc(100px + env(safe-area-inset-top, 0px));
-    min-height: calc(100px + env(safe-area-inset-top, 0px));
+    height: calc(104px + env(safe-area-inset-top, 0px));
+    min-height: calc(104px + env(safe-area-inset-top, 0px));
   }
 }
 
@@ -377,6 +377,8 @@ const toggleTheme = async () => {
   gap: 8px;
   cursor: pointer;
   user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
   /* Expand hit area for touch */
   min-height: 40px;
   padding: 4px 2px;
@@ -452,6 +454,9 @@ const toggleTheme = async () => {
   text-decoration: none;
   cursor: pointer;
   white-space: nowrap;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
   transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), background-color 200ms ease, color 200ms ease, box-shadow 200ms ease;
 
   &:focus {
@@ -471,21 +476,6 @@ const toggleTheme = async () => {
   @media screen and (min-width: 768px) {
     min-height: 0;
     padding: 4px 14px;
-  }
-
-  /* Icon-only tabs under ~420px — same control, denser */
-  @media screen and (max-width: 420px) {
-    min-width: 40px;
-    padding: 6px 10px;
-    gap: 0;
-
-    & .nav-segmented-item__label {
-      display: none;
-    }
-
-    & .nav-segmented-item__icon {
-      font-size: 14px;
-    }
   }
 
   @media (hover: hover) and (pointer: fine) {
@@ -585,6 +575,18 @@ const toggleTheme = async () => {
     gap: 2px;
   }
 
+  /* Thumb-sized utilities: 36px was under the comfortable 40px floor. */
+  .nav-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .nav-btn__icon {
+    width: 15px;
+    height: 15px;
+    font-size: 15px;
+  }
+
   .nav-bar__center {
     order: 3;
     flex: 1 0 100%;
@@ -603,7 +605,7 @@ const toggleTheme = async () => {
   .nav-segmented-item {
     flex: 1 1 0;
     justify-content: center;
-    min-height: 36px;
+    min-height: 40px;
     padding: 6px 8px;
   }
 

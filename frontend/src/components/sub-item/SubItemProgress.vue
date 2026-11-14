@@ -5,7 +5,7 @@
       progressColorClass,
       `progress--${progressStyle}`
     ]"
-    :style="{ width: progressWidth }"
+    :style="{ transform: `scaleX(${progressValue})` }"
   ></div>
 </template>
 
@@ -24,7 +24,7 @@ const progress = computed(() => {
     ? props.flow.progress
     : undefined;
 });
-const progressWidth = computed(() => `${(progress.value ?? 0) * 100}%`);
+const progressValue = computed(() => progress.value ?? 0);
 
 const progressColorClass = computed(() => {
   if (progress.value === undefined) {
@@ -41,9 +41,12 @@ const progressColorClass = computed(() => {
 .progress {
   position: absolute;
   left: 0;
+  width: 100%;
+  transform-origin: left center;
   pointer-events: none;
   z-index: 0;
-  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), background 0.6s ease;
+  /* Scale, not width: a progress update must not trigger layout on every card. */
+  transition: transform 300ms cubic-bezier(0.23, 1, 0.32, 1), background-color 300ms ease;
 
   &.progress--background,
   &:not(.progress--bar) {

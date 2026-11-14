@@ -295,9 +295,11 @@
     color: var(--comment-text-color);
     cursor: pointer;
 
-    &:hover {
-      color: var(--primary-text-color);
-      background: color-mix(in srgb, var(--comment-text-color) 12%, transparent);
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        color: var(--primary-text-color);
+        background: color-mix(in srgb, var(--comment-text-color) 12%, transparent);
+      }
     }
 
     &:focus-visible {

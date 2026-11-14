@@ -4,7 +4,7 @@
       <div class="gate-intro">
         <div class="gate-brand">
           <img class="gate-brand__logo" :src="logoIcon" alt="" />
-          <span class="gate-brand__status" aria-hidden="true"></span>
+          <span class="gate-brand__status" :class="{ 'is-failed': failed }" aria-hidden="true"></span>
         </div>
         <h2 class="gate-title">{{ $t(`subPage.loadFailed.title`) }}</h2>
         <p class="gate-desc">{{ $t(`subPage.loadFailed.desc`) }}</p>
@@ -168,13 +168,19 @@ const saveTokenAndRetry = async () => {
   height: 12px;
   border: 2px solid var(--card-color);
   border-radius: 50%;
-  background: var(--danger-color);
+  /* Needs a token: attention, not success. A rejected or unreachable boot is
+     the only red state. */
+  background: var(--second-color);
+
+  &.is-failed {
+    background: var(--danger-color);
+  }
 }
 
 .gate-title {
   margin: 0;
   color: var(--primary-text-color);
-  font-size: 22px;
+  font-size: var(--text-xl);
   font-weight: 650;
   letter-spacing: -0.02em;
   line-height: 1.25;
@@ -317,14 +323,14 @@ const saveTokenAndRetry = async () => {
 .gate-hint {
   margin: 2px 0 0;
   color: var(--comment-text-color);
-  font-size: 11px;
+  font-size: var(--text-xs);
   line-height: 1.4;
 }
 
 @media screen and (max-width: 700px) {
   .admin-token-panel {
     width: min(100%, 480px);
-    padding-top: calc(100px + env(safe-area-inset-top, 0px) + 16px);
+    padding-top: calc(104px + env(safe-area-inset-top, 0px) + 16px);
   }
 
   .admin-token-card {

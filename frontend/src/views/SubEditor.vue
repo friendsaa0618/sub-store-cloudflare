@@ -254,20 +254,25 @@ const showEditorGroupTitles = computed(() => {
   }
 
   /* The input is borderless on the paper, so a resting hairline says
-     "editable"; hover deepens it and focus keeps it solid. */
+     "editable"; hover deepens it and focus keeps it solid. The bottom padding
+     keeps the line clear of CJK descenders. */
   &:deep(.editor-group .app-form-item .app-input-text) {
+    padding: 2px 0 4px;
     box-shadow: inset 0 -1px 0 var(--divider-color);
     transition: box-shadow 160ms ease;
   }
 
   &:deep(.editor-group .app-form-item .app-textarea__control) {
+    padding-bottom: 4px;
     box-shadow: inset 0 -1px 0 var(--divider-color);
     transition: box-shadow 160ms ease;
   }
 
-  &:deep(.editor-group .app-form-item:hover .app-input-text),
-  &:deep(.editor-group .app-form-item:hover .app-textarea__control) {
-    box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--primary-color) 22%, transparent);
+  @media (hover: hover) and (pointer: fine) {
+    &:deep(.editor-group .app-form-item:hover .app-input-text),
+    &:deep(.editor-group .app-form-item:hover .app-textarea__control) {
+      box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--primary-color) 22%, transparent);
+    }
   }
 
   &:deep(.editor-group .app-form-item:focus-within .app-input-text),

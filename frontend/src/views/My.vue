@@ -11,7 +11,7 @@
             class="auto-reverse"
           />
           <div class="name">
-            <p class="title">{{ appName }}</p>
+            <p class="title" :title="appName">{{ appName }}</p>
             <p class="des">
               <span class="des-line1">{{ t("myPage.profile.desc") }}</span>
               <span class="des-line2">
@@ -191,7 +191,7 @@ const errorMessage = apiErrorMessage;
     margin: 0;
     overflow: hidden;
     color: var(--primary-text-color);
-    font-size: 17px;
+    font-size: var(--text-lg);
     font-weight: 650;
     letter-spacing: -0.02em;
     text-overflow: ellipsis;
@@ -251,6 +251,11 @@ const errorMessage = apiErrorMessage;
 @media screen and (max-width: 767px) {
   .profile-block {
     padding: var(--space-4);
+
+    & .title {
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
 
     & .info {
       align-items: flex-start;

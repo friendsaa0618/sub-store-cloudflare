@@ -23,6 +23,8 @@ body {
   outline: none;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  /* html owns the root stop; body repeats it for engines that scroll the body. */
+  overscroll-behavior: none;
   min-height: 100% !important;
   /* Base stack for everything, including overlays teleported to <body>. */
   font-family: var(--font-sans), sans-serif;

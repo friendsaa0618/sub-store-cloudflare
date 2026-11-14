@@ -61,6 +61,7 @@ const select = () => {
 
   &.is-button {
     padding: 5px 10px;
+    min-height: 36px;
     border: 1px solid var(--divider-color);
     border-radius: var(--radius-md);
     background: transparent;
@@ -138,5 +139,11 @@ const select = () => {
 .app-radio__input:focus-visible ~ .app-radio__label {
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+@media (pointer: coarse), (max-width: 767px) {
+  .app-radio.is-button {
+    min-height: 40px;
+  }
 }
 </style>

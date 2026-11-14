@@ -163,7 +163,7 @@ export default {
     onboarding: {
       welcome: "First run",
       title: "Create your first subscription link in three steps",
-      desc: "Your configuration stays in your Cloudflare D1 database. Add a source, create a collection, then copy a client link.",
+      desc: "Your configuration stays in your own Cloudflare D1 database.",
       addSource: "Add a remote subscription or local node text",
       addCollection: "Review the default Daily collection or create one",
       copyLink: "Copy a Mihomo, sing-box, or other download link",
@@ -175,7 +175,7 @@ export default {
       createCollection: "Create collection"
     },
     loadFailed: {
-      title: "Unable to load data",
+      title: "Connect to Sub-Store",
       desc: "If you just deployed the app, enter the admin token first. Otherwise, check the Worker API and network connection.",
       btn: "Retry",
       tokenLabel: "Admin token",

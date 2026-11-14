@@ -224,6 +224,12 @@ onUnmounted(() => {
     width: 32px;
     height: 32px;
   }
+
+  /* Match the 40px utility buttons in the two-row phone header. */
+  @media screen and (max-width: 599px) {
+    width: 40px;
+    height: 40px;
+  }
 }
 
 @media (hover: hover) and (pointer: fine) {

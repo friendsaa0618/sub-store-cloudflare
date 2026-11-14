@@ -68,7 +68,7 @@ const hiddenTargetCount = computed(() => Math.max(0, DOWNLOAD_TARGET_OPTIONS.len
   align-items: center;
   justify-content: space-between;
   gap: var(--space-5);
-  padding: 18px 22px;
+  padding: 20px 24px;
   overflow: hidden;
   /* The client icons sit on the dark hero, so keep their own colors instead
      of the page's theme-inverted image filter. */
@@ -79,7 +79,7 @@ const hiddenTargetCount = computed(() => Math.max(0, DOWNLOAD_TARGET_OPTIONS.len
   color: var(--hero-text);
   box-shadow: 0 18px 40px -32px rgba(16, 26, 21, 0.7);
   /* One entrance for the page; everything else stays still. */
-  animation: hero-in 320ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: hero-in 280ms cubic-bezier(0.23, 1, 0.32, 1) both;
 }
 
 .home-hero__intro {
@@ -89,7 +89,7 @@ const hiddenTargetCount = computed(() => Math.max(0, DOWNLOAD_TARGET_OPTIONS.len
 .home-hero__title {
   margin: 0;
   color: var(--hero-text);
-  font-size: 18px;
+  font-size: var(--text-lg);
   font-weight: 650;
   letter-spacing: -0.015em;
   line-height: 1.25;
@@ -123,7 +123,7 @@ const hiddenTargetCount = computed(() => Math.max(0, DOWNLOAD_TARGET_OPTIONS.len
 
 .flow-node__value {
   color: var(--hero-text);
-  font-size: 26px;
+  font-size: var(--text-xl);
   font-weight: 650;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
@@ -136,7 +136,7 @@ const hiddenTargetCount = computed(() => Math.max(0, DOWNLOAD_TARGET_OPTIONS.len
 
 .flow-node__label {
   color: var(--hero-muted);
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: 500;
   line-height: 1.3;
   white-space: nowrap;
@@ -195,7 +195,7 @@ const hiddenTargetCount = computed(() => Math.max(0, DOWNLOAD_TARGET_OPTIONS.len
 
 .flow-targets__more {
   color: var(--hero-muted);
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
@@ -217,15 +217,15 @@ const hiddenTargetCount = computed(() => Math.max(0, DOWNLOAD_TARGET_OPTIONS.len
     flex-direction: column;
     align-items: flex-start;
     gap: var(--space-4);
-    padding: 16px;
+    padding: var(--space-4);
   }
 
   .home-hero__title {
-    font-size: 17px;
+    font-size: var(--text-md);
   }
 
   .home-hero__desc {
-    font-size: 12px;
+    font-size: var(--text-sm);
   }
 
   .home-hero__flow {
@@ -239,7 +239,7 @@ const hiddenTargetCount = computed(() => Math.max(0, DOWNLOAD_TARGET_OPTIONS.len
   }
 
   .flow-node__value {
-    font-size: 23px;
+    font-size: var(--text-lg);
   }
 
   .flow-link {
@@ -251,6 +251,33 @@ const hiddenTargetCount = computed(() => Math.max(0, DOWNLOAD_TARGET_OPTIONS.len
   /* The counter would sit in the card's gutter at phone widths; the marks say enough. */
   .flow-targets__more {
     display: none;
+  }
+}
+
+/* 320px: four 26px client marks plus the arrows no longer fit; shrink the
+   marks and the connectors instead of clipping the last one. */
+@media screen and (max-width: 360px) {
+  .home-hero__flow {
+    gap: var(--space-1);
+  }
+
+  .flow-link {
+    min-width: 8px;
+  }
+
+  .flow-targets__icons {
+    gap: 3px;
+  }
+
+  .flow-target {
+    width: 22px;
+    height: 22px;
+    border-radius: var(--radius-sm);
+
+    & img {
+      width: 16px;
+      height: 16px;
+    }
   }
 }
 </style>

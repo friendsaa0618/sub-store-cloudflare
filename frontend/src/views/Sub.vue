@@ -504,9 +504,11 @@ const filteredCollections = useFilteredDraggableList(collections, shouldShowElem
     transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
     box-shadow 160ms ease;
 
-  &:hover {
-    transform: scale(1.06);
-    box-shadow: 0 12px 28px -10px color-mix(in srgb, var(--primary-color) 75%, transparent);
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      transform: scale(1.06);
+      box-shadow: 0 12px 28px -10px color-mix(in srgb, var(--primary-color) 75%, transparent);
+    }
   }
 
   &:active {
@@ -561,8 +563,10 @@ const filteredCollections = useFilteredDraggableList(collections, shouldShowElem
   text-decoration: none;
   white-space: nowrap;
 
-  &:hover {
-    background: var(--divider-color);
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      background: var(--divider-color);
+    }
   }
 
   &:focus-visible {
@@ -611,7 +615,8 @@ const filteredCollections = useFilteredDraggableList(collections, shouldShowElem
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 32px 34px;
+  justify-content: center;
+  padding: var(--space-6);
 }
 
 .onboarding-mark {
@@ -659,10 +664,10 @@ const filteredCollections = useFilteredDraggableList(collections, shouldShowElem
 
 .onboarding-steps {
   margin: 0;
-  padding: 32px 30px;
+  padding: var(--space-6) var(--space-5);
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: center;
   gap: 0;
   list-style: none;
   border-left: 1px solid var(--divider-color);
@@ -861,6 +866,13 @@ const filteredCollections = useFilteredDraggableList(collections, shouldShowElem
   border: 1px solid var(--divider-color);
   border-radius: var(--radius-lg);
   background: var(--card-color);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+
+  /* The input itself has no outline; the field surface carries the focus. */
+  &:focus-within {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px var(--focus-ring-color);
+  }
 }
 
 .list-search__icon {
@@ -902,8 +914,10 @@ const filteredCollections = useFilteredDraggableList(collections, shouldShowElem
   color: var(--comment-text-color);
   cursor: pointer;
 
-  &:hover {
-    color: var(--primary-text-color);
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      color: var(--primary-text-color);
+    }
   }
 
   &:focus-visible {

@@ -49,6 +49,37 @@ test.describe("touch", () => {
   }
 });
 
+/* Phone layout contracts that are easy to lose in a media-query cleanup. */
+test.describe("phone layout", () => {
+  test("the header keeps all three tab labels", async ({ page }) => {
+    await open(page, "/subs", ".sub-item-wrapper");
+    const labels = page.locator(".nav-segmented-item__label");
+    await expect(labels).toHaveCount(3);
+    for (let index = 0; index < 3; index += 1) {
+      await expect(labels.nth(index)).toBeVisible();
+    }
+  });
+
+  test("the converter runs between its input and result", async ({ page }) => {
+    await open(page, "/tools", ".tools-page");
+    const order = await page.evaluate(() => {
+      const box = (selector: string) => {
+        const rect = document.querySelector(selector)!.getBoundingClientRect();
+        return { top: rect.top, bottom: rect.bottom };
+      };
+      return {
+        input: box(".converter-pane--input"),
+        run: box(".converter-run"),
+        output: box(".converter-pane--output"),
+        copy: box(".converter-copy"),
+      };
+    });
+    expect(order.input.bottom).toBeLessThanOrEqual(order.run.top);
+    expect(order.run.bottom).toBeLessThanOrEqual(order.output.top);
+    expect(order.output.bottom).toBeLessThanOrEqual(order.copy.top);
+  });
+});
+
 /* The status bar takes its colour from theme-color. Before boot it follows the
    OS scheme; after boot it has to follow the theme the account picked. */
 test.describe("browser chrome", () => {

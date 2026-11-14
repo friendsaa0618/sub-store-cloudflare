@@ -375,9 +375,11 @@
     cursor: pointer;
     opacity: 0.72;
 
-    &:hover {
-      color: var(--danger-color);
-      opacity: 1;
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        color: var(--danger-color);
+        opacity: 1;
+      }
     }
 
     &:deep(svg) {

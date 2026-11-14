@@ -102,6 +102,10 @@ const previewPopupStyle = computed(() => {
   flex-shrink: 0;
   padding: 18px 44px 12px 18px;
   border-bottom: 1px solid var(--divider-color);
+
+  @media screen and (max-width: 599px) {
+    padding: 14px 44px 10px 16px;
+  }
 }
 
 .preview-panel-title {
@@ -117,16 +121,20 @@ const previewPopupStyle = computed(() => {
   margin: 4px 0 0;
   font-size: 12px;
   color: var(--comment-text-color);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .preview-panel-body {
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
+  overscroll-behavior: contain;
   padding: 12px 16px calc(14px + env(safe-area-inset-bottom));
   -webkit-overflow-scrolling: touch;
+
+  @media screen and (max-width: 599px) {
+    padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
+  }
 }
 </style>

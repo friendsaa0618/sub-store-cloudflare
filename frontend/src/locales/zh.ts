@@ -163,7 +163,7 @@ export default {
     onboarding: {
       welcome: "首次使用",
       title: "三步生成你的第一个订阅链接",
-      desc: "数据保存在你自己的 Cloudflare D1 中。先添加订阅源，再创建组合订阅，最后复制链接到客户端。",
+      desc: "数据保存在你自己的 Cloudflare D1 中。",
       addSource: "添加远程订阅或本地节点",
       addCollection: "确认默认 Daily，或新建组合订阅",
       copyLink: "复制 Mihomo、sing-box 等下载链接",
@@ -175,7 +175,7 @@ export default {
       createCollection: "创建组合订阅"
     },
     loadFailed: {
-      title: "数据加载失败",
+      title: "连接到 Sub-Store",
       desc: "如果刚完成部署，请先输入管理 Token；否则请检查 Worker API 和网络连接。",
       btn: "重试",
       tokenLabel: "管理 Token",

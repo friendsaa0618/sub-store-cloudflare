@@ -49,7 +49,7 @@
         <div v-for="template in templates" :key="template.name" class="list-row">
           <div class="list-row__main">
             <div class="list-row__title-line">
-              <span class="list-row__title">{{ template.displayName || template.name }}</span>
+              <span class="list-row__title" :title="template.displayName || template.name">{{ template.displayName || template.name }}</span>
               <span class="pill" :class="template.readonly ? 'is-muted' : 'is-accent'">
                 {{ template.readonly ? t("myPage.templates.builtIn") : t("myPage.templates.custom") }}
               </span>

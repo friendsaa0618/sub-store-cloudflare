@@ -459,8 +459,10 @@ const pasteNav = async () => {
   /* position: absolute; */
   cursor: pointer;
 }
-.cm-img-button button:hover {
-  transform: scale(0.9);
+@media (hover: hover) and (pointer: fine) {
+  .cm-img-button button:hover {
+    transform: scale(0.9);
+  }
 }
 
 .cm-img-button button:active {

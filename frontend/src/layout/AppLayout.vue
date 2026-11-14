@@ -23,7 +23,7 @@
 
   @media screen and (max-width: 599px) {
     .app-layout-wrapper {
-      padding-top: calc(100px + env(safe-area-inset-top, 0px));
+      padding-top: calc(104px + env(safe-area-inset-top, 0px));
     }
   }
 </style>

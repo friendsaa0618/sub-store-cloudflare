@@ -52,6 +52,9 @@
       >
         <font-awesome-icon icon="fa-solid fa-arrow-rotate-right" />
       </button>
+      <!-- Collections have no refresh of their own. The slot stays reserved so
+           the action columns line up from row to row. -->
+      <span v-else class="sub-item-action-placeholder" aria-hidden="true"></span>
       <button
         class="sub-item-action"
         :aria-label="$t(isEnabled ? 'subPage.actions.disable' : 'subPage.actions.enable')"
@@ -349,17 +352,11 @@ onBeforeUnmount(() => {
   }
 
   .sub-item-action__label {
-    display: none;
-    font-size: 12px;
+    display: inline;
+    font-size: var(--text-xs);
     font-weight: 600;
     line-height: 1;
     white-space: nowrap;
-  }
-
-  @media screen and (min-width: 900px) {
-    .sub-item-action__label {
-      display: inline;
-    }
   }
 
   @media (hover: hover) and (pointer: fine) {
@@ -412,9 +409,32 @@ onBeforeUnmount(() => {
   background: var(--divider-color);
 }
 
+/* Keeps the source/collection action strips in the same columns. */
+.sub-item-action-placeholder {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+}
+
 /* Mobile compact: copy + more — larger hit targets */
 .sub-item-menu.is-compact {
   & .sub-item-menu__divider {
+    display: none;
+  }
+
+  /* The label widens the copy chip; the 40px compact square still sets the
+     height and the minimum width. */
+  & .sub-item-action--primary {
+    width: auto;
+    min-width: 40px;
+    padding: 0 10px;
+  }
+}
+
+/* At 320px the label and the title compete for the same row; the title wins.
+   The chain icon still says "copy". */
+@media screen and (max-width: 360px) {
+  .sub-item-action--primary .sub-item-action__label {
     display: none;
   }
 }
@@ -465,6 +485,11 @@ onBeforeUnmount(() => {
   &:active {
     background: rgba(148, 163, 184, 0.14);
     transform: none;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--focus-ring-color);
   }
 
   @media (hover: hover) and (pointer: fine) {

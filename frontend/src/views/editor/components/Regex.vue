@@ -352,8 +352,10 @@
     color: var(--primary-color);
     cursor: pointer;
 
-    &:hover {
-      background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+      }
     }
   }
 </style>
