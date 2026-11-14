@@ -198,8 +198,13 @@ function getSources(options: BuildOptions) {
 
   const sourceIds = options.collection.sourceIds || [];
   if (sourceIds.length === 0) return options.sources;
+  const byIdOrName = new Map<string, SubscriptionSource>();
+  for (const source of options.sources) {
+    if (!byIdOrName.has(source.id)) byIdOrName.set(source.id, source);
+    if (!byIdOrName.has(source.name)) byIdOrName.set(source.name, source);
+  }
   return sourceIds
-    .map((id) => options.sources.find((source) => source.id === id || source.name === id))
+    .map((id) => byIdOrName.get(id))
     .filter((source): source is SubscriptionSource => Boolean(source));
 }
 
@@ -1306,12 +1311,13 @@ function renameProxies(proxies: ProxyNode[], filter: FilterRule) {
 }
 
 function deleteFieldMatches(proxies: ProxyNode[], filter: FilterRule) {
-  const patterns = filter.patterns || (filter.pattern ? [filter.pattern] : []);
+  const patterns = (filter.patterns || (filter.pattern ? [filter.pattern] : []))
+    .map((pattern) => compileRegex(String(pattern), "g"));
   if (patterns.length === 0) return proxies;
   const field = filter.field || "name";
   return proxies.map((proxy) => {
     const next = { ...proxy };
-    const value = patterns.reduce((name, pattern) => name.replace(compileRegex(String(pattern), "g"), ""), String(getByPath(next, field) || ""));
+    const value = patterns.reduce((name, pattern) => name.replace(pattern, ""), String(getByPath(next, field) || ""));
     return setByPath(next, field, value.trim());
   });
 }
@@ -1382,10 +1388,12 @@ function formatDuplicateNumber(input: number, minLength: number, digits: string[
   return output;
 }
 
+const NAME_COLLATOR = new Intl.Collator("zh-Hans-CN");
+
 function sortProxies(proxies: ProxyNode[], direction: string) {
   if (direction === "random") return shuffleProxies(proxies);
   return [...proxies].sort((a, b) => {
-    const result = a.name.localeCompare(b.name, "zh-Hans-CN");
+    const result = NAME_COLLATOR.compare(a.name, b.name);
     return direction === "desc" ? -result : result;
   });
 }
@@ -1398,15 +1406,17 @@ function regexSortProxies(proxies: ProxyNode[], filter: FilterRule) {
   const direction = filter.direction || "asc";
   if (expressions.length === 0) return sortProxies(proxies, direction);
 
-  return [...proxies].sort((a, b) => {
-    const left = regexOrder(expressions, a.name);
-    const right = regexOrder(expressions, b.name);
-    if (left && !right) return -1;
-    if (right && !left) return 1;
-    if (left && right) return left - right;
-    if (direction === "original") return 0;
-    return sortProxies([a, b], direction)[0] === a ? -1 : 1;
-  });
+  return proxies
+    .map((proxy) => ({ proxy, order: regexOrder(expressions, proxy.name) }))
+    .sort((a, b) => {
+      if (a.order && !b.order) return -1;
+      if (b.order && !a.order) return 1;
+      if (a.order && b.order) return a.order - b.order;
+      if (direction === "original") return 0;
+      const result = NAME_COLLATOR.compare(a.proxy.name, b.proxy.name);
+      return direction === "desc" ? -result : result;
+    })
+    .map((item) => item.proxy);
 }
 
 function regexOrder(expressions: RegExp[], name: string) {
@@ -1640,14 +1650,17 @@ function normalizeTaiwanFlag(flag: string, mode: string) {
 
 function ensureUniqueProxyNames(proxies: ProxyNode[]) {
   const used = new Set<string>();
+  const nextSuffix = new Map<string, number>();
   return proxies.map((proxy) => {
     let name = proxy.name;
-    let suffix = 2;
-    // Check the emitted names, not just the inputs, so `A, A, A-2` cannot end
-    // up with two `A-2` entries.
-    while (used.has(name)) {
+    if (used.has(name)) {
+      // Check the emitted names, not just the inputs, so `A, A, A-2` cannot end
+      // up with two `A-2` entries. Names are only added, so the next suffix can
+      // resume where the previous collision stopped.
+      let suffix = nextSuffix.get(proxy.name) ?? 2;
+      while (used.has(`${proxy.name}-${suffix}`)) suffix += 1;
       name = `${proxy.name}-${suffix}`;
-      suffix += 1;
+      nextSuffix.set(proxy.name, suffix + 1);
     }
     used.add(name);
     return name === proxy.name ? proxy : { ...proxy, name };

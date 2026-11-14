@@ -1189,4 +1189,30 @@ describe("subscription parsing and limits", () => {
     const filteredJson = JSON.parse(filtered) as { proxies: Array<{ name: string }> };
     expect(filteredJson.proxies.map((proxy) => proxy.name)).toEqual(["A", "B"]);
   });
+
+  it("applies delete-field and regex-sort filters in one pass", async () => {
+    const output = await buildSubscription({
+      source: {
+        id: "filter-hotpath",
+        name: "Filter Hotpath",
+        type: "local",
+        url: "",
+        content: [
+          "trojan://password@example.com:443#US%20%231%20%5B1x%5D",
+          "trojan://password@example.com:444#HK%20%231%20%5B1x%5D",
+          "trojan://password@example.com:445#JP%20%231%20%5B1x%5D",
+          "trojan://password@example.com:446#SG%20%231%20%5B1x%5D",
+        ].join("\n"),
+        filters: [
+          { type: "delete-field", field: "name", patterns: ["\\s*\\[1x\\]$"] },
+          { type: "regex-sort", expressions: ["HK", "JP"], direction: "asc" },
+        ],
+      },
+      sources: [],
+      requestUrl: new URL("https://example.com/download/source/filter-hotpath/json"),
+      target: "json",
+    });
+    const json = JSON.parse(output) as { proxies: Array<{ name: string }> };
+    expect(json.proxies.map((proxy) => proxy.name)).toEqual(["HK #1", "JP #1", "SG #1", "US #1"]);
+  });
 });
