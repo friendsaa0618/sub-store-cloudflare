@@ -57,7 +57,7 @@ import {
   normalizeLocale,
   type SupportedLocale,
 } from "@/locales/languages";
-import { syncDocumentLang } from "@/locales";
+import { setLocale } from "@/locales";
 
 const props = withDefaults(
   defineProps<{
@@ -139,11 +139,13 @@ const onMenuKeydown = (event: KeyboardEvent) => {
   }
 };
 
-const changeLang = (type: SupportedLocale) => {
-  locale.value = type;
-  localStorage.setItem("locale", type);
-  syncDocumentLang(type);
-  closeMenu(true);
+const changeLang = async (type: SupportedLocale) => {
+  try {
+    await setLocale(type);
+    localStorage.setItem("locale", type);
+  } finally {
+    closeMenu(true);
+  }
 };
 
 const handleDocumentClick = (e: MouseEvent) => {
