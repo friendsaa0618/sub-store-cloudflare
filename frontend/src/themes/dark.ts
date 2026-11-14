@@ -7,43 +7,48 @@ export default {
     // Official dark theme — primary product palette (not legacy).
   },
   colors: {
-    // Solid neutral primary (shared language with light: inverted black/white)
-    'primary-color': '#F4F4F5',
-    'primary-color-end': '#F4F4F5',
-    'second-color': '#F97316',
-    'third-color': '#10B981',
+    // Signal mint: the dark-theme counterpart of the light theme's green.
+    'primary-color': '#6FE3B6',
+    'primary-color-end': '#8BEDC7',
+    'second-color': '#F0A04B',
+    'third-color': '#34D399',
 
     'danger-color': '#F87171',
-    'succeed-color': '#34D399',
+    'succeed-color': '#6FE3B6',
 
     // icon色
-    'icon-nav-bar-right': '#A1A1AA',
-    'unimportant-icon-color': '#8A8A93',
+    'icon-nav-bar-right': '#C2CDC6',
+    'unimportant-icon-color': '#9AA79F',
 
-    // Surface & Fills (Zinc Scale - #09090b base, #18181b card/surface, #27272a hover/borders)
-    'status-bar-background-color': '#09090B',
-    'background-color': '#09090B',
-    'nav-bar-color': 'rgba(9, 9, 11, 0.75)',
-    'tab-bar-color': 'rgba(9, 9, 11, 0.75)',
-    'popup-color': '#18181B',
-    'divider-color': 'rgba(255, 255, 255, 0.08)',
-    'card-color': '#18181B',
-    'dialog-color': '#18181B',
-    'switch-close-background-color': 'rgba(255, 255, 255, 0.12)',
-    'switch-active-background-color': '#F4F4F5',
-    'compare-item-background-color': '#27272A',
-    'picker-mask-near-color': 'rgba(9, 9, 11, 0.5)',
-    'picker-mask-far-color': '#09090B',
+    // Surfaces: green-black paper, slightly lifted cards.
+    'status-bar-background-color': '#0A0E0C',
+    'background-color': '#0A0E0C',
+    'nav-bar-color': 'rgba(10, 14, 12, 0.82)',
+    'tab-bar-color': 'rgba(10, 14, 12, 0.82)',
+    'popup-color': '#151B17',
+    'divider-color': 'rgba(238, 243, 239, 0.09)',
+    'card-color': '#151B17',
+    'dialog-color': '#151B17',
+    'switch-close-background-color': 'rgba(238, 243, 239, 0.14)',
+    'switch-active-background-color': '#6FE3B6',
+    'compare-item-background-color': '#1E2621',
+    'picker-mask-near-color': 'rgba(10, 14, 12, 0.5)',
+    'picker-mask-far-color': '#0A0E0C',
 
-    // Text (Zinc hierarchy)
-    'primary-text-color': '#F4F4F5',
-    'second-text-color': '#A1A1AA',
-    // #93939D keeps 4.5:1 on the compare surface (#27272A), where 12px
-    // secondary text lives; the earlier #8A8A93 landed at 4.35:1.
-    'comment-text-color': '#93939D',
-    // Merged into the comment level: three text steps, and the lightest one
-    // no longer sits at 2.5:1 on the card surface.
-    'lowest-text-color': '#93939D',
+    // Text (ink hierarchy)
+    'primary-text-color': '#EEF3EF',
+    'second-text-color': '#C2CDC6',
+    // 7:1 on a card, 7.8:1 on the page.
+    'comment-text-color': '#9AA79F',
+    'lowest-text-color': '#9AA79F',
+
+    // The pipeline hero stays a distinct surface in dark mode: a touch
+    // lighter than the page, edged in mint.
+    'hero-bg': '#121B16',
+    'hero-border': 'rgba(111, 227, 182, 0.24)',
+    'hero-text': '#F3F8F5',
+    'hero-muted': '#A7B8AF',
+    'hero-accent': '#6FE3B6',
 
     // Other
     'img-brightness': '100',
@@ -51,13 +56,11 @@ export default {
     'tab-bar-blur': '20px',
     'sticky-title-blur': '20px',
 
-    'compare-tag-text-color': '#A1A1AA',
-    'compare-tag-background-color': 'rgba(255, 255, 255, 0.08)',
+    'compare-tag-text-color': '#C2CDC6',
+    'compare-tag-background-color': 'rgba(238, 243, 239, 0.08)',
 
-    // Elevation — softer lift on near-black surfaces
-    'card-shadow': '0 2px 12px -2px rgba(0, 0, 0, 0.35)',
-    'card-shadow-hover': '0 10px 28px -6px rgba(0, 0, 0, 0.55)',
+    // Elevation — a quiet lift on near-black surfaces.
+    'card-shadow': '0 1px 2px rgba(0, 0, 0, 0.3)',
+    'card-shadow-hover': '0 12px 32px -20px rgba(0, 0, 0, 0.7)',
   },
 };
-//--second-text-color
-//--comment-text-color 覆盖

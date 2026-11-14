@@ -7,43 +7,50 @@ export default {
     // Official light theme — primary product palette (not legacy).
   },
   colors: {
-    // Solid neutral primary (shared language with dark)
-    'primary-color': '#0F172A',
-    'primary-color-end': '#0F172A',
-    'second-color': '#F97316',
+    // Signal green: the product accent. Used for primary actions, links and
+    // the live state of the subscription pipeline.
+    'primary-color': '#0B7A58',
+    'primary-color-end': '#0F8F68',
+    'second-color': '#C2740A',
     'third-color': '#10B981',
 
-    'danger-color': '#E11D48',
-    'succeed-color': '#10B981',
+    'danger-color': '#C0264B',
+    'succeed-color': '#0B7A58',
 
     // icon色
-    'icon-nav-bar-right': '#334155',
-    'unimportant-icon-color': '#64748B',
+    'icon-nav-bar-right': '#33413A',
+    'unimportant-icon-color': '#5C6A62',
 
-    // Surface & Fills (Slate Scale - #ffffff base/card, #f8fafc surface, #f1f5f9 muted, #e2e8f0 borders)
-    'status-bar-background-color': '#FFFFFF',
-    'background-color': '#F8FAFC',
-    'nav-bar-color': 'rgba(255, 255, 255, 0.8)',
-    'tab-bar-color': 'rgba(255, 255, 255, 0.8)',
+    // Paper & ink: a warm, faintly green neutral so white cards sit on the
+    // page instead of dissolving into another gray dashboard.
+    'status-bar-background-color': '#F4F6F3',
+    'background-color': '#F4F6F3',
+    'nav-bar-color': 'rgba(244, 246, 243, 0.86)',
+    'tab-bar-color': 'rgba(244, 246, 243, 0.86)',
     'popup-color': '#FFFFFF',
-    'divider-color': '#E2E8F0',
+    'divider-color': '#E1E7E2',
     'card-color': '#FFFFFF',
     'dialog-color': '#FFFFFF',
-    'switch-close-background-color': 'rgba(15, 23, 42, 0.08)',
-    'switch-active-background-color': '#0F172A',
-    'compare-item-background-color': '#F1F5F9',
-    'picker-mask-near-color': 'rgba(248, 250, 252, 0.5)',
-    'picker-mask-far-color': '#F8FAFC',
+    'switch-close-background-color': 'rgba(17, 26, 21, 0.1)',
+    'switch-active-background-color': '#0B7A58',
+    'compare-item-background-color': '#EEF2EE',
+    'picker-mask-near-color': 'rgba(244, 246, 243, 0.5)',
+    'picker-mask-far-color': '#F4F6F3',
 
-    // Text (Slate hierarchy)
-    'primary-text-color': '#0F172A',
-    'second-text-color': '#334155',
-    // #5C6A7E keeps 4.5:1 on the compare surface (#F1F5F9), where 12px
-    // secondary text lives; slate-500 landed at 4.34:1.
-    'comment-text-color': '#5C6A7E',
-    // Merged into the comment level: three text steps, and the lightest one
-    // no longer sits at 2.5:1 on the card surface.
-    'lowest-text-color': '#5C6A7E',
+    // Text (ink hierarchy)
+    'primary-text-color': '#111A15',
+    'second-text-color': '#33413A',
+    // 5.7:1 on a white card, 5.2:1 on the page — small metadata stays legible.
+    'comment-text-color': '#5C6A62',
+    'lowest-text-color': '#5C6A62',
+
+    // The pipeline hero is the one dark surface in the light theme. These
+    // tokens keep the motif consistent across light and dark themes.
+    'hero-bg': '#101A15',
+    'hero-border': 'rgba(111, 227, 182, 0.22)',
+    'hero-text': '#F3F8F5',
+    'hero-muted': '#A7B8AF',
+    'hero-accent': '#6FE3B6',
 
     // Other
     'img-brightness': '0',
@@ -51,11 +58,11 @@ export default {
     'tab-bar-blur': '20px',
     'sticky-title-blur': '20px',
 
-    'compare-tag-text-color': '#475569',
-    'compare-tag-background-color': '#F1F5F9',
+    'compare-tag-text-color': '#47554D',
+    'compare-tag-background-color': '#EEF2EE',
 
-    // Elevation (shared card language with secondary pages)
-    'card-shadow': '0 2px 12px -2px rgba(15, 23, 42, 0.06)',
-    'card-shadow-hover': '0 8px 24px -4px rgba(15, 23, 42, 0.1)',
+    // Elevation: a hairline lift, not a floating SaaS card.
+    'card-shadow': '0 1px 2px rgba(17, 26, 21, 0.04)',
+    'card-shadow-hover': '0 10px 28px -18px rgba(17, 26, 21, 0.28)',
   },
 };

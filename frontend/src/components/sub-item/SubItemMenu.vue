@@ -14,7 +14,9 @@
       @click.stop="emit('copy-link')"
     >
       <font-awesome-icon icon="fa-solid fa-link" />
+      <span class="sub-item-action__label">{{ $t('subPage.actions.copyLinkShort') }}</span>
     </button>
+    <span class="sub-item-menu__divider" aria-hidden="true"></span>
     <template v-if="isDesktop">
       <button
         class="sub-item-action"
@@ -40,6 +42,7 @@
       >
         <font-awesome-icon icon="fa-solid fa-clone" />
       </button>
+      <span class="sub-item-menu__divider" aria-hidden="true"></span>
       <button
         v-if="type === 'sub'"
         class="sub-item-action"
@@ -306,7 +309,7 @@ onBeforeUnmount(() => {
   border-radius: var(--radius-lg, var(--item-card-radios));
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   flex-shrink: 0;
 
   &.simple-mode {
@@ -327,28 +330,42 @@ onBeforeUnmount(() => {
 }
 
 .sub-item-action {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   padding: 0;
   border: 1px solid transparent;
   border-radius: var(--radius-md);
   background: transparent;
-  color: var(--comment-text-color);
+  color: color-mix(in srgb, var(--comment-text-color) 82%, transparent);
   cursor: pointer;
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), background-color 160ms ease, color 160ms ease, border-color 160ms ease;
 
   & svg {
     width: 14px;
     height: 14px;
   }
 
+  .sub-item-action__label {
+    display: none;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  @media screen and (min-width: 900px) {
+    .sub-item-action__label {
+      display: inline;
+    }
+  }
+
   @media (hover: hover) and (pointer: fine) {
     &:hover {
-      background: rgba(148, 163, 184, 0.12);
-      color: var(--primary-text-color);
+      background: color-mix(in srgb, var(--primary-color) 8%, transparent);
+      color: var(--primary-color);
     }
   }
 
@@ -358,15 +375,19 @@ onBeforeUnmount(() => {
 
   /* Copy link: a quiet chip, not a filled button — the only emphasised action */
   &.sub-item-action--primary {
-    background: color-mix(in srgb, var(--primary-color) 6%, transparent);
-    color: var(--primary-text-color);
-    border-color: color-mix(in srgb, var(--primary-color) 16%, transparent);
+    width: auto;
+    padding: 0 10px;
+    gap: 6px;
+    background: color-mix(in srgb, var(--primary-color) 8%, transparent);
+    color: var(--primary-color);
+    border-color: color-mix(in srgb, var(--primary-color) 26%, transparent);
   }
 
   @media (hover: hover) and (pointer: fine) {
     &.sub-item-action--primary:hover {
-      background: color-mix(in srgb, var(--primary-color) 10%, transparent);
-      border-color: color-mix(in srgb, var(--primary-color) 28%, transparent);
+      background: color-mix(in srgb, var(--primary-color) 14%, transparent);
+      border-color: color-mix(in srgb, var(--primary-color) 40%, transparent);
+      color: var(--primary-color);
     }
   }
 
@@ -383,12 +404,26 @@ onBeforeUnmount(() => {
   }
 }
 
+.sub-item-menu__divider {
+  width: 1px;
+  height: 18px;
+  flex: 0 0 1px;
+  margin: 0 2px;
+  background: var(--divider-color);
+}
+
+/* Mobile compact: copy + more — larger hit targets */
+.sub-item-menu.is-compact {
+  & .sub-item-menu__divider {
+    display: none;
+  }
+}
+
 .sub-item-overflow {
   position: relative;
   display: flex;
   align-items: center;
 }
-
 /* Body-teleported overflow menu — lives above list cards */
 .sub-item-overflow-portal {
   box-sizing: border-box;

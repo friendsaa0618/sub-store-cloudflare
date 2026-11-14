@@ -100,14 +100,14 @@ const previewPopupStyle = computed(() => {
 
 .preview-panel-header {
   flex-shrink: 0;
-  padding: 16px 44px 10px 18px;
+  padding: 18px 44px 12px 18px;
   border-bottom: 1px solid var(--divider-color);
 }
 
 .preview-panel-title {
   margin: 0;
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 650;
   letter-spacing: -0.015em;
   color: var(--primary-text-color);
   line-height: 1.3;
@@ -126,7 +126,7 @@ const previewPopupStyle = computed(() => {
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
-  padding: 10px 16px calc(12px + env(safe-area-inset-bottom));
+  padding: 12px 16px calc(14px + env(safe-area-inset-bottom));
   -webkit-overflow-scrolling: touch;
 }
 </style>

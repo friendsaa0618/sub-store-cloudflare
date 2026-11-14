@@ -9,116 +9,140 @@
       </header>
 
       <div class="surface settings-form-card">
-        <div class="settings-form-grid">
-          <p class="appearance-group-title form-field-group--full">
-            {{ t("myPage.appearance.themeGroup") }}
-          </p>
-          <div class="form-field-group form-field-group--full appearance-choice">
-            <span class="form-field-label">{{ t("myPage.appearance.themeMode") }}</span>
-            <AppRadioGroup
-              direction="horizontal"
-              :model-value="themeMode"
-              @update:model-value="(value) => setThemeMode(String(value))"
-            >
-              <AppRadio shape="button" label="auto">{{ t("myPage.appearance.themeAuto") }}</AppRadio>
-              <AppRadio shape="button" label="light">{{ t("myPage.appearance.themeLight") }}</AppRadio>
-              <AppRadio shape="button" label="dark">{{ t("myPage.appearance.themeDark") }}</AppRadio>
-            </AppRadioGroup>
-          </div>
-          <div class="form-field-group appearance-choice">
-            <label class="form-field-label" for="appearance-theme-light">
-              {{ t("myPage.appearance.themeLightName") }}
-            </label>
-            <select
-              id="appearance-theme-light"
-              class="settings-select"
-              :value="settingsStore.theme.light || 'light'"
-              @change="setThemeSlot('light', ($event.target as HTMLSelectElement).value)"
-            >
-              <option v-for="option in lightThemes" :key="option.value" :value="option.value">
-                {{ option.label }}
-              </option>
-            </select>
-          </div>
-          <div class="form-field-group appearance-choice">
-            <label class="form-field-label" for="appearance-theme-dark">
-              {{ t("myPage.appearance.themeDarkName") }}
-            </label>
-            <select
-              id="appearance-theme-dark"
-              class="settings-select"
-              :value="settingsStore.theme.dark || 'dark'"
-              @change="setThemeSlot('dark', ($event.target as HTMLSelectElement).value)"
-            >
-              <option v-for="option in darkThemes" :key="option.value" :value="option.value">
-                {{ option.label }}
-              </option>
-            </select>
+        <div class="settings-sheet">
+          <div class="settings-group">
+            <p class="settings-group__title">{{ t("myPage.appearance.themeGroup") }}</p>
+
+            <div class="settings-row">
+              <span class="settings-row__text">
+                <span class="settings-row__label">{{ t("myPage.appearance.themeMode") }}</span>
+              </span>
+              <div class="settings-row__control">
+                <AppRadioGroup
+                  direction="horizontal"
+                  :model-value="themeMode"
+                  @update:model-value="(value) => setThemeMode(String(value))"
+                >
+                  <AppRadio shape="button" label="auto">{{ t("myPage.appearance.themeAuto") }}</AppRadio>
+                  <AppRadio shape="button" label="light">{{ t("myPage.appearance.themeLight") }}</AppRadio>
+                  <AppRadio shape="button" label="dark">{{ t("myPage.appearance.themeDark") }}</AppRadio>
+                </AppRadioGroup>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <label class="settings-row__text" for="appearance-theme-light">
+                <span class="settings-row__label">{{ t("myPage.appearance.themeLightName") }}</span>
+              </label>
+              <div class="settings-row__control">
+                <select
+                  id="appearance-theme-light"
+                  class="settings-select"
+                  :value="settingsStore.theme.light || 'light'"
+                  @change="setThemeSlot('light', ($event.target as HTMLSelectElement).value)"
+                >
+                  <option v-for="option in lightThemes" :key="option.value" :value="option.value">
+                    {{ option.label }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <label class="settings-row__text" for="appearance-theme-dark">
+                <span class="settings-row__label">{{ t("myPage.appearance.themeDarkName") }}</span>
+              </label>
+              <div class="settings-row__control">
+                <select
+                  id="appearance-theme-dark"
+                  class="settings-select"
+                  :value="settingsStore.theme.dark || 'dark'"
+                  @change="setThemeSlot('dark', ($event.target as HTMLSelectElement).value)"
+                >
+                  <option v-for="option in darkThemes" :key="option.value" :value="option.value">
+                    {{ option.label }}
+                  </option>
+                </select>
+              </div>
+            </div>
           </div>
 
-          <p class="appearance-group-title form-field-group--full">
-            {{ t("myPage.appearance.listGroup") }}
-          </p>
-          <div
-            v-for="item in listToggles"
-            :key="item.key"
-            class="toggle-card-row"
-          >
-            <span class="toggle-card-title">
-              {{ t(item.label) }}
-              <span v-if="item.hint" class="toggle-card-hint">{{ t(item.hint) }}</span>
-            </span>
-            <AppSwitch
-              :model-value="Boolean(appearanceSetting[item.key])"
-              :aria-label="t(item.label)"
-              @update:model-value="(value) => setAppearance(item.key, value)"
-            />
-          </div>
-          <div
-            v-for="item in visibleListChoices"
-            :key="item.key"
-            class="form-field-group appearance-choice"
-          >
-            <span class="form-field-label">{{ t(item.label) }}</span>
-            <AppRadioGroup
-              direction="horizontal"
-              :model-value="String(appearanceSetting[item.key] ?? item.options[0].value)"
-              @update:model-value="(value) => setAppearance(item.key, String(value))"
+          <div class="settings-group">
+            <p class="settings-group__title">{{ t("myPage.appearance.listGroup") }}</p>
+
+            <div
+              v-for="item in listToggles"
+              :key="item.key"
+              class="settings-row"
             >
-              <AppRadio
-                v-for="option in item.options"
-                :key="option.value"
-                shape="button"
-                :label="option.value"
-              >
-                {{ t(option.label) }}
-              </AppRadio>
-            </AppRadioGroup>
+              <span class="settings-row__text">
+                <span class="settings-row__label">{{ t(item.label) }}</span>
+                <span v-if="item.hint" class="settings-row__hint">{{ t(item.hint) }}</span>
+              </span>
+              <div class="settings-row__control">
+                <AppSwitch
+                  :model-value="Boolean(appearanceSetting[item.key])"
+                  :aria-label="t(item.label)"
+                  @update:model-value="(value) => setAppearance(item.key, value)"
+                />
+              </div>
+            </div>
+
+            <div
+              v-for="item in visibleListChoices"
+              :key="item.key"
+              class="settings-row"
+            >
+              <span class="settings-row__text">
+                <span class="settings-row__label">{{ t(item.label) }}</span>
+              </span>
+              <div class="settings-row__control">
+                <AppRadioGroup
+                  direction="horizontal"
+                  :model-value="String(appearanceSetting[item.key] ?? item.options[0].value)"
+                  @update:model-value="(value) => setAppearance(item.key, String(value))"
+                >
+                  <AppRadio
+                    v-for="option in item.options"
+                    :key="option.value"
+                    shape="button"
+                    :label="option.value"
+                  >
+                    {{ t(option.label) }}
+                  </AppRadio>
+                </AppRadioGroup>
+              </div>
+            </div>
           </div>
 
-          <p class="appearance-group-title form-field-group--full">
-            {{ t("myPage.appearance.editorGroup") }}
-          </p>
-          <div
-            v-for="item in editorChoices"
-            :key="item.key"
-            class="form-field-group appearance-choice"
-          >
-            <span class="form-field-label">{{ t(item.label) }}</span>
-            <AppRadioGroup
-              direction="horizontal"
-              :model-value="String(appearanceSetting[item.key] ?? item.options[0].value)"
-              @update:model-value="(value) => setAppearance(item.key, String(value))"
+          <div class="settings-group">
+            <p class="settings-group__title">{{ t("myPage.appearance.editorGroup") }}</p>
+
+            <div
+              v-for="item in editorChoices"
+              :key="item.key"
+              class="settings-row"
             >
-              <AppRadio
-                v-for="option in item.options"
-                :key="option.value"
-                shape="button"
-                :label="option.value"
-              >
-                {{ t(option.label) }}
-              </AppRadio>
-            </AppRadioGroup>
+              <span class="settings-row__text">
+                <span class="settings-row__label">{{ t(item.label) }}</span>
+              </span>
+              <div class="settings-row__control">
+                <AppRadioGroup
+                  direction="horizontal"
+                  :model-value="String(appearanceSetting[item.key] ?? item.options[0].value)"
+                  @update:model-value="(value) => setAppearance(item.key, String(value))"
+                >
+                  <AppRadio
+                    v-for="option in item.options"
+                    :key="option.value"
+                    shape="button"
+                    :label="option.value"
+                  >
+                    {{ t(option.label) }}
+                  </AppRadio>
+                </AppRadioGroup>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -260,45 +284,3 @@ const setAppearance = (key: string, value: boolean | string) => {
 </script>
 
 <style scoped src="./settings-form.css"></style>
-
-<style scoped>
-.appearance-group-title {
-  margin: 0;
-  padding: 0 var(--space-3);
-  color: var(--comment-text-color);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-
-  &:not(:first-child) {
-    margin-top: var(--space-2);
-  }
-}
-
-/* Choices sit under the toggle cards; line their labels up with the card text. */
-.appearance-choice {
-  padding-inline: var(--space-3);
-  gap: 8px;
-}
-
-.settings-select {
-  box-sizing: border-box;
-  width: 100%;
-  height: 40px;
-  min-height: 40px;
-  padding: 0 10px;
-  border: 1px solid var(--divider-color);
-  border-radius: var(--radius-md);
-  background: var(--background-color);
-  color: var(--primary-text-color);
-  font-family: inherit;
-  font-size: var(--text-field);
-  cursor: pointer;
-
-  &:focus-visible {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px var(--focus-ring-color);
-  }
-}
-</style>

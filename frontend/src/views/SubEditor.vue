@@ -205,12 +205,34 @@ const showEditorGroupTitles = computed(() => {
     background: var(--card-color);
     border: 1px solid var(--divider-color);
     border-radius: var(--radius-lg);
+    box-shadow: var(--card-shadow);
     margin-bottom: var(--space-3);
     overflow: hidden;
   }
 
   &:deep(.editor-group + .editor-group) {
     border-top: 1px solid var(--divider-color);
+  }
+
+  &:deep(.editor-group__title) {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px var(--card-gutter) 10px;
+    border-bottom: 1px solid var(--divider-color);
+    background: color-mix(in srgb, var(--primary-color) 3%, var(--card-color));
+    color: var(--primary-text-color);
+    font-size: 13px;
+    font-weight: 650;
+
+    &::before {
+      content: "";
+      width: 3px;
+      height: 12px;
+      flex: 0 0 3px;
+      border-radius: 2px;
+      background: var(--primary-color);
+    }
   }
 
   &:deep(.editor-group .app-form-item) {
@@ -221,7 +243,36 @@ const showEditorGroupTitles = computed(() => {
     border-radius: 0;
     background: transparent;
     box-shadow: none;
-    grid-template-columns: 96px minmax(0, 1fr);
+    grid-template-columns: 104px minmax(0, 1fr);
+    transition: background-color 160ms ease;
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        background: color-mix(in srgb, var(--primary-color) 3%, transparent);
+      }
+    }
+  }
+
+  /* The input is borderless on the paper, so a resting hairline says
+     "editable"; hover deepens it and focus keeps it solid. */
+  &:deep(.editor-group .app-form-item .app-input-text) {
+    box-shadow: inset 0 -1px 0 var(--divider-color);
+    transition: box-shadow 160ms ease;
+  }
+
+  &:deep(.editor-group .app-form-item .app-textarea__control) {
+    box-shadow: inset 0 -1px 0 var(--divider-color);
+    transition: box-shadow 160ms ease;
+  }
+
+  &:deep(.editor-group .app-form-item:hover .app-input-text),
+  &:deep(.editor-group .app-form-item:hover .app-textarea__control) {
+    box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--primary-color) 22%, transparent);
+  }
+
+  &:deep(.editor-group .app-form-item:focus-within .app-input-text),
+  &:deep(.editor-group .app-form-item:focus-within .app-textarea__control) {
+    box-shadow: inset 0 -1px 0 var(--primary-color);
   }
 
   /* Label-less rows (the node editor) own the full card width */
@@ -233,9 +284,10 @@ const showEditorGroupTitles = computed(() => {
     border-top: 1px solid var(--divider-color);
   }
 
-  /* Keep the focus ring inside the card */
+  /* Keep the focus signal inside the card: a brand edge plus a quiet tint. */
   &:deep(.editor-group .app-form-item:focus-within) {
-    box-shadow: inset 0 0 0 2px var(--focus-ring-color);
+    background: color-mix(in srgb, var(--primary-color) 5%, transparent);
+    box-shadow: inset 2px 0 0 var(--primary-color);
   }
 
   &:deep(.editor-group .app-form-item__label) {
@@ -243,6 +295,8 @@ const showEditorGroupTitles = computed(() => {
     max-width: none;
     margin-right: var(--space-3);
     padding: 0;
+    color: var(--second-text-color);
+    font-weight: 550;
     line-height: 1.35;
     font-size: 13px;
   }

@@ -207,15 +207,18 @@ const openPreviewPanel = () => {
   min-width: 0;
   background: var(--card-color);
   border: 1px solid var(--divider-color);
+  box-shadow: var(--card-shadow);
   cursor: pointer;
   position: relative;
   overflow: visible;
-  transition: border-color 160ms ease, transform 160ms ease;
+  align-items: center;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 
   /* Hover tint only on true hover devices — no lift, no sticky hover on touch */
   @media (hover: hover) and (pointer: fine) {
     &:hover {
-      border-color: color-mix(in srgb, var(--primary-color) 22%, var(--divider-color));
+      border-color: color-mix(in srgb, var(--primary-color) 30%, var(--divider-color));
+      box-shadow: var(--card-shadow-hover);
     }
   }
 
@@ -228,12 +231,12 @@ const openPreviewPanel = () => {
     width: 48px;
     height: 48px;
     margin-right: 12px;
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-md);
 
     @media screen and (min-width: 768px) {
-      width: 56px;
-      height: 56px;
-      margin-right: 15px;
+      width: 48px;
+      height: 48px;
+      margin-right: 14px;
     }
 
     & img {
@@ -246,7 +249,7 @@ const openPreviewPanel = () => {
     z-index: 1;
     flex: 1;
     min-width: 0;
-    line-height: 1.6;
+    line-height: 1.55;
     display: flex;
     flex-direction: column;
 

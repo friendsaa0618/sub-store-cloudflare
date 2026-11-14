@@ -59,11 +59,11 @@ test.describe("browser chrome", () => {
 
   test("follows the light theme", async ({ page }) => {
     await open(page, "/subs", ".sub-item-wrapper");
-    expect(await themeColors(page)).toEqual(["#F8FAFC", "#F8FAFC"]);
+    expect(await themeColors(page)).toEqual(["#F4F6F3", "#F4F6F3"]);
   });
 
   test("follows the dark theme", async ({ page }) => {
     await open(page, "/subs", ".sub-item-wrapper", true);
-    expect(await themeColors(page)).toEqual(["#09090B", "#09090B"]);
+    expect(await themeColors(page)).toEqual(["#0A0E0C", "#0A0E0C"]);
   });
 });

@@ -1,6 +1,6 @@
 <template>
     <!-- Request Settings -->
-    <section class="section">
+    <section class="section" :class="{ 'section--collapsed': !requestEditing }">
       <header
         class="section-head section-head--clickable"
         role="button"
@@ -217,13 +217,16 @@ const saveRequestSettings = async () => {
 /* Collapsible caption row (request settings) */
 .section-head--clickable {
   cursor: pointer;
+  padding: 6px;
+  margin: -6px;
   border-radius: var(--radius-md);
   -webkit-user-select: none;
   user-select: none;
+  transition: background-color 160ms ease;
 
   @media (hover: hover) and (pointer: fine) {
-    &:hover .section-head__title {
-      color: var(--primary-text-color);
+    &:hover {
+      background: color-mix(in srgb, var(--primary-color) 5%, transparent);
     }
   }
 

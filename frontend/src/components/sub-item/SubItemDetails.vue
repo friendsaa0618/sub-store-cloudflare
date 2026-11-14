@@ -158,13 +158,13 @@ const nonSimpleSecondLine = computed(() => {
   word-wrap: break-word;
   word-break: break-all;
   overflow: hidden;
-  margin-top: 4px;
+  margin-top: 3px;
   font-size: 12px;
   color: var(--comment-text-color);
 
   & span {
     display: block;
-    line-height: 1.8;
+    line-height: 1.5;
   }
 
   &.is-dual-column {
@@ -181,7 +181,7 @@ const nonSimpleSecondLine = computed(() => {
   word-wrap: break-word;
   word-break: break-all;
   overflow: hidden;
-  margin-top: 4px;
+  margin-top: 3px;
   font-size: 12px;
   color: var(--comment-text-color);
 

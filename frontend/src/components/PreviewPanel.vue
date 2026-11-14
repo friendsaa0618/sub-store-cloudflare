@@ -255,7 +255,7 @@
   .preview-list {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 2px 4px;
+    gap: 4px 6px;
     padding: 0;
     margin: 0;
     list-style: none;
@@ -270,25 +270,26 @@
       align-items: center;
       justify-content: space-between;
       gap: 10px;
-      padding: 5px 8px;
+      min-height: 44px;
+      padding: 7px 10px;
       border-radius: var(--radius-md);
       transition: background-color 160ms ease;
 
       @media (hover: hover) and (pointer: fine) {
         &:hover {
-          background: color-mix(in srgb, var(--primary-color) 4%, transparent);
+          background: color-mix(in srgb, var(--primary-color) 5%, transparent);
         }
       }
 
       & .infos {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 9px;
         min-width: 0;
 
         & div {
-          width: 24px;
-          height: 24px;
+          width: 26px;
+          height: 26px;
           border-radius: var(--radius-sm);
           overflow: hidden;
           display: flex;
@@ -305,7 +306,7 @@
           white-space: nowrap;
           color: var(--primary-text-color);
           font-size: 13px;
-          font-weight: 500;
+          font-weight: 550;
         }
       }
 
@@ -319,19 +320,19 @@
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          width: 28px;
-          height: 28px;
+          width: 30px;
+          height: 30px;
           border-radius: var(--radius-md);
           background: transparent;
           border: 1px solid transparent;
           color: var(--comment-text-color);
           cursor: pointer;
-          transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+          transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
 
-          /* A thumb needs more than the 28px the icon needs to look right. */
+          /* A thumb needs more than the 30px the icon needs to look right. */
           @media (pointer: coarse) {
-            width: 36px;
-            height: 36px;
+            width: 38px;
+            height: 38px;
           }
 
           @media (hover: hover) and (pointer: fine) {

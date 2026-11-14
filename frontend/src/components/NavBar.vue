@@ -296,6 +296,12 @@ const toggleTheme = async () => {
   border-bottom: 1px solid var(--divider-color, rgba(0, 0, 0, 0.08));
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+
+  /* Phones: brand + utilities on top, a full-width tab row below. */
+  @media screen and (max-width: 599px) {
+    height: calc(100px + env(safe-area-inset-top, 0px));
+    min-height: calc(100px + env(safe-area-inset-top, 0px));
+  }
 }
 
 /*
@@ -312,7 +318,7 @@ const toggleTheme = async () => {
   gap: 8px;
   box-sizing: border-box;
   width: 100%;
-  max-width: 1024px;
+  max-width: var(--page-max-width, 1120px);
   height: 56px;
   margin-left: auto;
   margin-right: auto;
@@ -423,7 +429,7 @@ const toggleTheme = async () => {
   max-width: 100%;
   padding: 3px;
   border-radius: var(--radius-full);
-  background: rgba(148, 163, 184, 0.08);
+  background: color-mix(in srgb, var(--primary-text-color) 4%, transparent);
   border: 1px solid var(--divider-color);
   gap: 2px;
 }
@@ -484,8 +490,8 @@ const toggleTheme = async () => {
 
   @media (hover: hover) and (pointer: fine) {
     &:hover:not(.is-active) {
-      color: var(--primary-text-color);
-      background: rgba(148, 163, 184, 0.12);
+      color: var(--primary-color);
+      background: color-mix(in srgb, var(--primary-color) 8%, transparent);
     }
   }
 
@@ -494,10 +500,10 @@ const toggleTheme = async () => {
   }
 
   &.is-active {
-    background: var(--card-color);
-    color: var(--primary-text-color);
+    background: var(--primary-color);
+    color: var(--card-color);
     font-weight: 600;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
   }
 }
 
@@ -506,8 +512,8 @@ const toggleTheme = async () => {
 }
 
 .nav-btn {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   box-sizing: border-box;
   padding: 0;
   border: 0;
@@ -525,12 +531,12 @@ const toggleTheme = async () => {
   }
   cursor: pointer;
   flex-shrink: 0;
-  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), background-color 200ms ease, color 200ms ease;
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), background-color 160ms ease, color 160ms ease;
 
   @media (hover: hover) and (pointer: fine) {
     &:hover {
-      background: rgba(148, 163, 184, 0.15);
-      color: var(--primary-text-color);
+      background: color-mix(in srgb, var(--primary-color) 9%, transparent);
+      color: var(--primary-color);
     }
   }
 
@@ -552,5 +558,57 @@ const toggleTheme = async () => {
   width: 14px;
   height: 14px;
   font-size: 14px;
+}
+
+/* Phones: two rows — brand and utilities above, the three tabs full-width
+   below. The one-row version squeezed eight controls into 390px. */
+@media screen and (max-width: 599px) {
+  .nav-bar-wrapper .nav-bar {
+    height: auto;
+    flex-wrap: wrap !important;
+    padding:
+      6px
+      calc(12px + env(safe-area-inset-right, 0px))
+      6px
+      calc(12px + env(safe-area-inset-left, 0px));
+    row-gap: 4px;
+    column-gap: 8px;
+  }
+
+  .nav-bar__left {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .nav-bar__right {
+    flex: 0 0 auto;
+    gap: 2px;
+  }
+
+  .nav-bar__center {
+    order: 3;
+    flex: 1 0 100%;
+    width: 100%;
+  }
+
+  .app-brand__name {
+    display: inline;
+  }
+
+  .nav-segmented-control {
+    width: 100%;
+    padding: 3px;
+  }
+
+  .nav-segmented-item {
+    flex: 1 1 0;
+    justify-content: center;
+    min-height: 36px;
+    padding: 6px 8px;
+  }
+
+  .nav-segmented-item__label {
+    display: inline;
+  }
 }
 </style>

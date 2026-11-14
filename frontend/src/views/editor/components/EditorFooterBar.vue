@@ -53,17 +53,18 @@ const padding = "env(safe-area-inset-bottom)";
   align-items: center;
   gap: 12px;
   /* Match .page-body horizontal edges (home content column) */
-  padding: 10px max(var(--space-4), calc((100% - 1024px) / 2 + var(--space-4)))
+  padding: 10px max(var(--space-4), calc((100% - var(--page-max-width, 1120px)) / 2 + var(--space-4)))
     calc(v-bind("padding") + 10px);
   box-sizing: border-box;
   /* Opaque: the node-action grid scrolls under this bar, and a translucent one
      let its tiles read through the buttons. */
   background: var(--card-color);
   border-top: 1px solid var(--divider-color);
+  box-shadow: 0 -10px 28px -26px rgba(0, 0, 0, 0.35);
 
   @media screen and (min-width: 768px) {
-    padding-left: max(var(--space-5), calc((100% - 1024px) / 2 + var(--space-5)));
-    padding-right: max(var(--space-5), calc((100% - 1024px) / 2 + var(--space-5)));
+    padding-left: max(var(--space-5), calc((100% - var(--page-max-width, 1120px)) / 2 + var(--space-5)));
+    padding-right: max(var(--space-5), calc((100% - var(--page-max-width, 1120px)) / 2 + var(--space-5)));
   }
 
   & .compare-link {
@@ -139,8 +140,8 @@ const padding = "env(safe-area-inset-bottom)";
 
     /* Desktop: a toolbar action, not a page-wide banner */
     @media screen and (min-width: 768px) {
-      flex: 0 0 280px;
-      width: 280px !important;
+      flex: 0 0 180px;
+      width: 180px !important;
     }
   }
 }

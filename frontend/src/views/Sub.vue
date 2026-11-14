@@ -118,7 +118,10 @@
               :aria-expanded="!isFold('sub')"
               @click="toggleFold('sub')"
             >
-              <span class="section-head__title">{{ $t(`specificWord.singleSub`) }}</span>
+              <span class="section-head__title">
+                {{ $t(`specificWord.singleSub`) }}
+                <span class="section-head__count">{{ subs.length }}</span>
+              </span>
               <font-awesome-icon
                 class="section-head__chevron"
                 :icon="isFold('sub') ? 'fa-solid fa-chevron-right' : 'fa-solid fa-chevron-down'"
@@ -182,7 +185,10 @@
               :aria-expanded="!isFold('col')"
               @click="toggleFold('col')"
             >
-              <span class="section-head__title">{{ $t(`specificWord.collectionSub`) }}</span>
+              <span class="section-head__title">
+                {{ $t(`specificWord.collectionSub`) }}
+                <span class="section-head__count">{{ collections.length }}</span>
+              </span>
               <font-awesome-icon
                 class="section-head__chevron"
                 :icon="isFold('col') ? 'fa-solid fa-chevron-right' : 'fa-solid fa-chevron-down'"
@@ -269,23 +275,25 @@
       class="empty-state-wrapper"
     >
       <section class="onboarding-card onboarding-empty">
-        <img class="empty-state-image" :src="logoIcon" alt="" />
-        <span class="onboarding-kicker">{{ $t('subPage.onboarding.welcome') }}</span>
-        <h3>{{ $t('subPage.onboarding.title') }}</h3>
-        <p class="onboarding-desc">{{ $t('subPage.onboarding.desc') }}</p>
+        <div class="onboarding-intro">
+          <img class="onboarding-mark" :src="logoIcon" alt="" />
+          <span class="onboarding-kicker">{{ $t('subPage.onboarding.welcome') }}</span>
+          <h3>{{ $t('subPage.onboarding.title') }}</h3>
+          <p class="onboarding-desc">{{ $t('subPage.onboarding.desc') }}</p>
+          <div class="onboarding-buttons">
+            <router-link to="/edit/subs/UNTITLED" class="onboarding-action">
+              <AppButton type="primary">{{ $t('subPage.onboarding.createSource') }}</AppButton>
+            </router-link>
+            <a href="https://github.com/realchendahuang/sub-store-cloudflare/blob/main/docs/quick-start.md" target="_blank" rel="noreferrer">
+              {{ $t('subPage.onboarding.openGuide') }}
+            </a>
+          </div>
+        </div>
         <ol class="onboarding-steps">
           <li><strong>1</strong><span>{{ $t('subPage.onboarding.addSource') }}</span></li>
           <li><strong>2</strong><span>{{ $t('subPage.onboarding.addCollection') }}</span></li>
           <li><strong>3</strong><span>{{ $t('subPage.onboarding.copyLink') }}</span></li>
         </ol>
-        <div class="onboarding-buttons">
-          <router-link to="/edit/subs/UNTITLED" class="onboarding-action">
-            <AppButton type="primary">{{ $t('subPage.onboarding.createSource') }}</AppButton>
-          </router-link>
-          <a href="https://github.com/realchendahuang/sub-store-cloudflare/blob/main/docs/quick-start.md" target="_blank" rel="noreferrer">
-            {{ $t('subPage.onboarding.openGuide') }}
-          </a>
-        </div>
       </section>
     </div>
 
@@ -486,19 +494,19 @@ const filteredCollections = useFilteredDraggableList(collections, shouldShowElem
   height: 50px;
   margin: 0;
   padding: 0;
-  border: 1px solid var(--second-color);
+  border: 1px solid var(--primary-color);
   border-radius: 50%;
-  background: var(--second-color);
-  box-shadow: 0 4px 14px -4px color-mix(in srgb, var(--second-color) 40%, transparent);
-  color: #fff;
+  background: var(--primary-color);
+  box-shadow: 0 8px 22px -10px color-mix(in srgb, var(--primary-color) 65%, transparent);
+  color: var(--card-color);
   cursor: pointer;
   transition:
-    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 160ms ease;
 
   &:hover {
-    transform: scale(1.08);
-    box-shadow: 0 8px 20px -4px color-mix(in srgb, var(--second-color) 50%, transparent);
+    transform: scale(1.06);
+    box-shadow: 0 12px 28px -10px color-mix(in srgb, var(--primary-color) 75%, transparent);
   }
 
   &:active {
@@ -513,7 +521,7 @@ const filteredCollections = useFilteredDraggableList(collections, shouldShowElem
   & > svg {
     width: 20px;
     height: 20px;
-    color: #fff;
+    color: var(--card-color);
   }
 }
 
@@ -563,26 +571,21 @@ const filteredCollections = useFilteredDraggableList(collections, shouldShowElem
   }
 }
 
-.empty-state-image {
-  display: block;
-  width: 88px;
-  height: 88px;
-  margin: 0 auto;
-  object-fit: contain;
-}
-
 .onboarding-card {
   box-sizing: border-box;
   border: 1px solid var(--divider-color);
   border-radius: var(--radius-lg);
   background: var(--card-color);
   color: var(--second-text-color);
+  box-shadow: var(--card-shadow);
 
   & h3 {
     margin: 6px 0 6px;
     color: var(--primary-text-color);
     font-size: 18px;
-    font-weight: 600;
+    font-weight: 650;
+    letter-spacing: -0.015em;
+    line-height: 1.3;
   }
 
   & p {
@@ -593,12 +596,37 @@ const filteredCollections = useFilteredDraggableList(collections, shouldShowElem
   }
 }
 
+/* First run: the page explains the same pipeline the hero shows once data
+   exists. Intro on the left, the three steps as a connected path on the right. */
 .onboarding-empty {
-  /* Three steps side by side need the room; 600px split the second step
-     mid-phrase. */
-  width: min(calc(100% - 32px), 720px);
-  padding: 28px 24px;
-  text-align: center;
+  width: min(calc(100% - 32px), 920px);
+  padding: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  text-align: left;
+  overflow: hidden;
+}
+
+.onboarding-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 32px 34px;
+}
+
+.onboarding-mark {
+  display: block;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 16px;
+  object-fit: contain;
+}
+
+.onboarding-empty h3 {
+  margin: 8px 0 8px;
+  font-size: 24px;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
 }
 
 .onboarding-inline {
@@ -612,68 +640,121 @@ const filteredCollections = useFilteredDraggableList(collections, shouldShowElem
   box-sizing: border-box;
 }
 
+.onboarding-inline h3 {
+  font-size: 16px;
+}
+
 .onboarding-kicker {
   color: var(--primary-color);
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: .04em;
+  letter-spacing: 0.04em;
 }
 
 .onboarding-desc {
-  max-width: 460px;
-  margin: 0 auto !important;
+  max-width: 46ch;
+  margin: 0 !important;
+  font-size: 13px;
 }
 
 .onboarding-steps {
-  margin: 20px 0 18px;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
+  margin: 0;
+  padding: 32px 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 0;
   list-style: none;
+  border-left: 1px solid var(--divider-color);
+  background: color-mix(in srgb, var(--primary-color) 3%, var(--card-color));
 
   & li {
+    position: relative;
     display: flex;
     align-items: flex-start;
-    gap: 8px;
+    gap: 14px;
+    padding: 0 0 26px;
     color: var(--second-text-color);
-    font-size: 12px;
+    font-size: 13px;
     line-height: 1.5;
     text-align: left;
-    /* Wrap at the comma instead of inside 组合订阅; `anywhere` is the fallback
-       for a label longer than its column. */
     word-break: keep-all;
     overflow-wrap: anywhere;
+
+    &:last-child {
+      padding-bottom: 0;
+    }
+
+    /* The line is the path: it only exists because the steps are sequential. */
+    &:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      left: 13px;
+      top: 32px;
+      bottom: 8px;
+      width: 1px;
+      background: color-mix(in srgb, var(--primary-color) 22%, var(--divider-color));
+    }
   }
 
   & strong {
-    width: 20px;
-    height: 20px;
-    flex: 0 0 20px;
+    position: relative;
+    z-index: 1;
+    width: 28px;
+    height: 28px;
+    flex: 0 0 28px;
     display: grid;
     place-items: center;
     border-radius: 50%;
-    background: color-mix(in srgb, var(--primary-color) 8%, transparent);
-    color: var(--primary-color);
-    font-size: 11px;
-    font-weight: 600;
+    background: var(--primary-color);
+    color: var(--card-color);
+    font-size: 12px;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+  }
+
+  & span {
+    max-width: none;
+    padding-top: 4px;
   }
 }
 
 .onboarding-buttons {
   display: flex;
   align-items: center;
-  justify-content: center;
+  flex-wrap: wrap;
   gap: 16px;
+  margin-top: 24px;
 
   & a:not(.onboarding-action) {
     color: var(--primary-color);
     font-size: 13px;
+    font-weight: 550;
   }
 }
 
 .onboarding-action {
   display: inline-flex;
+}
+
+@media (max-width: 760px) {
+  .onboarding-empty {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .onboarding-intro {
+    padding: 24px;
+  }
+
+  .onboarding-empty h3 {
+    font-size: 21px;
+  }
+
+  .onboarding-steps {
+    padding: 22px 24px;
+    border-left: 0;
+    border-top: 1px solid var(--divider-color);
+  }
 }
 
 @media (max-width: 520px) {
@@ -682,8 +763,8 @@ const filteredCollections = useFilteredDraggableList(collections, shouldShowElem
     flex-direction: column;
   }
 
-  .onboarding-steps {
-    grid-template-columns: 1fr;
+  .onboarding-buttons {
+    margin-top: 20px;
   }
 }
 
@@ -693,7 +774,7 @@ const filteredCollections = useFilteredDraggableList(collections, shouldShowElem
   flex-direction: column;
   justify-content: center;
   gap: 8px;
-  height: 78px;
+  height: 84px;
   padding: 0 var(--card-gutter);
   border: 1px solid var(--divider-color);
   border-radius: var(--radius-lg);
@@ -705,6 +786,10 @@ const filteredCollections = useFilteredDraggableList(collections, shouldShowElem
 
   & .loading-line:last-child {
     width: 40%;
+  }
+
+  @media screen and (max-width: 767px) {
+    height: 150px;
   }
 }
 
@@ -893,8 +978,7 @@ const filteredCollections = useFilteredDraggableList(collections, shouldShowElem
 }
 
 .draggable-item {
-  margin-top: 12px;
-  margin-bottom: 12px;
+  margin: 0;
   border-radius: var(--radius-lg, var(--item-card-radios));
   overflow: visible;
 }
@@ -912,7 +996,7 @@ const filteredCollections = useFilteredDraggableList(collections, shouldShowElem
   & .list-draggable {
     display: flex;
     flex-direction: column;
-    gap: 0;
+    gap: 8px;
     width: 100%;
     min-width: 0;
   }

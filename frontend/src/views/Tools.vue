@@ -1,7 +1,7 @@
 <template>
-  <div class="tools-page page-stack">
+  <div class="tools-page">
     <!-- Converter -->
-    <section class="section">
+    <section class="section tools-converter">
       <header class="section-head">
         <div class="section-head__text">
           <h2 class="section-head__title">{{ t('toolsPage.converter.title') }}</h2>
@@ -9,59 +9,71 @@
         </div>
       </header>
 
-      <div class="tool-card surface surface--pad">
-        <div class="row">
-          <div class="form-field">
+      <div class="tool-card surface surface--pad converter-card">
+        <div class="converter-controls">
+          <div class="form-field form-field--kind">
             <label class="field-label" for="tools-conversion-kind">{{ t('toolsPage.converter.kind') }}</label>
             <select id="tools-conversion-kind" v-model="conversionKind" class="field-control">
               <option value="proxy">{{ t('toolsPage.converter.proxy') }}</option>
               <option value="rule">{{ t('toolsPage.converter.rule') }}</option>
             </select>
           </div>
-          <div class="form-field">
+          <div class="form-field form-field--target">
             <label class="field-label" for="tools-conversion-target">{{ t('toolsPage.converter.target') }}</label>
             <select id="tools-conversion-target" v-model="conversionTarget" class="field-control">
               <option v-for="target in conversionTargets" :key="target" :value="target">{{ target }}</option>
             </select>
           </div>
+
+          <div class="converter-actions">
+            <AppButton type="primary" :loading="converting" :disabled="!conversionInput.trim()" @click="runConversion">
+              <font-awesome-icon icon="fa-solid fa-play" class="btn-icon" aria-hidden="true" />
+              {{ t('toolsPage.converter.run') }}
+            </AppButton>
+            <AppButton plain type="primary" :disabled="!conversionOutput" @click="copyText(conversionOutput)">
+              <font-awesome-icon icon="fa-solid fa-clone" class="btn-icon" aria-hidden="true" />
+              {{ t('toolsPage.converter.copy') }}
+            </AppButton>
+          </div>
         </div>
 
-        <label class="field-label" for="tools-conversion-input">{{ t('toolsPage.converter.content') }}</label>
-        <textarea
-          id="tools-conversion-input"
-          v-model="conversionInput"
-          class="field-control field-control--mono"
-          :placeholder="t('toolsPage.converter.input')"
-        />
+        <div class="converter-workspace">
+          <div class="converter-pane">
+            <label class="field-label" for="tools-conversion-input">{{ t('toolsPage.converter.content') }}</label>
+            <textarea
+              id="tools-conversion-input"
+              v-model="conversionInput"
+              class="field-control field-control--mono"
+              :placeholder="t('toolsPage.converter.input')"
+            />
+          </div>
 
-        <div class="actions">
-          <AppButton type="primary" :loading="converting" :disabled="!conversionInput.trim()" @click="runConversion">
-            <font-awesome-icon icon="fa-solid fa-play" class="btn-icon" aria-hidden="true" />
-            {{ t('toolsPage.converter.run') }}
-          </AppButton>
-          <AppButton plain type="primary" :disabled="!conversionOutput" @click="copyText(conversionOutput)">
-            <font-awesome-icon icon="fa-solid fa-clone" class="btn-icon" aria-hidden="true" />
-            {{ t('toolsPage.converter.copy') }}
-          </AppButton>
+          <div class="converter-pane">
+            <div class="converter-pane__head">
+              <label class="field-label" for="tools-conversion-output">{{ t('toolsPage.converter.result') }}</label>
+              <span v-if="conversionStats" class="stats">{{ conversionStats }}</span>
+            </div>
+            <textarea
+              id="tools-conversion-output"
+              v-model="conversionOutput"
+              class="field-control field-control--mono"
+              readonly
+              :placeholder="t('toolsPage.converter.output')"
+            />
+          </div>
         </div>
-
-        <label class="field-label" for="tools-conversion-output">{{ t('toolsPage.converter.result') }}</label>
-        <textarea
-          id="tools-conversion-output"
-          v-model="conversionOutput"
-          class="field-control field-control--mono"
-          readonly
-          :placeholder="t('toolsPage.converter.output')"
-        />
-        <p v-if="conversionStats" class="stats">{{ conversionStats }}</p>
       </div>
     </section>
 
+    <div class="tools-lower">
     <!-- Shares -->
-    <section class="section">
+    <section class="section tools-shares">
       <header class="section-head">
         <div class="section-head__text">
-          <h2 class="section-head__title">{{ t('toolsPage.shares.title') }}</h2>
+          <h2 class="section-head__title">
+            {{ t('toolsPage.shares.title') }}
+            <span class="section-head__count">{{ shares.length }}</span>
+          </h2>
           <p class="section-head__desc">{{ t('toolsPage.shares.desc') }}</p>
         </div>
       </header>
@@ -189,10 +201,13 @@
     </section>
 
     <!-- Recycle Bin -->
-    <section class="section">
+    <section class="section tools-recycle">
       <header class="section-head">
         <div class="section-head__text">
-          <h2 class="section-head__title">{{ t('toolsPage.recycle.title') }}</h2>
+          <h2 class="section-head__title">
+            {{ t('toolsPage.recycle.title') }}
+            <span class="section-head__count">{{ recycleEntries.length }}</span>
+          </h2>
           <p class="section-head__desc">{{ t('toolsPage.recycle.desc') }}</p>
         </div>
       </header>
@@ -239,6 +254,7 @@
         </div>
       </div>
     </section>
+    </div>
   </div>
 </template>
 
@@ -452,26 +468,9 @@ onMounted(() => Promise.all([loadShares(), loadRecycle()]));
   min-height: 100%;
   /* page-body already provides horizontal padding — avoid double inset */
   padding: 0;
-  animation: fadeIn 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-
-  /* Desktop: two columns, the converter spans both */
-  @media screen and (min-width: 900px) {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
-    column-gap: var(--space-4);
-    row-gap: var(--space-5);
-
-    & .section:first-child {
-      grid-column: 1 / -1;
-    }
-
-    /* Side-by-side sections: keep both content blocks on the same top line
-       even when one description wraps to two lines. */
-    & > .section:not(:first-child) .section-head__desc {
-      min-height: calc(2 * 1.45em);
-    }
-  }
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
 }
 
 .tool-card {
@@ -479,6 +478,71 @@ onMounted(() => Promise.all([loadShares(), loadRecycle()]));
   flex-direction: column;
   gap: var(--space-3);
   color: var(--second-text-color);
+}
+
+/* The converter is a workspace: controls on one line, input and output side
+   by side so the page is not two stacked textareas. */
+.converter-card {
+  gap: var(--space-4);
+}
+
+.converter-controls {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.converter-controls .form-field--kind {
+  flex: 0 0 156px;
+}
+
+.converter-controls .form-field--target {
+  flex: 0 0 180px;
+}
+
+.converter-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.converter-workspace {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.converter-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.converter-pane__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.converter-pane .field-control--mono {
+  min-height: 240px;
+}
+
+.tools-lower {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
+  gap: var(--space-5) var(--space-4);
+  align-items: start;
+}
+
+.tools-lower > .section {
+  min-width: 0;
 }
 
 /* List sits under its form card: a little more air than the section gap */
@@ -490,6 +554,25 @@ onMounted(() => Promise.all([loadShares(), loadRecycle()]));
   display: flex;
   gap: var(--space-2);
   flex-wrap: wrap;
+}
+
+/* Share form: two clear columns, not four cramped fields in one line. */
+.share-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.share-form .form-field,
+.share-form .form-field--grow {
+  flex: none;
+  min-width: 0;
+}
+
+@media screen and (max-width: 600px) {
+  .share-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .form-field {
@@ -540,7 +623,7 @@ onMounted(() => Promise.all([loadShares(), loadRecycle()]));
 
   &:is(textarea) {
     height: auto;
-    min-height: 140px;
+    min-height: 180px;
     padding: var(--space-3);
     resize: vertical;
     font-family: var(--font-mono);
@@ -559,7 +642,7 @@ onMounted(() => Promise.all([loadShares(), loadRecycle()]));
 
 .field-control--mono {
   height: auto;
-  min-height: 140px;
+  min-height: 180px;
   padding: var(--space-3);
   resize: vertical;
   font-family: var(--font-mono);
@@ -569,7 +652,7 @@ onMounted(() => Promise.all([loadShares(), loadRecycle()]));
 select.field-control {
   appearance: none;
   /* Light chevron; inverted on dark via filter so it tracks theme */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748B'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%235C6A62'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 10px center;
   background-size: 14px;
@@ -580,22 +663,11 @@ select.field-control {
    after :global(...) in a scoped block, which is how this rule used to land on
    <html> instead of the select. */
 :global(html[data-theme="dark"] select.field-control) {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23A1A1AA'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239AA79F'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
 }
 
 .btn-icon {
   margin-right: var(--space-1);
-}
-
-.actions {
-  display: flex;
-  gap: var(--space-2);
-  margin-top: var(--space-1);
-}
-
-/* Give the result group a little air after the action row */
-.actions + .field-label {
-  margin-top: var(--space-1);
 }
 
 .created-share {
@@ -698,11 +770,15 @@ select.field-control {
 }
 
 .stats {
+  margin: 0;
   color: var(--comment-text-color);
-  margin-top: var(--space-2);
   font-size: var(--text-xs);
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .empty {
@@ -722,6 +798,38 @@ select.field-control {
     width: 14px;
     height: 14px;
     opacity: 0.8;
+  }
+}
+
+@media screen and (max-width: 1000px) {
+  .tools-lower {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media screen and (max-width: 900px) {
+  .converter-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .converter-pane .field-control--mono {
+    min-height: 200px;
+  }
+}
+
+@media screen and (max-width: 700px) {
+  .converter-controls .form-field--kind,
+  .converter-controls .form-field--target {
+    flex: 1 1 100%;
+  }
+
+  .converter-actions {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .converter-actions .app-button {
+    flex: 1;
   }
 }
 

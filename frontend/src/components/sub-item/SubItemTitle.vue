@@ -43,18 +43,14 @@ defineProps<{
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   white-space: nowrap;
   overflow: hidden;
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -0.015em;
   color: var(--primary-text-color);
   vertical-align: middle;
-
-  @media screen and (min-width: 768px) {
-    font-size: 16px;
-  }
 
   /* Phones: tag pills squeeze the name into an early ellipsis, so keep
      them on desktop and let the card stay a clean two-line row. */
@@ -117,7 +113,13 @@ defineProps<{
   margin: 0;
 
   &:deep(.app-tag) {
-    padding: 2px 3px;
+    padding: 1px 6px;
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--primary-text-color) 5%, transparent);
+    color: var(--comment-text-color);
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 16px;
   }
 }
 

@@ -7,6 +7,9 @@
   --radius-full: 9999px;
   --item-card-radios: 12px;
 
+  /* One content column for the whole app (nav, pages and the editor footer). */
+  --page-max-width: 1120px;
+
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -32,6 +35,14 @@
     "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
   --font-mono: ui-monospace, "SF Mono", SFMono-Regular, "JetBrains Mono", Menlo,
     Consolas, "Sarasa Mono SC", "Noto Sans Mono CJK SC", "NSimSun", monospace;
+
+  /* Pipeline hero: the one dark surface in the light theme. Runtime theme
+     colors overwrite these; the defaults keep first paint on-brand. */
+  --hero-bg: #101a15;
+  --hero-border: rgba(111, 227, 182, 0.22);
+  --hero-text: #f3f8f5;
+  --hero-muted: #a7b8af;
+  --hero-accent: #6fe3b6;
 
   --overlay-blur: 16px;
   --z-nav: 100;

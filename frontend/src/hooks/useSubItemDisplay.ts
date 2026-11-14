@@ -65,7 +65,7 @@ export const useSubItemDisplay = (props: SubItemDisplayProps) => {
     // Stay on the 4/8/12/16 space scale: the simple card keeps the 12px gutter
     // instead of the old off-scale 9px, so phones match the rest of the app.
     if (appearanceSetting.value.isSimpleMode) return "var(--space-3)";
-    return props.isDualColumn ? "var(--space-3)" : "var(--space-4)";
+    return props.isDualColumn ? "var(--space-3)" : "12px var(--space-4)";
   });
 
   const imageMarginTop = computed(() => {

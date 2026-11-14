@@ -1,5 +1,5 @@
 <template>
-  <div class="my-page-wrapper page-stack">
+  <div class="my-page-wrapper settings-page page-stack">
     <!-- Profile + backup actions (merged; no redundant backup-only card) -->
     <section class="profile-block surface">
       <div class="info">
@@ -148,13 +148,16 @@ const errorMessage = apiErrorMessage;
 .my-page-wrapper {
   min-height: 100%;
   padding: 0;
-  animation: fadeIn 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
 }
 
 .profile-block {
   width: 100%;
   box-sizing: border-box;
-  padding: var(--card-gutter);
+  padding: var(--space-4) var(--space-5);
+  box-shadow: var(--card-shadow);
 
   & .info {
     width: 100%;
@@ -179,7 +182,7 @@ const errorMessage = apiErrorMessage;
 
   & .name {
     min-width: 0;
-    margin-left: 12px;
+    margin-left: 14px;
     display: flex;
     flex-direction: column;
   }
@@ -188,9 +191,9 @@ const errorMessage = apiErrorMessage;
     margin: 0;
     overflow: hidden;
     color: var(--primary-text-color);
-    font-size: 16px;
-    font-weight: 600;
-    letter-spacing: -0.015em;
+    font-size: 17px;
+    font-weight: 650;
+    letter-spacing: -0.02em;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -236,8 +239,8 @@ const errorMessage = apiErrorMessage;
   }
 
   & .profile-note {
-    margin: 12px 0 0;
-    padding-top: 10px;
+    margin: 14px 0 0;
+    padding-top: 12px;
     border-top: 1px solid var(--divider-color);
     color: var(--comment-text-color);
     font-size: 12px;
@@ -247,6 +250,8 @@ const errorMessage = apiErrorMessage;
 
 @media screen and (max-width: 767px) {
   .profile-block {
+    padding: var(--space-4);
+
     & .info {
       align-items: flex-start;
       flex-wrap: wrap;

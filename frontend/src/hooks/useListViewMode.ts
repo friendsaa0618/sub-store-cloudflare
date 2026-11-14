@@ -7,7 +7,7 @@ import { useSettingsStore } from "@/store/settings";
 import { useSystemStore } from "@/store/system";
 
 // Dual-column once viewport is wide enough for two cards inside the
-// centered content column ($content-max-width: 1024px).
+// centered content column ($page-max-width: 1120px).
 export const LIST_VIEW_MODE_BREAKPOINT = 900;
 
 export const useListViewMode = () => {

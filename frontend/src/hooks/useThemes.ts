@@ -26,6 +26,9 @@ export const designTokens: Record<string, string> = {
   'radius-full': '9999px',
   'item-card-radios': '12px',
 
+  // Layout: one content column shared by the nav, pages and editor footer.
+  'page-max-width': '1120px',
+
   // Space
   'space-1': '4px',
   'space-2': '8px',

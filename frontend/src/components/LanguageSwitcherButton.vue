@@ -212,8 +212,8 @@ onUnmounted(() => {
 }
 
 .language-switch-button--icon {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   padding: 0;
   border: 0;
   border-radius: 50%;
@@ -228,7 +228,8 @@ onUnmounted(() => {
 
 @media (hover: hover) and (pointer: fine) {
   .language-switch-button--icon:hover {
-    background: rgba(148, 163, 184, 0.15);
+    background: color-mix(in srgb, var(--primary-color) 9%, transparent);
+    color: var(--primary-color);
   }
 }
 

@@ -1,15 +1,18 @@
 /* Global overrides shared across views (kept after dropping the UI kit). */
 
-/* sticky title 顶部粘性定位标题 — tight rhythm with following fields */
+/* Editor section markers: the same signal tick used by page sections, kept
+   outside the form paper so it reads as a section start, not a field label. */
 .sticky-title-wrapper {
-  margin-top: var(--space-2);
-  margin-bottom: var(--space-2);
-  color: var(--comment-text-color);
+  margin: 10px 0 8px;
+  padding-left: 10px;
+  border-left: 3px solid var(--primary-color);
+  color: var(--primary-text-color);
 
   & > p {
     margin: 0;
-    font-size: 13px;
-    font-weight: 600;
+    color: var(--primary-text-color);
+    font-size: 14px;
+    font-weight: 650;
     letter-spacing: -0.01em;
   }
 }

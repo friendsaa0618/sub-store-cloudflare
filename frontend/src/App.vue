@@ -178,7 +178,7 @@ h1, h2, h3,
   flex-direction: column;
   overflow: auto;
   width: 100%;
-  max-width: 1024px;
+  max-width: var(--page-max-width, 1120px);
   margin-left: auto;
   margin-right: auto;
   min-width: 0;
@@ -188,17 +188,19 @@ h1, h2, h3,
   padding:
     12px
     calc(var(--page-inline) + env(safe-area-inset-right, 0px))
-    20px
+    24px
     calc(var(--page-inline) + env(safe-area-inset-left, 0px));
 
   @media screen and (min-width: 600px) {
-    --page-inline: 16px;
-    padding-top: 16px;
-    padding-bottom: 24px;
+    --page-inline: 20px;
+    padding-top: 20px;
+    padding-bottom: 32px;
   }
 
   @media screen and (min-width: 768px) {
     --page-inline: 24px;
+    padding-top: 24px;
+    padding-bottom: 40px;
   }
 }
 </style>

@@ -5,7 +5,6 @@
 </template>
 
 <script lang="ts" setup>
-  const topInset = "calc(56px + env(safe-area-inset-top, 0px))";
   const height = "calc(12px + env(safe-area-inset-bottom, 0px))";
 </script>
 
@@ -15,10 +14,16 @@
     width: 100%;
     min-width: 0;
     min-height: 0;
-    /* Fixed NavBar (56px) + notch/status safe-area */
-    padding-top: v-bind(topInset);
+    /* Fixed NavBar (56px desktop, two rows on phones) + notch/status safe-area */
+    padding-top: calc(56px + env(safe-area-inset-top, 0px));
     padding-bottom: v-bind(height);
     box-sizing: border-box;
     overflow: auto;
+  }
+
+  @media screen and (max-width: 599px) {
+    .app-layout-wrapper {
+      padding-top: calc(100px + env(safe-area-inset-top, 0px));
+    }
   }
 </style>

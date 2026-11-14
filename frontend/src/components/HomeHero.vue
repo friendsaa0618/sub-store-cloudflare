@@ -11,26 +11,31 @@
         <span class="flow-node__label">{{ t("subPage.hero.sources", sourceCount) }}</span>
       </li>
 
-      <li class="flow-link" aria-hidden="true"><span class="flow-link__dot"></span></li>
+      <li class="flow-link" aria-hidden="true"></li>
 
       <li class="flow-node flow-node--accent">
         <span class="flow-node__value">{{ collectionCount }}</span>
         <span class="flow-node__label">{{ t("subPage.hero.collections", collectionCount) }}</span>
       </li>
 
-      <li class="flow-link" aria-hidden="true"><span class="flow-link__dot"></span></li>
+      <li class="flow-link" aria-hidden="true"></li>
 
       <li class="flow-targets">
         <span class="flow-targets__icons">
-          <img
+          <span
             v-for="target in shownTargets"
             :key="target.value"
-            :src="target.icon"
-            :alt="target.label"
-            class="auto-reverse"
-            width="20"
-            height="20"
-          />
+            class="flow-target"
+            :title="target.label"
+          >
+            <img
+              :src="target.icon"
+              :alt="target.label"
+              class="auto-reverse"
+              width="18"
+              height="18"
+            />
+          </span>
           <span v-if="hiddenTargetCount" class="flow-targets__more">+{{ hiddenTargetCount }}</span>
         </span>
         <span class="flow-node__label">{{ t("subPage.hero.targets") }}</span>
@@ -52,36 +57,48 @@ defineProps<{
 
 const { t } = useI18n();
 
-const shownTargets = computed(() => DOWNLOAD_TARGET_OPTIONS.slice(0, 5));
-const hiddenTargetCount = computed(() => Math.max(0, DOWNLOAD_TARGET_OPTIONS.length - 5));
+const shownTargets = computed(() => DOWNLOAD_TARGET_OPTIONS.slice(0, 4));
+const hiddenTargetCount = computed(() => Math.max(0, DOWNLOAD_TARGET_OPTIONS.length - 4));
 </script>
 
 <style scoped>
 .home-hero {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-5);
-  padding: var(--space-4) var(--card-gutter);
-  border: 1px solid var(--divider-color);
+  padding: 18px 22px;
+  overflow: hidden;
+  /* The client icons sit on the dark hero, so keep their own colors instead
+     of the page's theme-inverted image filter. */
+  --img-brightness: 1;
+  border: 1px solid var(--hero-border);
   border-radius: var(--radius-lg);
-  background: var(--card-color);
+  background: var(--hero-bg);
+  color: var(--hero-text);
+  box-shadow: 0 18px 40px -32px rgba(16, 26, 21, 0.7);
   /* One entrance for the page; everything else stays still. */
-  animation: hero-in 340ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: hero-in 320ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+.home-hero__intro {
+  min-width: 0;
 }
 
 .home-hero__title {
   margin: 0;
-  color: var(--primary-text-color);
-  font-size: var(--text-md);
-  font-weight: 600;
-  letter-spacing: 0;
-  line-height: 1.3;
+  color: var(--hero-text);
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
 }
 
 .home-hero__desc {
-  margin: 4px 0 0;
-  color: var(--comment-text-color);
+  max-width: 46ch;
+  margin: 5px 0 0;
+  color: var(--hero-muted);
   font-size: var(--text-sm);
   line-height: 1.45;
 }
@@ -99,90 +116,87 @@ const hiddenTargetCount = computed(() => Math.max(0, DOWNLOAD_TARGET_OPTIONS.len
 .flow-node {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  min-width: 56px;
+  align-items: flex-start;
+  gap: 1px;
+  min-width: 62px;
 }
 
 .flow-node__value {
-  color: var(--primary-text-color);
-  font-size: var(--text-lg);
-  font-weight: 600;
+  color: var(--hero-text);
+  font-size: 26px;
+  font-weight: 650;
   font-variant-numeric: tabular-nums;
-  line-height: 1.1;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
 }
 
 .flow-node--accent .flow-node__value {
-  color: var(--primary-color);
+  color: var(--hero-accent);
 }
 
 .flow-node__label {
-  color: var(--comment-text-color);
-  font-size: var(--text-xs);
+  color: var(--hero-muted);
+  font-size: 11px;
+  font-weight: 500;
   line-height: 1.3;
   white-space: nowrap;
 }
 
+/* A hairline with an arrowhead: the direction is part of the model. */
 .flow-link {
   position: relative;
-  width: 56px;
+  width: 52px;
   height: 1px;
-  background: var(--divider-color);
-  overflow: hidden;
+  flex: 0 0 auto;
+  background: color-mix(in srgb, var(--hero-text) 22%, transparent);
 
   &::after {
     content: "";
     position: absolute;
-    inset: -1px 0;
-    background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
-    opacity: 0;
-    transition: opacity 200ms ease;
+    top: -3px;
+    right: 0;
+    width: 6px;
+    height: 6px;
+    border-top: 1px solid color-mix(in srgb, var(--hero-text) 42%, transparent);
+    border-right: 1px solid color-mix(in srgb, var(--hero-text) 42%, transparent);
+    transform: rotate(45deg);
   }
-}
-
-.home-hero:hover .flow-link::after {
-  opacity: 0.16;
-}
-
-.flow-link__dot {
-  position: absolute;
-  top: -2px;
-  left: 0;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--primary-color);
-  opacity: 0;
-  animation: flow-run 3.4s linear infinite;
-}
-
-.flow-link:nth-of-type(4) .flow-link__dot {
-  animation-delay: 1.1s;
 }
 
 .flow-targets {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 4px;
+  align-items: flex-start;
+  gap: 5px;
 }
 
 .flow-targets__icons {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+.flow-target {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  border: 1px solid color-mix(in srgb, var(--hero-text) 18%, transparent);
+  background: color-mix(in srgb, var(--hero-text) 10%, transparent);
 
   & img {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     object-fit: contain;
-    border-radius: var(--radius-sm);
   }
 }
 
 .flow-targets__more {
-  color: var(--comment-text-color);
-  font-size: var(--text-xs);
+  color: var(--hero-muted);
+  font-size: 11px;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
@@ -198,28 +212,20 @@ const hiddenTargetCount = computed(() => Math.max(0, DOWNLOAD_TARGET_OPTIONS.len
   }
 }
 
-@keyframes flow-run {
-  0% {
-    transform: translateX(-6px);
-    opacity: 0;
-  }
-
-  15%,
-  85% {
-    opacity: 0.55;
-  }
-
-  100% {
-    transform: translateX(56px);
-    opacity: 0;
-  }
-}
-
 @media screen and (max-width: 767px) {
   .home-hero {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--space-4);
+    padding: 16px;
+  }
+
+  .home-hero__title {
+    font-size: 17px;
+  }
+
+  .home-hero__desc {
+    font-size: 12px;
   }
 
   .home-hero__flow {
@@ -228,10 +234,18 @@ const hiddenTargetCount = computed(() => Math.max(0, DOWNLOAD_TARGET_OPTIONS.len
     gap: var(--space-2);
   }
 
+  .flow-node {
+    min-width: 52px;
+  }
+
+  .flow-node__value {
+    font-size: 23px;
+  }
+
   .flow-link {
     flex: 1 1 auto;
     width: auto;
-    min-width: 16px;
+    min-width: 14px;
   }
 
   /* The counter would sit in the card's gutter at phone widths; the marks say enough. */
