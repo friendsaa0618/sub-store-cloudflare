@@ -22,18 +22,20 @@ export function parseProxyUri(line: string, index: number): ProxyNode | undefine
 }
 
 function parseVless(line: string, index: number): ProxyNode {
-  const url = new URL(line);
-  const params = url.searchParams;
+  const parts = parseUriParts(line);
+  const url = parts ? undefined : new URL(line);
+  const params = parts?.params ?? url!.searchParams;
+  const hash = parts?.hash ?? url!.hash.slice(1);
   const publicKey = params.get("pbk") || params.get("public-key");
   const shortId = params.get("sid") || params.get("short-id");
   const security = params.get("security") || (publicKey ? "reality" : "tls");
 
   return stripUndefined({
-    name: decodeURIComponent(url.hash.slice(1) || `vless-${index + 1}`),
+    name: decodeURIComponent(hash || `vless-${index + 1}`),
     type: "vless",
-    server: url.hostname,
-    port: Number(url.port || 443),
-    uuid: decodeURIComponent(url.username),
+    server: parts?.host ?? url!.hostname,
+    port: Number((parts?.port ?? url!.port) || 443),
+    uuid: decodeURIComponent(parts?.username ?? url!.username),
     udp: true,
     flow: params.get("flow") || undefined,
     network: params.get("type") || "tcp",
@@ -44,6 +46,56 @@ function parseVless(line: string, index: number): ProxyNode {
     "client-fingerprint": params.get("fp") || "chrome",
     "reality-opts": publicKey ? stripUndefined({ "public-key": publicKey, "short-id": shortId, "spider-x": params.get("spx") || "/" }) : undefined,
   });
+}
+
+type UriParts = {
+  username: string;
+  host: string;
+  port: string;
+  hash: string;
+  params: URLSearchParams;
+};
+
+// `new URL` is the single largest parser cost for share links. Subscription
+// URIs almost always have the simple `scheme://user@host:port?query#name`
+// shape, so parse that directly and keep WHATWG URL for IPv6, escapes in the
+// host, control characters, or any other unusual authority.
+function parseUriParts(line: string): UriParts | undefined {
+  const schemeEnd = line.indexOf("://");
+  if (schemeEnd <= 0) return undefined;
+  const rest = line.slice(schemeEnd + 3);
+  // WHATWG URL removes ASCII tab/newline characters and treats backslashes as
+  // separators; keep those inputs on the URL path instead of approximating it.
+  if (rest.includes("\\") || /[\u0000-\u001f\u007f]/.test(rest)) return undefined;
+
+  const hashIndex = rest.indexOf("#");
+  const hash = hashIndex >= 0 ? rest.slice(hashIndex + 1) : "";
+  const beforeHash = hashIndex >= 0 ? rest.slice(0, hashIndex) : rest;
+  const queryIndex = beforeHash.indexOf("?");
+  const query = queryIndex >= 0 ? beforeHash.slice(queryIndex + 1) : "";
+  const main = queryIndex >= 0 ? beforeHash.slice(0, queryIndex) : beforeHash;
+  const slashIndex = main.indexOf("/");
+  const authority = slashIndex >= 0 ? main.slice(0, slashIndex) : main;
+  if (!authority) return undefined;
+
+  const atIndex = authority.lastIndexOf("@");
+  const userinfo = atIndex >= 0 ? authority.slice(0, atIndex) : "";
+  const hostport = atIndex >= 0 ? authority.slice(atIndex + 1) : authority;
+  if (!hostport || hostport.startsWith("[")) return undefined;
+  const colonIndex = hostport.lastIndexOf(":");
+  const host = colonIndex >= 0 ? hostport.slice(0, colonIndex) : hostport;
+  const port = colonIndex >= 0 ? hostport.slice(colonIndex + 1) : "";
+  if (!host || /[^A-Za-z0-9._~-]/.test(host)) return undefined;
+  if (port && (!/^\d+$/.test(port) || Number(port) > 65535)) return undefined;
+
+  const userColon = userinfo.indexOf(":");
+  return {
+    username: userColon >= 0 ? userinfo.slice(0, userColon) : userinfo,
+    host,
+    port,
+    hash,
+    params: new URLSearchParams(query),
+  };
 }
 
 // VLESS and trojan share links carry the transport in the same `type` /
@@ -118,15 +170,17 @@ function parseHysteria(line: string, index: number): ProxyNode {
 }
 
 function parseTrojan(line: string, index: number): ProxyNode {
-  const url = new URL(line);
-  const params = url.searchParams;
+  const parts = parseUriParts(line);
+  const url = parts ? undefined : new URL(line);
+  const params = parts?.params ?? url!.searchParams;
+  const hash = parts?.hash ?? url!.hash.slice(1);
   const network = params.get("type");
   return stripUndefined({
-    name: decodeURIComponent(url.hash.slice(1) || `trojan-${index + 1}`),
+    name: decodeURIComponent(hash || `trojan-${index + 1}`),
     type: "trojan",
-    server: url.hostname,
-    port: Number(url.port || 443),
-    password: decodeURIComponent(url.username),
+    server: parts?.host ?? url!.hostname,
+    port: Number((parts?.port ?? url!.port) || 443),
+    password: decodeURIComponent(parts?.username ?? url!.username),
     sni: params.get("sni") || params.get("peer") || undefined,
     "skip-cert-verify": boolParam(params.get("allowInsecure")),
     udp: true,

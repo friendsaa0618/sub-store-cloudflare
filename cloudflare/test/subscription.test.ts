@@ -22,6 +22,24 @@ describe("subscription parsing and limits", () => {
     expect(nodes[0].name).toBe("Parsed Node");
   });
 
+  it("parses simple share links and keeps URL fallbacks for unusual authorities", () => {
+    const nodes = validateSubscriptionContent([
+      "vless://uuid@[2001:db8::1]:443?security=tls#IPv6",
+      "vless://uuid@EXAMPLE.COM:443?type=ws&path=%2Fws#Upper",
+      "trojan://p%40ss@example.com:8443?sni=x#a%23b",
+      "vless://uuid@example.com:443#a\tb",
+    ].join("\n"));
+
+    expect(nodes.map((node) => [node.name, node.server, node.port])).toEqual([
+      ["IPv6", "[2001:db8::1]", 443],
+      ["Upper", "EXAMPLE.COM", 443],
+      ["a#b", "example.com", 8443],
+      // WHATWG URL drops the tab inside the fragment; the fallback must too.
+      ["ab", "example.com", 443],
+    ]);
+    expect((nodes[1] as Record<string, unknown>)["ws-opts"]).toEqual({ path: "/ws" });
+  });
+
   it("renders every advertised target", async () => {
     const targets = ["mihomo", "stash", "surge", "surge-mac", "surfboard", "loon", "egern", "shadowrocket", "qx", "sing-box", "v2ray", "uri", "json"] as const;
     for (const target of targets) {

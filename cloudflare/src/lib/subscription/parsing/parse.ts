@@ -68,12 +68,16 @@ function parseYamlProxies(raw: string) {
 }
 
 function parseProxyLines(raw: string) {
-  return raw
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => line && !line.startsWith("#") && !line.startsWith(";") && !/^\[[^\]]+\]$/.test(line))
-    .map((line, index) => parseProxyUri(line, index) || parseClientProxyLine(line, index))
-    .filter(isProxyNode);
+  const proxies: ProxyNode[] = [];
+  for (const line of raw.split(/\r?\n/)) {
+    const text = line.trim();
+    if (!text || text.startsWith("#") || text.startsWith(";") || /^\[[^\]]+\]$/.test(text)) continue;
+    // The index counts parsed nodes, not raw lines, so default names stay
+    // stable when comments or section headers are present.
+    const proxy = parseProxyUri(text, proxies.length) || parseClientProxyLine(text, proxies.length);
+    if (isProxyNode(proxy)) proxies.push(proxy);
+  }
+  return proxies;
 }
 
 function normalizeProxy(input: unknown): ProxyNode | undefined {
