@@ -39,6 +39,7 @@
     "deploy:config": "node scripts/render-wrangler-config.mjs",
     "check:worker": "pnpm run scripts:generate && pnpm --dir cloudflare run check",
     "check:tests": "pnpm run scripts:generate && pnpm --dir cloudflare run test",
+    "bench:subscription": "node --expose-gc scripts/benchmark-subscription.mjs",
     "check:audit": "pnpm audit --prod --audit-level=high",
     "check:runtime": "node scripts/smoke-worker.mjs",
     "check:scripts": "node scripts/check-script-budget.mjs",

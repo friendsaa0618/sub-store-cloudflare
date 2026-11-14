@@ -88,6 +88,16 @@ pnpm run check:history -- main
 
 The Worker tests run through Cloudflare's Vitest integration, apply the real D1 migrations, and dispatch requests to the actual Worker entrypoint. They cover auth, security headers, code-owned built-in templates and scripts, storage restore, download rendering, JSON5 and client-line parsers, rule conversion, remote metadata and Cache API behavior, scoped download grants, recycle/restore, and payload limits. `check:scripts` also generates the registry, performs a Wrangler dry-run bundle, and enforces a 2.5 MiB gzip release budget below the 3 MiB Workers Free limit.
 
+## Subscription Benchmark
+
+订阅热路径的可重复基准测试：
+
+```bash
+pnpm run bench:subscription
+```
+
+默认覆盖 1,000 和 5,000 个合成节点，测量 `buildSubscription` / `convertSubscriptionContent` 的端到端耗时和内存。参数、数据构造和当前基线见 [benchmark.md](benchmark.md)。
+
 ## Deployment Doctor
 
 For Cloudflare install problems:
