@@ -2,7 +2,7 @@
   "$schema": "./cloudflare/node_modules/wrangler/config-schema.json",
   "name": "sub-store-cloudflare",
   "main": "cloudflare/src/index.ts",
-  "workers_dev": false,
+  "workers_dev": true,
   "compatibility_date": "2026-07-08",
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
@@ -43,18 +43,21 @@
       "SUB_STORE_PUBLIC_DOWNLOAD_TOKEN"
     ]
   },
+  // The root config is the Deploy to Cloudflare template. Keep the D1 id at
+  // the all-zero placeholder and the deployment vars empty; personal values
+  // belong in cloudflare/wrangler.deploy.local.jsonc (git-ignored).
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "sub-store-cloudflare",
-      "database_id": "7ceceb53-10cf-4680-af13-0b88586a2e04",
+      "database_id": "00000000-0000-0000-0000-000000000000",
       "migrations_dir": "cloudflare/migrations"
     }
   ],
   "vars": {
     "SUB_STORE_APP_NAME": "Sub-Store Cloudflare",
-    "SUB_STORE_PUBLIC_DOWNLOAD_HOSTS": "sub-store.9081233.xyz",
-    "SUB_STORE_ACCESS_TEAM_DOMAIN": "proxy-00f.cloudflareaccess.com",
-    "SUB_STORE_ACCESS_AUD": "d70797db339a5242764b00892488d3ee8c6818ae7bb5168b102321190df58e59"
+    "SUB_STORE_PUBLIC_DOWNLOAD_HOSTS": "",
+    "SUB_STORE_ACCESS_TEAM_DOMAIN": "",
+    "SUB_STORE_ACCESS_AUD": ""
   }
 }

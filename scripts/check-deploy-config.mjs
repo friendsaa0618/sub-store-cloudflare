@@ -1,6 +1,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+import { stripJsonComments } from "./lib/jsonc.mjs";
+
 const args = process.argv.slice(2).filter((arg) => arg !== "--");
 const required = args.includes("--required");
 const [configPath = "cloudflare/wrangler.deploy.local.jsonc"] = args.filter((arg) => arg !== "--required");
@@ -16,7 +18,8 @@ if (!existsSync(configPath)) {
 
 const config = parseJsonc(readFileSync(configPath, "utf8"), configPath);
 const assets = config.assets;
-const expectedAssetDirectory = resolve(configPath) === resolve("wrangler.jsonc") ? "frontend/dist" : "../frontend/dist";
+const isRootConfig = resolve(configPath) === resolve("wrangler.jsonc");
+const expectedAssetDirectory = isRootConfig ? "frontend/dist" : "../frontend/dist";
 const findings = [];
 const rootConfig = readConfig("wrangler.jsonc");
 const workerConfig = readConfig("cloudflare/wrangler.jsonc");
@@ -59,6 +62,32 @@ if (!assets || typeof assets !== "object") {
   }
 }
 
+if (config.workers_dev === false && !(Array.isArray(config.routes) && config.routes.length > 0)) {
+  findings.push("workers_dev is false but no routes are configured; the Worker would have no public hostname");
+}
+if (isRootConfig && config.workers_dev !== true) {
+  findings.push("root wrangler.jsonc workers_dev must be true for the Deploy to Cloudflare path");
+}
+
+const dbBinding = Array.isArray(config.d1_databases)
+  ? config.d1_databases.find((entry) => entry && entry.binding === "DB")
+  : undefined;
+if (!dbBinding) {
+  findings.push('d1_databases must declare the "DB" binding');
+}
+if (isRootConfig && dbBinding && String(dbBinding.database_id || "") !== "00000000-0000-0000-0000-000000000000") {
+  findings.push("root wrangler.jsonc database_id must be the all-zero placeholder; real IDs belong in cloudflare/wrangler.deploy.local.jsonc");
+}
+
+if (isRootConfig) {
+  const vars = config.vars && typeof config.vars === "object" ? config.vars : {};
+  for (const key of ["SUB_STORE_PUBLIC_DOWNLOAD_HOSTS", "SUB_STORE_ACCESS_TEAM_DOMAIN", "SUB_STORE_ACCESS_AUD"]) {
+    if (String(vars[key] || "").trim()) {
+      findings.push(`root wrangler.jsonc vars.${key} must be empty; deployment-specific values belong in the local config`);
+    }
+  }
+}
+
 if (findings.length > 0) {
   console.error(`${configPath}: invalid deployment config`);
   console.error(findings.map((finding) => `- ${finding}`).join("\n"));
@@ -90,52 +119,4 @@ function stringList(input) {
 
 function sameStrings(left, right) {
   return JSON.stringify(stringList(left)) === JSON.stringify(stringList(right));
-}
-
-function stripJsonComments(input) {
-  let output = "";
-  let inString = false;
-  let quote = "";
-  let escaped = false;
-
-  for (let index = 0; index < input.length; index += 1) {
-    const char = input[index];
-    const next = input[index + 1];
-
-    if (inString) {
-      output += char;
-      if (escaped) {
-        escaped = false;
-      } else if (char === "\\") {
-        escaped = true;
-      } else if (char === quote) {
-        inString = false;
-      }
-      continue;
-    }
-
-    if (char === "\"" || char === "'") {
-      inString = true;
-      quote = char;
-      output += char;
-      continue;
-    }
-
-    if (char === "/" && next === "/") {
-      while (index < input.length && input[index] !== "\n") index += 1;
-      output += "\n";
-      continue;
-    }
-
-    if (char === "/" && next === "*") {
-      index += 2;
-      while (index < input.length && !(input[index] === "*" && input[index + 1] === "/")) index += 1;
-      index += 1;
-      continue;
-    }
-
-    output += char;
-  }
-
-  return output;
 }

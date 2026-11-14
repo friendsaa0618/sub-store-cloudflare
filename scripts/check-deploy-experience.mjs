@@ -1,8 +1,10 @@
 import { existsSync, readFileSync } from "node:fs";
 
+import { stripJsonComments } from "./lib/jsonc.mjs";
+
 const findings = [];
 const read = (path) => readFileSync(path, "utf8");
-const parse = (path) => JSON.parse(read(path));
+const parse = (path) => JSON.parse(stripJsonComments(read(path)));
 
 if (existsSync(".dev.vars.example")) {
   findings.push("root .dev.vars.example must not exist because Deploy to Cloudflare may prefill public secret values");
