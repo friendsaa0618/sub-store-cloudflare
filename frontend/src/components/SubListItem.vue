@@ -363,14 +363,13 @@ import { notifyLoading, dismissNotify } from "@/utils/notify";
 import { showDialog } from "@/utils/dialog";
 import dayjs from "dayjs";
 import { storeToRefs } from "pinia";
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, toRaw, type CSSProperties } from "vue";
+import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, ref, toRaw, type CSSProperties } from "vue";
 import { useAppClipboard } from "@/utils/clipboard";
 import { useDesktopLayout } from "@/hooks/useDesktopLayout";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 
 import { useCloudflareApi } from "@/api/app";
-import PreviewPanel from "@/components/PreviewPanel.vue";
 import { useHostAPI } from "@/hooks/useHostAPI";
 import { usePopupRoute } from "@/hooks/usePopupRoute";
 import { useAppNotifyStore } from "@/store/appNotify";
@@ -381,7 +380,6 @@ import { getString } from "@/utils/flowTransfer";
 import { readQuickTarget } from "@/utils/quickTarget";
 import { DOWNLOAD_TARGET_OPTIONS } from "@/constants/subscriptionTargets";
 import { buildSubscriptionIconUrl } from "@/utils/subscriptionIcon";
-import CompareTable from "@/views/CompareTable.vue";
 
 const props = defineProps<{
   type: "sub" | "collection";
@@ -389,6 +387,9 @@ const props = defineProps<{
   collection?: Collection;
   isDualColumn?: boolean;
 }>();
+/* Both panels sit behind v-if, so keep their code out of the /subs entry chunk. */
+const PreviewPanel = defineAsyncComponent(() => import("@/components/PreviewPanel.vue"));
+const CompareTable = defineAsyncComponent(() => import("@/views/CompareTable.vue"));
 const writeClipboard = useAppClipboard();
 
 const isDesktop = useDesktopLayout();

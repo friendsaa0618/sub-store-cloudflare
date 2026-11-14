@@ -49,9 +49,9 @@ const viteConfig = defineConfig((mode: ConfigEnv) => {
       sourcemap: false,
       assetsInlineLimit: 2048,
       chunkSizeWarningLimit: 2048,
-      target: "es2015",
-      // CSS nesting ships in the sources; esbuild only flattens it when a real
-      // browser target is given ("es2015" is JS-only and leaves `&` untouched).
+      // Match the CSS target so esbuild stops downleveling modern JS and
+      // flattens the CSS nesting shipped in the sources.
+      target: ["chrome107", "edge107", "firefox104", "safari16"],
       cssTarget: ["chrome107", "edge107", "firefox104", "safari16"],
       minify: "terser",
       input: {
