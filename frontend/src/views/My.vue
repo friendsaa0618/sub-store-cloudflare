@@ -336,6 +336,27 @@
             />
           </div>
 
+          <div class="form-field-group">
+            <label class="form-field-label" for="request-output-cache-ttl">{{ t("myPage.request.outputCacheTtl") }}</label>
+            <input
+              id="request-output-cache-ttl"
+              v-model="requestForm.outputCacheTtl"
+              class="settings-input"
+              type="number"
+              min="0"
+              max="300"
+              :placeholder="t('myPage.request.outputCacheTtl')"
+            />
+          </div>
+
+          <div class="toggle-card-row">
+            <span class="toggle-card-title">{{ t('myPage.request.remoteCacheStaleOnError') }}</span>
+            <AppSwitch
+              v-model="requestForm.remoteCacheStaleOnError"
+              :aria-label="t('myPage.request.remoteCacheStaleOnError')"
+            />
+          </div>
+
           <div class="form-field-group form-field-group--full">
             <label class="form-field-label" for="request-node-info">{{ t("myPage.request.nodeInfoApiUrl") }}</label>
             <input
@@ -344,14 +365,6 @@
               class="settings-input"
               type="text"
               :placeholder="t('myPage.request.nodeInfoApiUrl')"
-            />
-          </div>
-
-          <div class="toggle-card-row form-field-group--full">
-            <span class="toggle-card-title">{{ t('myPage.request.remoteCacheStaleOnError') }}</span>
-            <AppSwitch
-              v-model="requestForm.remoteCacheStaleOnError"
-              :aria-label="t('myPage.request.remoteCacheStaleOnError')"
             />
           </div>
         </div>
@@ -473,6 +486,7 @@ const requestForm = reactive({
   backendRequestConcurrencyWaitTime: "",
   remoteCacheTtl: "",
   remoteCacheStaleOnError: true,
+  outputCacheTtl: "",
   nodeInfoApiUrl: "",
 });
 const templateForm = reactive({
@@ -635,6 +649,7 @@ const syncRequestForm = () => {
   requestForm.backendRequestConcurrencyWaitTime = settingsStore.backendRequestConcurrencyWaitTime || "";
   requestForm.remoteCacheTtl = settingsStore.remoteCacheTtl || "300";
   requestForm.remoteCacheStaleOnError = settingsStore.remoteCacheStaleOnError !== false;
+  requestForm.outputCacheTtl = settingsStore.outputCacheTtl || "30";
   requestForm.nodeInfoApiUrl = settingsStore.nodeInfoApiUrl || "https://ipwho.is/{ip}";
 };
 

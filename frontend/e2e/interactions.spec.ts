@@ -30,7 +30,41 @@ test("settings request form expands", async ({ page }) => {
   await head.click();
   await expect(requestCard).toBeVisible();
   await expect(requestCard.locator("input").first()).toBeVisible();
+  const outputCacheTtl = requestCard.locator("#request-output-cache-ttl");
+  await expect(outputCacheTtl).toHaveValue("30");
+  await expect(outputCacheTtl).toHaveAttribute("max", "300");
   await head.click();
+  await expect(requestCard).toHaveCount(0);
+});
+
+test("settings output cache TTL saves", async ({ page }) => {
+  await open(page, "/my", ".profile-block");
+  await page.locator(".section-head--clickable").click();
+  const requestCard = page.locator(".section-head--clickable + .settings-form-card");
+  const outputCacheTtl = requestCard.locator("#request-output-cache-ttl");
+  await expect(outputCacheTtl).toHaveValue("30");
+  await outputCacheTtl.fill("120");
+
+  let patchPayload: Record<string, unknown> | undefined;
+  await page.route("**/api/settings", async (route) => {
+    if (route.request().method() !== "PATCH") {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ status: "success", data: SETTINGS_PAYLOAD }),
+      });
+      return;
+    }
+    patchPayload = route.request().postDataJSON() as Record<string, unknown>;
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ status: "success", data: { ...SETTINGS_PAYLOAD, outputCacheTtl: "120" } }),
+    });
+  });
+
+  await page.locator(".save-btn").click();
+  await expect.poll(() => String(patchPayload?.outputCacheTtl)).toBe("120");
   await expect(requestCard).toHaveCount(0);
 });
 

@@ -832,6 +832,7 @@ export default {
       backendRequestConcurrencyWaitTime: "并发请求间隔，单位毫秒",
       remoteCacheTtl: "远程订阅边缘缓存秒数，0 表示关闭",
       remoteCacheStaleOnError: "远程订阅失败时允许使用最近的边缘缓存",
+      outputCacheTtl: "下载输出缓存秒数，0 表示关闭（最大 300）",
       nodeInfoApiUrl: "节点信息 HTTPS API，必须包含 {'{ip}'}",
       summary: "当前远程订阅并发 {concurrency}，超时 {seconds} 秒。"
     },

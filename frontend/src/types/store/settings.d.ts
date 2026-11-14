@@ -19,6 +19,7 @@ interface SettingsPostData {
   backendRequestConcurrencyWaitTime?: string;
   remoteCacheTtl?: string;
   remoteCacheStaleOnError?: boolean;
+  outputCacheTtl?: string;
   nodeInfoApiUrl?: string;
   theme?: {
     auto: boolean;

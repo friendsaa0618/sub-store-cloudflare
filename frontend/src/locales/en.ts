@@ -832,6 +832,7 @@ export default {
       backendRequestConcurrencyWaitTime: "Wait time between concurrent requests in milliseconds",
       remoteCacheTtl: "Remote subscription edge-cache TTL in seconds; 0 disables it",
       remoteCacheStaleOnError: "Use the latest edge cache when a remote source fails",
+      outputCacheTtl: "Download output cache TTL in seconds; 0 disables it (max 300)",
       nodeInfoApiUrl: "HTTPS node-info API URL containing {'{ip}'}",
       summary: "Remote subscription concurrency is {concurrency}; timeout is {seconds}s."
     },

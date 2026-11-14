@@ -33,6 +33,7 @@ export const SETTINGS_PAYLOAD = {
   backendRequestConcurrencyWaitTime: "100",
   remoteCacheTtl: "300",
   remoteCacheStaleOnError: true,
+  outputCacheTtl: "30",
   nodeInfoApiUrl: "https://ipwho.is/{ip}",
   theme: { auto: true, name: "light", dark: "dark", light: "light" },
   appearanceSetting: {
