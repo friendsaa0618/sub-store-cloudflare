@@ -36,6 +36,28 @@ Cloudflare Worker
 
 核心路径只需要 Workers、D1 和 Secrets。Cache API 是自动降级的边缘优化；KV、R2、Durable Objects、Queue、Cron 都不是必要组件。
 
+## Worker API 模块结构
+
+`src/routes/api.ts` 只挂载 `/api/*` 的中间件和子路由。资源按文件拆分，新增接口时改对应文件即可：
+
+```text
+routes/api/
+  meta.ts         /env /bootstrap /scripts /settings /storage
+  sources.ts      订阅源 CRUD 与排序
+  collections.ts  组合订阅 CRUD 与排序
+  templates.ts    规则模板 CRUD
+  shares.ts       独立下载授权与配置回收站
+  tools.ts        一次性转换、节点信息、预览
+  links.ts        快捷下载链接与订阅流量信息
+  dto.ts          请求/响应映射与字段校验
+  shared.ts       请求体和公开下载地址等路由工具
+lib/flow.ts       流量信息请求与响应头解析
+lib/template-config.ts  模板 JSON/YAML 解析与 Mihomo 别名归一化
+lib/values.ts     请求字段的小型取值工具
+```
+
+`routes/download.ts` 保持独立：它只处理 `/download/*`、下载授权和输出缓存，不经过管理 API 的鉴权中间件。
+
 ## 数据模型
 
 | 表 | 作用 |

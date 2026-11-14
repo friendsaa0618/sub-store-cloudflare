@@ -5,7 +5,7 @@ import { authorizeScopedDownload } from "../lib/compatibility-resources";
 import { createOutputCacheContext, readOutputCache, writeOutputCache, type CachedOutput } from "../lib/output-cache";
 import { loadConvertedRuleSet } from "../lib/ruleset";
 import { buildSubscriptionResult, getTargetContentType, normalizeTarget, normalizeTargetAlias } from "../lib/subscription";
-import { getCollection, getRoutingTemplate, getSettings, getSource, getSubscriptionCollection, getSubscriptionSources, getSubscriptionSourcesByIds } from "../lib/store";
+import { getCollection, getRoutingTemplate, getSettings, getSource, getSubscriptionCollection, getSubscriptionSources, getSubscriptionSourcesByIds, subscriptionSourceFromRecord } from "../lib/store";
 import type { AppSettings, RoutingTemplate, RoutingTemplateConfig, SubscriptionCollection, SubscriptionSource, SubscriptionTarget } from "../types";
 
 export const downloadRoutes = new Hono<{ Bindings: SubStoreEnv }>();
@@ -78,16 +78,7 @@ downloadRoutes.get("/download/source/:name/:target?/:token?", async (c) => {
   ]);
   if (!source) return failed(c, "Subscription not found", 404);
   if (!source.enabled) return failed(c, "Subscription is disabled", 404);
-  const subscriptionSource: SubscriptionSource = {
-    id: source.id,
-    name: source.name,
-    type: source.type,
-    url: source.url,
-    content: source.content,
-    filters: source.filters,
-    enabled: source.enabled,
-    meta: source.meta,
-  };
+  const subscriptionSource = subscriptionSourceFromRecord(source);
 
   return renderDownload(c, {
     source: subscriptionSource,

@@ -57,3 +57,7 @@ export function normalizeTargetAlias(input: unknown): SubscriptionTarget | undef
   if (input === undefined || input === null || String(input) === "") return undefined;
   return TARGET_ALIASES[String(input).toLowerCase()];
 }
+
+export function normalizeTargetValue(input: unknown): SubscriptionTarget {
+  return normalizeTargetAlias(input) || "mihomo";
+}

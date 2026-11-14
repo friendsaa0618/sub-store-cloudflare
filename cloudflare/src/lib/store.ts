@@ -4,7 +4,9 @@ import {
   DEFAULT_TEMPLATE_CONFIG,
   DEFAULT_TEMPLATE_ID,
 } from "./defaults";
-import { normalizeTargetAlias } from "./targets";
+import { normalizeTargetValue } from "./targets";
+import { normalizeMihomoTemplateConfig } from "./template-config";
+import { stringArray } from "./values";
 import type {
   AppSettings,
   AppConfig,
@@ -13,7 +15,6 @@ import type {
   SourceRecord,
   SubscriptionCollection,
   SubscriptionSource,
-  SubscriptionTarget,
   TemplateRecord,
 } from "../types";
 
@@ -103,7 +104,12 @@ export async function upsertSource(env: SubStoreEnv, input: Partial<SourceRecord
     updatedAt: now,
   };
 
-  await env.DB.prepare(
+  await sourceStatement(env, source).run();
+  return source;
+}
+
+function sourceStatement(env: SubStoreEnv, source: SourceRecord) {
+  return env.DB.prepare(
     `INSERT INTO sources (id, name, type, url, content, enabled, filters_json, meta_json, created_at, updated_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
@@ -115,21 +121,18 @@ export async function upsertSource(env: SubStoreEnv, input: Partial<SourceRecord
        filters_json = excluded.filters_json,
        meta_json = excluded.meta_json,
        updated_at = excluded.updated_at`,
-  )
-    .bind(
-      source.id,
-      source.name,
-      source.type,
-      source.url,
-      source.content,
-      boolInt(source.enabled),
-      JSON.stringify(source.filters),
-      JSON.stringify(source.meta),
-      source.createdAt,
-      source.updatedAt,
-    )
-    .run();
-  return source;
+  ).bind(
+    source.id,
+    source.name,
+    source.type,
+    source.url,
+    source.content,
+    boolInt(source.enabled),
+    JSON.stringify(source.filters),
+    JSON.stringify(source.meta),
+    source.createdAt,
+    source.updatedAt,
+  );
 }
 
 export async function getSource(env: SubStoreEnv, id: string) {
@@ -168,7 +171,12 @@ export async function upsertCollection(env: SubStoreEnv, input: Partial<Collecti
     updatedAt: now,
   };
 
-  await env.DB.prepare(
+  await collectionStatement(env, collection).run();
+  return collection;
+}
+
+function collectionStatement(env: SubStoreEnv, collection: CollectionRecord) {
+  return env.DB.prepare(
     `INSERT INTO collections (id, name, source_ids_json, filters_json, template_id, ignore_failed, enabled, meta_json, created_at, updated_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
@@ -180,21 +188,18 @@ export async function upsertCollection(env: SubStoreEnv, input: Partial<Collecti
        enabled = excluded.enabled,
        meta_json = excluded.meta_json,
        updated_at = excluded.updated_at`,
-  )
-    .bind(
-      collection.id,
-      collection.name,
-      JSON.stringify(collection.sourceIds),
-      JSON.stringify(collection.filters),
-      collection.templateId,
-      boolInt(collection.ignoreFailed),
-      boolInt(collection.enabled),
-      JSON.stringify(collection.meta),
-      collection.createdAt,
-      collection.updatedAt,
-    )
-    .run();
-  return collection;
+  ).bind(
+    collection.id,
+    collection.name,
+    JSON.stringify(collection.sourceIds),
+    JSON.stringify(collection.filters),
+    collection.templateId,
+    boolInt(collection.ignoreFailed),
+    boolInt(collection.enabled),
+    JSON.stringify(collection.meta),
+    collection.createdAt,
+    collection.updatedAt,
+  );
 }
 
 export async function getCollection(env: SubStoreEnv, id: string) {
@@ -224,7 +229,12 @@ export async function upsertTemplate(env: SubStoreEnv, input: Partial<TemplateRe
     updatedAt: now,
   };
 
-  await env.DB.prepare(
+  await templateStatement(env, template).run();
+  return template;
+}
+
+function templateStatement(env: SubStoreEnv, template: TemplateRecord) {
+  return env.DB.prepare(
     `INSERT INTO templates (id, name, target, config_json, created_at, updated_at)
      VALUES (?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
@@ -232,10 +242,7 @@ export async function upsertTemplate(env: SubStoreEnv, input: Partial<TemplateRe
        target = excluded.target,
        config_json = excluded.config_json,
        updated_at = excluded.updated_at`,
-  )
-    .bind(template.id, template.name, template.target, JSON.stringify(template.config), template.createdAt, template.updatedAt)
-    .run();
-  return template;
+  ).bind(template.id, template.name, template.target, JSON.stringify(template.config), template.createdAt, template.updatedAt);
 }
 
 export async function getTemplate(env: SubStoreEnv, id: string) {
@@ -307,7 +314,7 @@ export async function importStorage(env: SubStoreEnv, input: unknown) {
 
 const MAX_SOURCE_ID_FILTERS = 45; // 2 * 45 bound parameters stays below D1's 100-parameter limit.
 
-function subscriptionSourceFromRecord(source: SourceRecord): SubscriptionSource {
+export function subscriptionSourceFromRecord(source: SourceRecord): SubscriptionSource {
   return {
     id: source.id,
     name: source.name,
@@ -362,31 +369,18 @@ function builtinTemplateRecord(template: (typeof BUILTIN_TEMPLATES)[number]): Te
 function sourceImportStatements(env: SubStoreEnv, sources: Partial<SourceRecord>[], now: number) {
   return sources.map((input, index) => {
     const id = toId(input.id || input.name || "source");
-    return env.DB.prepare(
-      `INSERT INTO sources
-       (id, name, type, url, content, enabled, filters_json, meta_json, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-       ON CONFLICT(id) DO UPDATE SET
-         name = excluded.name,
-         type = excluded.type,
-         url = excluded.url,
-         content = excluded.content,
-         enabled = excluded.enabled,
-         filters_json = excluded.filters_json,
-         meta_json = excluded.meta_json,
-         updated_at = excluded.updated_at`,
-    ).bind(
+    return sourceStatement(env, {
       id,
-      stringValue(input.name, id),
-      input.type === "local" ? "local" : "remote",
-      stringValue(input.url, ""),
-      stringValue(input.content, ""),
-      boolInt(input.enabled !== false),
-      JSON.stringify(normalizeFilters(input.filters)),
-      JSON.stringify(normalizeMeta(input.meta)),
-      now + index,
-      now,
-    );
+      name: stringValue(input.name, id),
+      type: input.type === "local" ? "local" : "remote",
+      url: stringValue(input.url, ""),
+      content: stringValue(input.content, ""),
+      enabled: input.enabled !== false,
+      filters: normalizeFilters(input.filters),
+      meta: normalizeMeta(input.meta),
+      createdAt: now + index,
+      updatedAt: now,
+    });
   });
 }
 
@@ -395,53 +389,32 @@ function templateImportStatements(env: SubStoreEnv, templates: Partial<TemplateR
     .filter((input) => !BUILTIN_TEMPLATE_IDS.has(toId(input.id || input.name || "template")))
     .map((input, index) => {
       const id = toId(input.id || input.name || "template");
-      return env.DB.prepare(
-        `INSERT INTO templates (id, name, target, config_json, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?)
-         ON CONFLICT(id) DO UPDATE SET
-           name = excluded.name,
-           target = excluded.target,
-           config_json = excluded.config_json,
-           updated_at = excluded.updated_at`,
-      ).bind(
+      return templateStatement(env, {
         id,
-        stringValue(input.name, id),
-        normalizeTargetValue(input.target),
-        JSON.stringify(parseConfig(input.config || DEFAULT_TEMPLATE_CONFIG)),
-        now + index,
-        now,
-      );
+        name: stringValue(input.name, id),
+        target: normalizeTargetValue(input.target),
+        config: parseConfig(input.config || DEFAULT_TEMPLATE_CONFIG),
+        createdAt: now + index,
+        updatedAt: now,
+      });
     });
 }
 
 function collectionImportStatements(env: SubStoreEnv, collections: Partial<CollectionRecord>[], now: number) {
   return collections.map((input, index) => {
     const id = toId(input.id || input.name || "collection");
-    return env.DB.prepare(
-      `INSERT INTO collections
-       (id, name, source_ids_json, filters_json, template_id, ignore_failed, enabled, meta_json, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-       ON CONFLICT(id) DO UPDATE SET
-         name = excluded.name,
-         source_ids_json = excluded.source_ids_json,
-         filters_json = excluded.filters_json,
-         template_id = excluded.template_id,
-         ignore_failed = excluded.ignore_failed,
-         enabled = excluded.enabled,
-         meta_json = excluded.meta_json,
-         updated_at = excluded.updated_at`,
-    ).bind(
+    return collectionStatement(env, {
       id,
-      stringValue(input.name, id),
-      JSON.stringify(stringArray(input.sourceIds)),
-      JSON.stringify(normalizeFilters(input.filters)),
-      stringValue(input.templateId, DEFAULT_TEMPLATE_ID),
-      boolInt(input.ignoreFailed !== false),
-      boolInt(input.enabled !== false),
-      JSON.stringify(normalizeMeta(input.meta)),
-      now + index,
-      now,
-    );
+      name: stringValue(input.name, id),
+      sourceIds: stringArray(input.sourceIds),
+      filters: normalizeFilters(input.filters),
+      templateId: stringValue(input.templateId, DEFAULT_TEMPLATE_ID),
+      ignoreFailed: input.ignoreFailed !== false,
+      enabled: input.enabled !== false,
+      meta: normalizeMeta(input.meta),
+      createdAt: now + index,
+      updatedAt: now,
+    });
   });
 }
 
@@ -584,21 +557,6 @@ function parseConfig(value: unknown) {
   return value && typeof value === "object" ? normalizeMihomoTemplateConfig(value as JsonObject) : BUILTIN_TEMPLATES[0].config;
 }
 
-function normalizeMihomoTemplateConfig(input: JsonObject) {
-  const output: JsonObject = { ...input };
-  copyAlias(output, "mixed-port", "mixedPort");
-  copyAlias(output, "allow-lan", "allowLan");
-  copyAlias(output, "log-level", "logLevel");
-  copyAlias(output, "proxy-groups", "proxyGroups");
-  copyAlias(output, "rule-providers", "ruleProviders");
-  return output;
-}
-
-function copyAlias(input: JsonObject, from: string, to: string) {
-  if (input[to] === undefined && input[from] !== undefined) input[to] = input[from];
-  delete input[from];
-}
-
 function normalizeMeta(input: unknown, fallback: unknown = {}): Record<string, unknown> {
   if (input && typeof input === "object" && !Array.isArray(input)) return input as Record<string, unknown>;
   if (fallback && typeof fallback === "object" && !Array.isArray(fallback)) return fallback as Record<string, unknown>;
@@ -627,14 +585,6 @@ function parseJson<T>(text: string, fallback: T): T {
   } catch {
     return fallback;
   }
-}
-
-function stringArray(value: unknown) {
-  return Array.isArray(value) ? value.map(String).filter(Boolean) : [];
-}
-
-function normalizeTargetValue(value: unknown): SubscriptionTarget {
-  return normalizeTargetAlias(value) || "mihomo";
 }
 
 function stringValue(value: unknown, fallback: string) {
