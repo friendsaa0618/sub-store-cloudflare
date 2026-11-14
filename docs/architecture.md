@@ -77,6 +77,39 @@ Cloudflare Worker
 
 远程订阅的 User-Agent 优先级是：订阅源自定义 `ua` / 临时 `ua` 参数 > 透传下载请求的 User-Agent > 全局默认 User-Agent。
 
+## 订阅模块结构
+
+公开入口 `lib/subscription` 保持不变，调用方仍然从 `../lib/subscription` 导入。实现按职责拆在同名目录里：
+
+```text
+lib/subscription/
+  index.ts                 公开导出（构建、预览、校验、一次性转换、目标兼容性）
+  build.ts                 下载构建：读取 sources、合并、套用 collection filters
+  preview.ts               预览与本地内容校验
+  convert.ts               一次性格式转换
+  sources.ts               远程订阅拉取、Cache API 缓存、响应元数据
+  concurrency.ts           请求超时/并发设置和并发执行器
+  filters.ts               filter DSL：筛选、重命名、去重、排序、解析、脚本
+  templates.ts             模板分组展开、rulesetCdn 重写
+  parsing/parse.ts         Base64 探测、YAML/JSON/URI 行分发、预览 ID
+  parsing/uri.ts           URI scheme 解析（vless/trojan/ss/ssr/vmess 等）
+  parsing/clients.ts       Quantumult X / Surge / Loon 单行节点解析
+  render/index.ts          输出目标分发
+  render/mihomo.ts         Mihomo / Stash YAML
+  render/surge.ts          Surge / Surge Mac / Surfboard
+  render/loon.ts           Loon
+  render/qx.ts             Quantumult X
+  render/egern.ts          Egern
+  render/uri.ts            URI / v2ray 分享链接
+  render/sing-box.ts       sing-box profile、分组、fake-ip、内核版本开关
+  render/sing-box-rules.ts sing-box 规则与 rule-set 转换
+  render/sing-box-nodes.ts sing-box 出站/端点转换
+  render/text.ts           文本型输出的公共参数拼装
+  utils.ts                 通用工具与 Base64 编码
+```
+
+拆分只调整代码位置，解析、过滤和输出行为不变。
+
 ## 输入与核心能力
 
 远程订阅最多 8 个 URL，可以按行填写并合并；单个响应上限 2 MiB，合计上限 12 MiB。本地订阅支持单行 URI、Mihomo YAML、JSON/JSON5 代理数组、常见 Surge/Loon/Quantumult X 单行节点和完整 Base64 内容。远程响应可以经过 Workers Cache API 短期缓存，并只透传允许的订阅元数据。管理 API 请求体上限是 4 MiB，流量信息、节点信息和 DoH 响应分别限制在 64 KiB。
