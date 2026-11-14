@@ -477,6 +477,7 @@ function defaultSettings(env: SubStoreEnv) {
     backendRequestConcurrencyWaitTime: "100",
     remoteCacheTtl: "900",
     remoteCacheStaleOnError: true,
+    outputCacheTtl: "30",
     rulesetCdn: DEFAULT_RULESET_CDN,
     nodeInfoApiUrl: "https://ipwho.is/{ip}",
     theme: { auto: true, name: "light", dark: "dark", light: "light" },

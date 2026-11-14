@@ -77,6 +77,12 @@ Cloudflare Worker
 
 远程订阅的 User-Agent 优先级是：订阅源自定义 `ua` / 临时 `ua` 参数 > 透传下载请求的 User-Agent > 全局默认 User-Agent。
 
+### 输出缓存
+
+`/download/source` 和 `/download/collection` 的最终输出会缓存在 Cache API 中，默认 `outputCacheTtl` 为 30 秒（设置项，0 关闭，最大 300）。缓存 key 包含 host、target、全局下载 token 的 SHA-256 和配置指纹，因此配置变化会自动换 key。
+
+以下请求不使用输出缓存：scoped download grant、带 `?url=` / `?content=` / `?ua=` 的临时输入、`refresh=1` / `noCache`，以及 token 出现在路径里的请求（避免 token 被写进输出的 `# Source:` 注释）。`refresh` 请求仍会把新结果写回缓存。响应头 `x-sub-store-output-cache` 为 `hit` / `miss` / `disabled`。
+
 ## 订阅模块结构
 
 公开入口 `lib/subscription` 保持不变，调用方仍然从 `../lib/subscription` 导入。实现按职责拆在同名目录里：

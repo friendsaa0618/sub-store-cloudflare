@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import type { Context } from "hono";
 import { failed, isTokenValid } from "../lib/http";
 import { authorizeScopedDownload } from "../lib/compatibility-resources";
+import { createOutputCacheContext, readOutputCache, writeOutputCache, type CachedOutput } from "../lib/output-cache";
 import { loadConvertedRuleSet } from "../lib/ruleset";
 import { buildSubscriptionResult, getTargetContentType, normalizeTarget, normalizeTargetAlias } from "../lib/subscription";
 import { getCollection, getRoutingTemplate, getSettings, getSource, getSubscriptionCollection, getSubscriptionSources, getSubscriptionSourcesByIds } from "../lib/store";
@@ -18,8 +19,8 @@ type DownloadContext = Context<{ Bindings: SubStoreEnv }>;
 downloadRoutes.get("/download/collection/:name/ruleset/:provider/:token?", async (c) => {
   const collection = await getSubscriptionCollection(c.env, c.req.param("name"));
   if (!collection) return failed(c, "Collection not found", 404);
-  const invalidToken = await rejectInvalidDownloadToken(c, "collection", c.req.param("name"), "sing-box");
-  if (invalidToken) return invalidToken;
+  const auth = await authorizeDownload(c, "collection", c.req.param("name"), "sing-box");
+  if (auth instanceof Response) return auth;
 
   const template = await getRoutingTemplate(c.env, collection.templateId);
   const provider = findRuleProvider(template?.config, c.req.param("provider"));
@@ -35,8 +36,8 @@ downloadRoutes.get("/download/collection/:name/ruleset/:provider/:token?", async
 downloadRoutes.get("/download/collection/:name/:target?/:token?", async (c) => {
   const target = getDownloadTarget(c);
   if (!target) return failed(c, "Unsupported target", 400);
-  const invalidToken = await rejectInvalidDownloadToken(c, "collection", c.req.param("name"), target);
-  if (invalidToken) return invalidToken;
+  const auth = await authorizeDownload(c, "collection", c.req.param("name"), target);
+  if (auth instanceof Response) return auth;
 
   const collection = await getSubscriptionCollection(c.env, c.req.param("name"));
   if (!collection) {
@@ -60,14 +61,15 @@ downloadRoutes.get("/download/collection/:name/:target?/:token?", async (c) => {
     template,
     settings,
     target,
+    scopedToken: auth.scoped,
   });
 });
 
 downloadRoutes.get("/download/source/:name/:target?/:token?", async (c) => {
   const target = getDownloadTarget(c);
   if (!target) return failed(c, "Unsupported target", 400);
-  const invalidToken = await rejectInvalidDownloadToken(c, "source", c.req.param("name"), target);
-  if (invalidToken) return invalidToken;
+  const auth = await authorizeDownload(c, "source", c.req.param("name"), target);
+  if (auth instanceof Response) return auth;
 
   const [source, template, settings] = await Promise.all([
     getSource(c.env, c.req.param("name")),
@@ -93,6 +95,7 @@ downloadRoutes.get("/download/source/:name/:target?/:token?", async (c) => {
     target,
     template,
     settings,
+    scopedToken: auth.scoped,
   });
 });
 
@@ -105,6 +108,7 @@ async function renderDownload(
     target: SubscriptionTarget;
     template: RoutingTemplate | undefined;
     settings: AppSettings;
+    scopedToken: boolean;
   },
 ) {
   // `?url=` / `?content=` exist for ad-hoc links handed out by the admin. On a
@@ -116,32 +120,69 @@ async function renderDownload(
   const sourceOverride = getTemporarySourceOverride(c);
   const sources = sourceOverride ? applyTemporarySourceOverride(options.sources, sourceOverride, options.collection) : options.sources;
   const source = sourceOverride && options.source ? applyTemporarySourceOverride([options.source], sourceOverride)[0] : options.source;
+  const requestUrl = new URL(c.req.url);
+  const forceRefresh = ["1", "true"].includes(c.req.query("refresh") || c.req.query("noCache") || "");
+  const token = getDownloadToken(c) || "";
+  // A token in the path would be copied into the `# Source:` comment, so never
+  // put that output in a shared cache.
+  const tokenInPath = Boolean(token && requestUrl.pathname.includes(token));
+  const cacheContext = !options.scopedToken && !sourceOverride && !tokenInPath
+    ? await createOutputCacheContext({
+        kind: options.collection ? "collection" : "source",
+        id: options.collection?.id || options.source?.id || "",
+        target: options.target,
+        host: requestUrl.host,
+        token,
+        collection: options.collection,
+        source: options.source,
+        sources,
+        template: options.template,
+        settings: options.settings,
+      })
+    : undefined;
+
+  if (cacheContext && !forceRefresh) {
+    const cached = await readOutputCache(cacheContext.key);
+    if (cached) return outputResponse(cached, "hit");
+  }
+
   try {
     const result = await buildSubscriptionResult({
       source,
       collection: options.collection,
       sources,
-      requestUrl: new URL(c.req.url),
+      requestUrl,
       target: options.target,
       template: options.template,
       settings: options.settings,
       requestUserAgent: c.req.header("user-agent") || "",
-      forceRefresh: ["1", "true"].includes(c.req.query("refresh") || c.req.query("noCache") || ""),
+      forceRefresh,
       waitUntil: (promise) => c.executionCtx.waitUntil(promise),
     });
-    const headers = new Headers({
-      "content-type": getTargetContentType(options.target),
-      "profile-update-interval": result.metadata.profileUpdateInterval || "6",
-      "cache-control": "no-store",
-    });
-    setResponseHeader(headers, "subscription-userinfo", result.metadata.subscriptionUserinfo);
-    setResponseHeader(headers, "profile-web-page-url", result.metadata.profileWebPageUrl);
-    setResponseHeader(headers, "content-disposition", result.metadata.contentDisposition);
-    setResponseHeader(headers, "x-sub-store-cache", result.metadata.cacheStatus);
-    return new Response(result.body, { headers });
+    const output: CachedOutput = {
+      body: result.body,
+      metadata: result.metadata,
+      contentType: getTargetContentType(options.target),
+    };
+    if (cacheContext) await writeOutputCache(cacheContext.key, output, cacheContext.ttl);
+    return outputResponse(output, cacheContext ? "miss" : "disabled");
   } catch (error) {
     return failed(c, error instanceof Error ? error.message : String(error), 500);
   }
+}
+
+function outputResponse(output: CachedOutput, outputCacheStatus: "hit" | "miss" | "disabled") {
+  const headers = new Headers({
+    "content-type": output.contentType,
+    "profile-update-interval": output.metadata.profileUpdateInterval || "6",
+    "cache-control": "no-store",
+    "x-sub-store-output-cache": outputCacheStatus,
+  });
+  setResponseHeader(headers, "subscription-userinfo", output.metadata.subscriptionUserinfo);
+  setResponseHeader(headers, "profile-web-page-url", output.metadata.profileWebPageUrl);
+  setResponseHeader(headers, "content-disposition", output.metadata.contentDisposition);
+  setResponseHeader(headers, "x-sub-store-cache", output.metadata.cacheStatus);
+  return new Response(output.body, { headers });
 }
 
 function setResponseHeader(headers: Headers, name: string, value: string | undefined) {
@@ -217,15 +258,17 @@ function getDownloadToken(c: DownloadContext) {
   return c.req.param("token") || c.req.query("token");
 }
 
-async function rejectInvalidDownloadToken(
+type DownloadAuth = { scoped: boolean };
+
+async function authorizeDownload(
   c: DownloadContext,
   resourceType: "source" | "collection",
   resourceId: string,
   target: SubscriptionTarget,
-) {
+): Promise<DownloadAuth | Response> {
   const token = getDownloadToken(c);
-  if (await isTokenValid(c.env.SUB_STORE_PUBLIC_DOWNLOAD_TOKEN, token)) return undefined;
-  if (await authorizeScopedDownload(c.env, token, resourceType, resourceId, target)) return undefined;
+  if (await isTokenValid(c.env.SUB_STORE_PUBLIC_DOWNLOAD_TOKEN, token)) return { scoped: false };
+  if (await authorizeScopedDownload(c.env, token, resourceType, resourceId, target)) return { scoped: true };
   return failed(c, "Download token is invalid", 403);
 }
 

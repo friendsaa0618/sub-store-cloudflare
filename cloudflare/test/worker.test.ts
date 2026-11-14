@@ -445,6 +445,54 @@ describe("Worker and D1 integration", () => {
     expect(body).toContain("All Node B");
   });
 
+  it("caches rendered downloads and invalidates them when the source changes", async () => {
+    const create = await workerRequest("/api/sources", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        id: "output-cache-source",
+        name: "Output Cache",
+        type: "local",
+        content: "trojan://password@example.com:443#Cache%20One",
+        enabled: true,
+      }),
+    });
+    expect(create.status).toBe(200);
+
+    const url = `/download/source/output-cache-source/json?token=${DOWNLOAD_TOKEN}`;
+    const first = await workerRequest(url, {}, false);
+    expect(first.status).toBe(200);
+    expect(first.headers.get("x-sub-store-output-cache")).toBe("miss");
+    const firstBody = await first.text();
+    expect(firstBody).toContain("Cache One");
+
+    const second = await workerRequest(url, {}, false);
+    expect(second.status).toBe(200);
+    expect(second.headers.get("x-sub-store-output-cache")).toBe("hit");
+    expect(await second.text()).toBe(firstBody);
+
+    const update = await workerRequest("/api/sources/output-cache-source", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        name: "Output Cache",
+        type: "local",
+        content: "trojan://password@example.com:443#Cache%20Two",
+        enabled: true,
+      }),
+    });
+    expect(update.status).toBe(200);
+
+    const third = await workerRequest(url, {}, false);
+    expect(third.status).toBe(200);
+    expect(third.headers.get("x-sub-store-output-cache")).toBe("miss");
+    expect(await third.text()).toContain("Cache Two");
+
+    const pathToken = await workerRequest(`/download/source/output-cache-source/json/${DOWNLOAD_TOKEN}`, {}, false);
+    expect(pathToken.status).toBe(200);
+    expect(pathToken.headers.get("x-sub-store-output-cache")).toBe("disabled");
+  });
+
   it("rejects invalid and duplicate record ids", async () => {
     const invalid = await workerRequest("/api/sources", {
       method: "POST",
