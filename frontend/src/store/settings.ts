@@ -169,13 +169,8 @@ export const useSettingsStore = defineStore("settingsStore", {
         });
       }
     },
-    /** Apply a settings payload that was already fetched (bootstrap). */
-    applySettings(data: Record<string, any> | null | undefined) {
-      if (!data) {
-        this.hasFetchedSettings = false;
-        return;
-      }
-
+    /** Request fields shared by the bootstrap payload and a saved settings response. */
+    applyServerSettings(data: Record<string, any>) {
       this.defaultUserAgent = data.defaultUserAgent || "";
       this.defaultFlowUserAgent = data.defaultFlowUserAgent || "";
       this.defaultTimeout = data.defaultTimeout || "";
@@ -185,8 +180,17 @@ export const useSettingsStore = defineStore("settingsStore", {
       this.remoteCacheStaleOnError = data.remoteCacheStaleOnError !== false;
       this.outputCacheTtl = normalizeSettingInputValue(data.outputCacheTtl);
       this.nodeInfoApiUrl = normalizeSettingInputValue(data.nodeInfoApiUrl);
-      this.syncTime = data.syncTime || 0;
       this.avatarUrl = data.avatarUrl || "";
+    },
+    /** Apply a settings payload that was already fetched (bootstrap). */
+    applySettings(data: Record<string, any> | null | undefined) {
+      if (!data) {
+        this.hasFetchedSettings = false;
+        return;
+      }
+
+      this.applyServerSettings(data);
+      this.syncTime = data.syncTime || 0;
 
       this.theme.auto = data.theme?.auto ?? true;
       this.theme.name = data.theme?.name ?? "light";
@@ -217,16 +221,7 @@ export const useSettingsStore = defineStore("settingsStore", {
       const { showNotify } = useAppNotifyStore();
       const res = await settingsApi.setSettings(data);
       if (res?.data?.status === "success" && res?.data?.data) {
-        this.defaultUserAgent = res.data.data.defaultUserAgent || "";
-        this.defaultFlowUserAgent = res.data.data.defaultFlowUserAgent || "";
-        this.defaultTimeout = res.data.data.defaultTimeout || "";
-        this.backendRequestConcurrency = normalizeSettingInputValue(res.data.data.backendRequestConcurrency);
-        this.backendRequestConcurrencyWaitTime = normalizeSettingInputValue(res.data.data.backendRequestConcurrencyWaitTime);
-        this.remoteCacheTtl = normalizeSettingInputValue(res.data.data.remoteCacheTtl);
-        this.remoteCacheStaleOnError = res.data.data.remoteCacheStaleOnError !== false;
-        this.outputCacheTtl = normalizeSettingInputValue(res.data.data.outputCacheTtl);
-        this.nodeInfoApiUrl = normalizeSettingInputValue(res.data.data.nodeInfoApiUrl);
-        this.avatarUrl = res.data.data.avatarUrl || "";
+        this.applyServerSettings(res.data.data);
         showNotify({ type: "success", title: t(`myPage.notify.save.succeed`) });
         return true;
       } else {

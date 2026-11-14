@@ -296,7 +296,6 @@
 <script lang="ts" setup>
 import { storeToRefs } from "pinia";
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, toRaw, watch } from "vue";
-import { useI18n } from "vue-i18n";
 import { useRoute } from 'vue-router';
 import draggable from "vuedraggable";
 
@@ -307,20 +306,14 @@ import SubListItem from "@/components/SubListItem.vue";
 import { useFilteredDraggableList } from "@/hooks/useFilteredDraggableList";
 import { usePopupRoute } from "@/hooks/usePopupRoute";
 import { useListViewMode } from "@/hooks/useListViewMode";
-import { useAppNotifyStore } from "@/store/appNotify";
 import { useGlobalStore } from "@/store/global";
 import { useListSearchStore } from "@/store/listSearch";
 import { useSettingsStore } from '@/store/settings';
 import { useSubsStore } from "@/store/subs";
-import { butifyDate } from "@/utils/butifyDate";
 import { initStores } from "@/utils/initApp";
 import { listItemMatchesSearch, shouldSearchListRemark } from "@/utils/listSearch";
 import { isMobile } from "@/utils/isMobile";
-const { showNotify } = useAppNotifyStore();
 const cloudflareApi = useCloudflareApi();
-const { t } = useI18n();
-// const isSubFold = ref(localStorage.getItem('sub-fold') === '1');
-// const isColFold = ref(localStorage.getItem('col-fold') === '1');
 const subsStore = useSubsStore();
 const globalStore = useGlobalStore();
 const settingsStore = useSettingsStore();
@@ -391,18 +384,15 @@ watch(
     listSearchInput.value?.focus();
   },
 );
-const { hasSubs, hasCollections, subs, collections, flows } = storeToRefs(subsStore);
+const { hasSubs, hasCollections, subs, collections } = storeToRefs(subsStore);
 const { appearanceSetting } = storeToRefs(settingsStore);
 const { effectiveListViewMode } = useListViewMode();
 const {
   // isSimpleMode,
   isLoading,
-  isFlowFetching,
   fetchResult,
   // showFloatingRefreshButton,
 } = storeToRefs(globalStore);
-/** Timestamp of the last successful data load; null until first success. */
-const lastRefreshAt = ref<number | null>(null);
 const isDualColumnMode = computed(() => {
   return effectiveListViewMode.value === "dual-column";
 });
@@ -415,98 +405,6 @@ const filterdSubsCount = computed(() => {
 const filterdColsCount = computed(() => {
   return collections.value.filter(shouldShowElement).length;
 });
-
-const totalSubscriptionCount = computed(
-  () => subs.value.length + collections.value.length,
-);
-
-/**
- * Count real flow failures / low-traffic warnings from remote sources only.
- * Missing flow data is not treated as success or failure (shows "—").
- */
-const flowIssueCounts = computed(() => {
-  let failed = 0;
-  let warning = 0;
-  let checked = 0;
-
-  for (const sub of subs.value) {
-    if (sub.source === "local" && !sub.subUserinfo) continue;
-
-    const target = flows.value[sub.url as string] || flows.value[sub.name];
-    if (!target) continue;
-
-    checked += 1;
-
-    if (!("status" in target) || !target.status) {
-      failed += 1;
-      continue;
-    }
-
-    if (target.status === "failed") {
-      if ((target as ErrorResponse).error?.code === "NO_FLOW_INFO") continue;
-      failed += 1;
-      continue;
-    }
-
-    if (target.status === "success" && (target as Flow).data?.usage) {
-      const {
-        total,
-        usage: { upload, download },
-      } = (target as Flow).data;
-      let progress = 0;
-      try {
-        progress = 1 - (upload + download) / total;
-        progress = Number.parseFloat(progress.toFixed(2));
-      } catch {
-        progress = 0;
-      }
-      if (!(progress > 0)) progress = 0;
-      if (progress < 0.1) warning += 1;
-    }
-  }
-
-  return { failed, warning, checked };
-});
-
-const flowStatusValue = computed(() => {
-  const { failed, warning, checked } = flowIssueCounts.value;
-  if (checked === 0) return t("subPage.overview.emDash");
-  return String(failed + warning);
-});
-
-const flowStatusDetail = computed(() => {
-  const { failed, warning, checked } = flowIssueCounts.value;
-  if (checked === 0) {
-    return isFlowFetching.value
-      ? t("subPage.overview.flowPending")
-      : t("subPage.overview.emDash");
-  }
-  if (failed === 0 && warning === 0) {
-    return t("subPage.overview.flowOk");
-  }
-  const parts: string[] = [];
-  if (failed > 0) {
-    parts.push(t("subPage.overview.flowFailed", { count: failed }));
-  }
-  if (warning > 0) {
-    parts.push(t("subPage.overview.flowWarning", { count: warning }));
-  }
-  return parts.join(t("specificWord.metaSeparator"));
-});
-
-const lastRefreshDisplay = computed(() => {
-  if (lastRefreshAt.value == null) return t("subPage.overview.emDash");
-  return butifyDate(lastRefreshAt.value);
-});
-
-watch(
-  () => [isLoading.value, fetchResult.value] as const,
-  ([loading, ok]) => {
-    if (!loading && ok) {
-      lastRefreshAt.value = Date.now();
-    }
-  },
-);
 
 const refresh = async () => {
   await initStores(true, true, true);
@@ -569,23 +467,6 @@ const toggleFold = (type) => {
   }
   localStorage.setItem('sub-fold', JSON.stringify(fold.value));
 };
-// const toggleSubFold = () => {
-//   isSubFold.value = !isSubFold.value;
-//   if (isSubFold.value) {
-//     localStorage.setItem('sub-fold', '1')  
-//   } else {
-//     localStorage.removeItem('sub-fold')
-//   }
-// };
-// const toggleColFold = () => {
-//   isColFold.value = !isColFold.value;
-//   if (isColFold.value) {
-//     localStorage.setItem('col-fold', '1')  
-//   } else {
-//     localStorage.removeItem('col-fold')
-//   }
-// };
-
 const shouldShowElement = (element) => {
   return listItemMatchesSearch(element, listSearchStore.normalizedQuery, {
     includeRemark: shouldSearchListRemark(appearanceSetting.value),
