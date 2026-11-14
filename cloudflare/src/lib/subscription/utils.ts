@@ -25,7 +25,30 @@ export function uniqueStrings(values: string[]) {
 }
 
 export function stripUndefined<T extends Record<string, unknown>>(input: T) {
-  return Object.fromEntries(Object.entries(input).filter(([, value]) => value !== undefined && value !== "")) as T;
+  const keys = Object.keys(input);
+  let changed = false;
+  for (const key of keys) {
+    const value = input[key];
+    if (value === undefined || value === "") {
+      changed = true;
+      break;
+    }
+  }
+  if (!changed) return input;
+
+  const output: Record<string, unknown> = {};
+  for (const key of keys) {
+    const value = input[key];
+    if (value === undefined || value === "") continue;
+    // JSON.parse can create an own `__proto__` key; assign it as data instead
+    // of letting the assignment change the output prototype.
+    if (key === "__proto__") {
+      Object.defineProperty(output, key, { value, enumerable: true, configurable: true, writable: true });
+    } else {
+      output[key] = value;
+    }
+  }
+  return output as T;
 }
 
 export function getByPath(input: Record<string, unknown>, path: string) {
@@ -59,13 +82,18 @@ export function base64Utf8(input: string) {
   return btoa(binary);
 }
 
+const TEXT_DECODER = new TextDecoder();
+
 export function decodeBase64UrlText(input: string) {
   const normalized = input.replace(/\s+/g, "");
   const padded = normalized.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(normalized.length / 4) * 4, "=");
   try {
     const binary = atob(padded);
-    const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
-    return new TextDecoder().decode(bytes);
+    // `Uint8Array.from(binary, ...)` invokes a callback per byte; a direct loop
+    // is roughly ten times faster on the per-node vmess payload.
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+    return TEXT_DECODER.decode(bytes);
   } catch {
     return "";
   }

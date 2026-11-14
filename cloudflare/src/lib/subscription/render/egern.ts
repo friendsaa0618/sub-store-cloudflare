@@ -1,11 +1,11 @@
-import { stringify as stringifyYaml } from "yaml";
 import type { ProxyNode } from "../../../types";
 import { stripUndefined } from "../utils";
+import { stringifyYamlDocument } from "./yaml";
 
 export function renderEgernYaml(proxies: ProxyNode[]) {
   const list = proxies.map(toEgernProxy).filter((proxy) => Boolean(proxy));
   if (list.length === 0) throw new Error("No supported nodes for egern output");
-  return stringifyYaml({ proxies: list });
+  return stringifyYamlDocument({ proxies: list });
 }
 
 function toEgernProxy(proxy: ProxyNode) {
