@@ -851,7 +851,7 @@ const filteredCollections = useFilteredDraggableList(collections, shouldShowElem
   height: 12px;
   border-radius: var(--radius-sm);
 
-  &--short {
+  &.loading-line--short {
     width: 40%;
   }
 }
