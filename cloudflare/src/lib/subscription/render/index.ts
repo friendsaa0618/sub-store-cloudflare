@@ -29,7 +29,7 @@ export function renderTarget(proxies: ProxyNode[], target: SubscriptionTarget, t
 
 export function renderBuildTarget(proxies: ProxyNode[], options: BuildOptions) {
   const rulesetCdn = options.settings?.rulesetCdn;
-  if (options.target === "mihomo" || options.target === "stash") return renderMihomoYaml(proxies, options.requestUrl, options.template?.config, rulesetCdn);
+  if (options.target === "mihomo" || options.target === "stash") return renderMihomoYaml(proxies, options.requestUrl, options.template?.config, rulesetCdn, options.sourcePath);
   if (options.target === "surge") return renderSurgeProxies(proxies);
   if (options.target === "surge-mac") return renderSurgeMacProxies(proxies);
   if (options.target === "surfboard") return renderSurfboardProxies(proxies);
@@ -51,5 +51,5 @@ export function renderBuildTarget(proxies: ProxyNode[], options: BuildOptions) {
   if (options.target === "v2ray") return base64Utf8(renderProxyUris(proxies));
   if (options.target === "uri") return renderProxyUris(proxies);
   if (options.target === "json") return JSON.stringify({ proxies }, null, 2);
-  return renderMihomoYaml(proxies, options.requestUrl, options.template?.config, rulesetCdn);
+  return renderMihomoYaml(proxies, options.requestUrl, options.template?.config, rulesetCdn, options.sourcePath);
 }

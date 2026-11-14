@@ -12,6 +12,8 @@ export type BuildOptions = {
   collection?: SubscriptionCollection;
   sources: SubscriptionSource[];
   requestUrl: URL;
+  /** Path shown in output comments; defaults to requestUrl.pathname. */
+  sourcePath?: string;
   target: SubscriptionTarget;
   template?: RoutingTemplate;
   settings?: AppSettings;

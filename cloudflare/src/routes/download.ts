@@ -121,11 +121,18 @@ async function renderDownload(
   const sources = sourceOverride ? applyTemporarySourceOverride(options.sources, sourceOverride, options.collection) : options.sources;
   const source = sourceOverride && options.source ? applyTemporarySourceOverride([options.source], sourceOverride)[0] : options.source;
   const requestUrl = new URL(c.req.url);
+  const requestUserAgent = c.req.header("user-agent") || "";
   const forceRefresh = ["1", "true"].includes(c.req.query("refresh") || c.req.query("noCache") || "");
   const token = getDownloadToken(c) || "";
   // A token in the path would be copied into the `# Source:` comment, so never
   // put that output in a shared cache.
-  const tokenInPath = Boolean(token && requestUrl.pathname.includes(token));
+  const tokenInPath = Boolean(token && decodedPathname(requestUrl).includes(token));
+  const sourcePath = tokenInPath ? withoutPathToken(requestUrl, token).pathname : requestUrl.pathname;
+  const cacheQuery = [...requestUrl.searchParams.entries()]
+    .filter(([key]) => !["token", "refresh", "noCache"].includes(key))
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([key, value]) => `${key}=${value}`)
+    .join("&");
   const cacheContext = !options.scopedToken && !sourceOverride && !tokenInPath
     ? await createOutputCacheContext({
         kind: options.collection ? "collection" : "source",
@@ -133,6 +140,8 @@ async function renderDownload(
         target: options.target,
         host: requestUrl.host,
         token,
+        requestUserAgent,
+        query: cacheQuery,
         collection: options.collection,
         source: options.source,
         sources,
@@ -152,10 +161,11 @@ async function renderDownload(
       collection: options.collection,
       sources,
       requestUrl,
+      sourcePath,
       target: options.target,
       template: options.template,
       settings: options.settings,
-      requestUserAgent: c.req.header("user-agent") || "",
+      requestUserAgent,
       forceRefresh,
       waitUntil: (promise) => c.executionCtx.waitUntil(promise),
     });
@@ -256,6 +266,24 @@ function stringQuery(c: DownloadContext, key: string) {
 
 function getDownloadToken(c: DownloadContext) {
   return c.req.param("token") || c.req.query("token");
+}
+
+function decodedPathname(url: URL) {
+  try {
+    return decodeURIComponent(url.pathname);
+  } catch {
+    return url.pathname;
+  }
+}
+
+function withoutPathToken(url: URL, token: string) {
+  const next = new URL(url);
+  next.pathname = decodedPathname(next).replace(new RegExp(`/${escapeRegExp(token)}/?$`), "/");
+  return next;
+}
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 type DownloadAuth = { scoped: boolean };

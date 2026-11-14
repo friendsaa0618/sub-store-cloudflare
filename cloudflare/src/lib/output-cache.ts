@@ -21,6 +21,8 @@ type OutputCacheInput = {
   target: string;
   host: string;
   token: string;
+  requestUserAgent: string;
+  query: string;
   collection?: unknown;
   source?: unknown;
   sources: unknown;
@@ -44,6 +46,8 @@ export async function createOutputCacheContext(input: OutputCacheInput): Promise
     settings: input.settings,
     target: input.target,
     host: input.host,
+    requestUserAgent: input.requestUserAgent,
+    query: input.query,
   });
   const [tokenHash, configHash] = await Promise.all([
     sha256(input.token),

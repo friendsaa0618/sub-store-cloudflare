@@ -1,5 +1,6 @@
 import { env, exports as workerExports } from "cloudflare:workers";
 import { beforeAll, describe, expect, it, vi } from "vitest";
+import { createOutputCacheContext } from "../src/lib/output-cache";
 
 const ADMIN_TOKEN = "test-admin-token";
 const DOWNLOAD_TOKEN = "test-download-token";
@@ -491,6 +492,31 @@ describe("Worker and D1 integration", () => {
     const pathToken = await workerRequest(`/download/source/output-cache-source/json/${DOWNLOAD_TOKEN}`, {}, false);
     expect(pathToken.status).toBe(200);
     expect(pathToken.headers.get("x-sub-store-output-cache")).toBe("disabled");
+
+    const yaml = await workerRequest(`/download/source/output-cache-source/mihomo/${DOWNLOAD_TOKEN}`, {}, false);
+    expect(yaml.status).toBe(200);
+    const yamlBody = await yaml.text();
+    expect(yamlBody).toContain("# Source:");
+    expect(yamlBody).not.toContain(DOWNLOAD_TOKEN);
+  });
+
+  it("separates output cache entries by user agent and query", async () => {
+    const base = {
+      kind: "source" as const,
+      id: "cache-key",
+      target: "sing-box" as const,
+      host: "example.com",
+      token: "test-token",
+      requestUserAgent: "ua-a",
+      query: "",
+      sources: [],
+      settings: {},
+    };
+    const first = await createOutputCacheContext(base);
+    const userAgent = await createOutputCacheContext({ ...base, requestUserAgent: "ua-b" });
+    const query = await createOutputCacheContext({ ...base, query: "singboxHttpClients=1" });
+    expect(first?.key.url).not.toBe(userAgent?.key.url);
+    expect(first?.key.url).not.toBe(query?.key.url);
   });
 
   it("rejects invalid and duplicate record ids", async () => {
