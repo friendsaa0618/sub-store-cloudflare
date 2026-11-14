@@ -26,13 +26,21 @@ const pkg = parse("package.json");
 for (const script of [
   "build",
   "deploy",
+  "deploy:build-config",
   "install:cloudflare",
   "install:quick",
   "tokens:generate",
   "check:installer",
   "check:deploy-experience",
+  "check:build-config",
 ]) {
   if (!pkg.scripts?.[script]) findings.push(`package.json is missing script ${script}`);
+}
+if (!pkg.scripts?.deploy?.includes("deploy:build-config")) {
+  findings.push("package.json deploy must render the build-time Wrangler config");
+}
+if (!existsSync("scripts/render-build-wrangler-config.mjs")) {
+  findings.push("scripts/render-build-wrangler-config.mjs is required for Workers Builds");
 }
 
 const installer = read("scripts/install-cloudflare.mjs");
@@ -50,6 +58,11 @@ for (const path of ["README.md", "README.en.md"]) {
   ]) {
     if (!content.includes(marker)) findings.push(`${path} is missing ${marker}`);
   }
+}
+
+const upgrading = read("docs/upgrading.md");
+for (const marker of ["CLOUDFLARE_D1_DATABASE_ID", "pnpm run deploy"]) {
+  if (!upgrading.includes(marker)) findings.push(`docs/upgrading.md is missing ${marker}`);
 }
 
 if (findings.length > 0) {

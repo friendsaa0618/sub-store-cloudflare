@@ -86,6 +86,16 @@ pnpm run migrate:remote
 
 确认 `cloudflare/wrangler.deploy.local.jsonc` 是本地文件，不要提交。
 
+## Workers Builds 部署失败（D1）
+
+如果构建日志提示 D1 database not found、占位 database id，或 `D1 database id is required`，说明构建环境没有提供真实 D1 ID。根 `wrangler.jsonc` 只保留全零占位。
+
+在 Cloudflare Dashboard 的 Worker → Settings → Builds → Build variables and secrets 添加：
+
+- `CLOUDFLARE_D1_DATABASE_ID=<真实 D1 ID>`
+
+并确认构建命令是 `pnpm run build`、部署命令是 `pnpm run deploy`。`pnpm run deploy` 会生成被 git ignore 的 `cloudflare/wrangler.deploy.build.jsonc`，用它执行 D1 migration 和 deploy。
+
 ## Secret 缺失
 
 线上 Worker 至少需要：

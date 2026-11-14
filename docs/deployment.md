@@ -47,6 +47,22 @@ https://<worker>.<workers-subdomain>.workers.dev/?token=<admin-token>
 
 注意：Cloudflare 官方按钮会把仓库导入到用户自己的 GitHub/GitLab 账号，并可能为这个副本配置 Workers Builds。这个行为属于 Cloudflare 的模板部署体验，不代表本上游仓库使用 GitHub Actions、Dependabot 或 GitHub CI/CD。
 
+### Workers Builds 部署已有仓库
+
+如果 Cloudflare 已为仓库副本配置 Workers Builds，根 [../wrangler.jsonc](../wrangler.jsonc) 只提供部署中立模板，真实 D1 ID 从构建环境读取：
+
+- 构建命令：`pnpm run build`
+- 部署命令：`pnpm run deploy`
+- 构建环境变量：`CLOUDFLARE_D1_DATABASE_ID=<真实 D1 ID>`
+
+`pnpm run deploy` 会先执行 `pnpm run deploy:build-config`，用根模板生成被 git ignore 的 `cloudflare/wrangler.deploy.build.jsonc`，再执行 D1 migrations 和 `wrangler deploy --keep-vars`。根 `wrangler.jsonc` 不需要写真实 ID。
+
+可选环境变量：
+
+- `SUB_STORE_ADMIN_HOSTNAME` / `SUB_STORE_DOWNLOAD_HOSTNAME`：写入 custom domain routes；设置后自动关闭 `workers_dev`。
+- `SUB_STORE_WORKERS_DEV=1|0`：没有 hostname 时控制 workers.dev；设为 `0` 时必须至少提供一个 hostname。
+- `SUB_STORE_PUBLIC_DOWNLOAD_HOSTS`、`SUB_STORE_ACCESS_TEAM_DOMAIN`、`SUB_STORE_ACCESS_AUD`：覆盖 Worker vars；未设置时由 `--keep-vars` 保留现有线上值。
+
 ## 2. Agent / CLI 一键安装
 
 交互式安装器入口：

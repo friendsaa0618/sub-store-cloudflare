@@ -46,14 +46,21 @@ git merge upstream/main
 git push origin main
 ```
 
-Workers Builds 会在 push 后重新运行构建和部署。根目录 `deploy` 脚本会先应用 D1 migrations，再部署 Worker。
+Workers Builds 会在 push 后重新运行构建和部署。根目录 `deploy` 脚本会先在构建时生成 `cloudflare/wrangler.deploy.build.jsonc`，再应用 D1 migrations 并部署 Worker。根 `wrangler.jsonc` 保持全零 D1 占位，真实 ID 只从构建环境读取。
 
 在 Cloudflare 构建页确认：
 
 - 构建命令：`pnpm run build`
 - 部署命令：`pnpm run deploy`
+- 构建环境变量：`CLOUDFLARE_D1_DATABASE_ID=<真实 D1 ID>`
 - D1 仍绑定原数据库
 - 两个 Worker Secrets 仍存在
+
+可选构建环境变量：
+
+- `SUB_STORE_ADMIN_HOSTNAME` / `SUB_STORE_DOWNLOAD_HOSTNAME`：写入 custom domain routes；设置后自动关闭 `workers_dev`。
+- `SUB_STORE_WORKERS_DEV=1|0`：没有 hostname 时控制 workers.dev；设为 `0` 时必须至少提供一个 hostname。
+- `SUB_STORE_PUBLIC_DOWNLOAD_HOSTS`、`SUB_STORE_ACCESS_TEAM_DOMAIN`、`SUB_STORE_ACCESS_AUD`：覆盖 Worker vars；未设置时由 `--keep-vars` 保留现有线上值。
 
 ## Agent / CLI 安装
 

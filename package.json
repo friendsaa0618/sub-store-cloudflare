@@ -47,11 +47,12 @@
     "check:visual": "pnpm run build:frontend && pnpm --dir frontend exec playwright install chromium && pnpm --dir frontend run test:visual",
     "check": "pnpm run check:worker && pnpm run check:frontend",
     "check:deploy-config": "node scripts/check-deploy-config.mjs",
-    "deploy": "pnpm run scripts:generate && pnpm run db:migrations:apply && pnpm --dir cloudflare exec wrangler deploy --config ../wrangler.jsonc",
+    "deploy": "pnpm run scripts:generate && pnpm run deploy:build-config && pnpm run db:migrations:apply && pnpm --dir cloudflare exec wrangler deploy --keep-vars --config wrangler.deploy.build.jsonc",
+    "deploy:build-config": "node scripts/render-build-wrangler-config.mjs",
     "deploy:dry-run": "pnpm run scripts:generate && pnpm run build:frontend && pnpm --dir cloudflare exec wrangler deploy --dry-run --config ../wrangler.jsonc",
     "deploy:local": "pnpm run scripts:generate && pnpm run build:frontend && pnpm run check:deploy-config -- --required && pnpm --dir cloudflare exec wrangler deploy --config wrangler.deploy.local.jsonc",
     "deploy:local:dry-run": "pnpm run scripts:generate && pnpm run check && pnpm run check:deploy-config -- --required && pnpm --dir cloudflare exec wrangler deploy --dry-run --config wrangler.deploy.local.jsonc",
-    "db:migrations:apply": "pnpm --dir cloudflare exec wrangler d1 migrations apply DB --remote --config ../wrangler.jsonc",
+    "db:migrations:apply": "pnpm --dir cloudflare exec wrangler d1 migrations apply DB --remote --config wrangler.deploy.build.jsonc",
     "scripts:generate": "node scripts/generate-script-registry.mjs",
     "seed:validate": "node scripts/validate-agent-setup.mjs",
     "seed:render": "node scripts/render-seed-sql.mjs",
@@ -64,11 +65,12 @@
     "check:worker-contract": "node scripts/check-worker-contract.mjs",
     "check:installer": "node --test scripts/test/*.test.mjs",
     "check:deploy-experience": "node scripts/check-deploy-experience.mjs",
+    "check:build-config": "node scripts/render-build-wrangler-config.mjs /tmp/wrangler.deploy.build.test.jsonc --database-id 00000000-0000-0000-0000-000000000000 && node scripts/check-deploy-config.mjs /tmp/wrangler.deploy.build.test.jsonc",
     "check:docs": "node scripts/check-doc-links.mjs",
     "check:open-source": "node scripts/check-open-source.mjs",
     "check:history": "node scripts/check-git-history.mjs",
     "release:prepare": "node scripts/prepare-release.mjs",
-    "check:release": "pnpm run check && pnpm run check:tests && pnpm run check:agent && pnpm run check:installer && pnpm run check:deploy-experience && pnpm run check:module-format && pnpm run check:worker-contract && pnpm run check:docs && pnpm run check:deploy-config && pnpm run check:deploy-config -- wrangler.jsonc && pnpm run check:audit && pnpm run check:runtime && pnpm run check:scripts && pnpm run check:open-source && pnpm run check:history -- main"
+    "check:release": "pnpm run check && pnpm run check:tests && pnpm run check:agent && pnpm run check:installer && pnpm run check:deploy-experience && pnpm run check:build-config && pnpm run check:module-format && pnpm run check:worker-contract && pnpm run check:docs && pnpm run check:deploy-config && pnpm run check:deploy-config -- wrangler.jsonc && pnpm run check:audit && pnpm run check:runtime && pnpm run check:scripts && pnpm run check:open-source && pnpm run check:history -- main"
   },
   "cloudflare": {
     "bindings": {
