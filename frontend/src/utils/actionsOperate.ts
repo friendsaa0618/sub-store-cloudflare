@@ -1,10 +1,5 @@
 import { shallowRef, nextTick } from 'vue';
-import ActionRadio from '@/views/editor/components/ActionRadio.vue';
-import FilterSelect from '@/views/editor/components/FilterSelect.vue';
-import Regex from '@/views/editor/components/Regex.vue';
-import HandleDuplicate from '@/views/editor/components/HandleDuplicate.vue';
-import Sort from '@/views/editor/components/Sort.vue';
-import ScriptAction from '@/views/editor/components/ScriptAction.vue';
+import { getActionDefinition } from '@/views/editor/action-catalog/actionCatalog';
 
 export const addItem = (
   form,
@@ -19,78 +14,24 @@ export const addItem = (
   const enabled = true;
   const previewEnabled = true;
   const customName = selectedOptions[0].customName || "";
+  const definition = getActionDefinition(type);
   const obj = {
     id,
     customName,
     type,
     tipsDes: t(`editorPage.subConfig.nodeActions['${type}'].tipsDes`),
-    component: null,
+    component: definition ? shallowRef(definition.component) : null,
     enabled,
   };
 
   actionsChecked.push([id, previewEnabled]);
-  switch (type) {
-    case 'Flag Operator':
-    case 'Resolve Domain Operator':
-      obj.component = shallowRef(ActionRadio);
-      form.process.push({
-        id,
-        type,
-        args: args ?? (type === 'Resolve Domain Operator'
-          ? { provider: 'Cloudflare', type: 'IPv4', filter: 'disabled', cache: 'disabled', url: '', edns: '', concurrency: '' }
-          : { mode: 'add', tw: 'cn' }),
-        customName,
-      });
-      break;
-    case 'Sort Operator':
-      obj.component = shallowRef(Sort);
-      form.process.push({ id, type, args: args ?? 'asc', customName });
-      break;
-    case 'Region Filter':
-    case 'Type Filter':
-      obj.component = shallowRef(FilterSelect);
-      form.process.push({ id, type, args: args ?? [], customName });
-      break;
-    case 'Regex Filter':
-      obj.component = shallowRef(Regex);
-      form.process.push({ id, type, args: args ?? { keep: true, regex: [] }, customName });
-      break;
-    case 'Regex Sort Operator':
-    case 'Regex Delete Operator':
-    case 'Regex Rename Operator':
-      obj.component = shallowRef(Regex);
-      form.process.push({
-        id,
-        type,
-        args: args ?? (type === 'Regex Sort Operator' ? { order: 'asc', expressions: [] } : []),
-        customName,
-      });
-      break;
-    case 'Handle Duplicate Operator':
-      obj.component = shallowRef(HandleDuplicate);
-      form.process.push({
-        id,
-        type,
-        args: args ?? {
-          action: 'rename',
-          link: '-',
-          position: 'back',
-          template: '0 1 2 3 4 5 6 7 8 9',
-          field: ['name'],
-        },
-        customName
-      });
-      break;
-    case 'Script Filter':
-    case 'Script Operator':
-      obj.component = shallowRef(ScriptAction);
-      form.process.push({
-        id,
-        type,
-        args: args ?? { scriptId: '', scriptKind: type === 'Script Filter' ? 'filter' : 'operator', arguments: {} },
-        customName,
-      });
-      break;
+  if (definition) {
+    form.process.push({
+      id,
+      type,
+      args: args ?? definition.createArgs(),
+      customName,
+    });
   }
   actionsList.push(obj);
 
