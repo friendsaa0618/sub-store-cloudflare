@@ -25,9 +25,12 @@ export function uniqueStrings(values: string[]) {
 }
 
 export function stripUndefined<T extends Record<string, unknown>>(input: T) {
-  const keys = Object.keys(input);
+  // `for...in` walks V8's enum cache without allocating a key array per node;
+  // `Object.keys` showed up as a measurable cost in the parser hot path.
+  // Callers only pass plain objects, so inherited enumerable keys are not a
+  // concern here.
   let changed = false;
-  for (const key of keys) {
+  for (const key in input) {
     const value = input[key];
     if (value === undefined || value === "") {
       changed = true;
@@ -37,7 +40,7 @@ export function stripUndefined<T extends Record<string, unknown>>(input: T) {
   if (!changed) return input;
 
   const output: Record<string, unknown> = {};
-  for (const key of keys) {
+  for (const key in input) {
     const value = input[key];
     if (value === undefined || value === "") continue;
     // JSON.parse can create an own `__proto__` key; assign it as data instead
@@ -83,17 +86,32 @@ export function base64Utf8(input: string) {
 }
 
 const TEXT_DECODER = new TextDecoder();
+const BASE64_NEEDS_NORMALIZATION = /[-\s_]/;
 
 export function decodeBase64UrlText(input: string) {
-  const normalized = input.replace(/\s+/g, "");
-  const padded = normalized.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(normalized.length / 4) * 4, "=");
+  // Standard base64 needs no cleanup. Base64url and line-wrapped payloads do;
+  // skipping the three replace passes is a large win on per-node vmess data.
+  // The cheap guard also skips a full base64 validity scan: malformed input
+  // still falls into atob and returns "" just as before.
+  const normalized = BASE64_NEEDS_NORMALIZATION.test(input)
+    ? input.replace(/\s+/g, "").replace(/-/g, "+").replace(/_/g, "/")
+    : input;
+  const remainder = normalized.length % 4;
+  const padded = remainder ? normalized.padEnd(normalized.length + (4 - remainder), "=") : normalized;
   try {
     const binary = atob(padded);
     // `Uint8Array.from(binary, ...)` invokes a callback per byte; a direct loop
-    // is roughly ten times faster on the per-node vmess payload.
+    // is roughly ten times faster on the per-node vmess payload. Most payloads
+    // and credentials are ASCII, and TextDecoder has a fixed per-call cost, so
+    // return the binary string directly when no byte needs UTF-8 decoding.
     const bytes = new Uint8Array(binary.length);
-    for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
-    return TEXT_DECODER.decode(bytes);
+    let ascii = true;
+    for (let index = 0; index < binary.length; index += 1) {
+      const code = binary.charCodeAt(index);
+      bytes[index] = code;
+      if (code > 0x7f) ascii = false;
+    }
+    return ascii ? binary : TEXT_DECODER.decode(bytes);
   } catch {
     return "";
   }

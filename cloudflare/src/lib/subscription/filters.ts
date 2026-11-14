@@ -69,17 +69,24 @@ function deleteFieldMatches(proxies: ProxyNode[], filter: FilterRule) {
     .map((pattern) => compileRegex(String(pattern), "g"));
   if (patterns.length === 0) return proxies;
   const field = filter.field || "name";
+  // Most delete-field filters target `name`; skip the per-node path split and
+  // leave nodes whose value did not change untouched instead of copying them.
+  const simple = !field.includes(".");
   return proxies.map((proxy) => {
-    const next = { ...proxy };
-    const value = patterns.reduce((name, pattern) => name.replace(pattern, ""), String(getByPath(next, field) || ""));
-    return setByPath(next, field, value.trim());
+    const current = simple ? proxy[field] : getByPath(proxy, field);
+    let value = String(current || "");
+    for (const pattern of patterns) value = value.replace(pattern, "");
+    value = value.trim();
+    if (value === current) return proxy;
+    return simple ? { ...proxy, [field]: value } : setByPath({ ...proxy }, field, value);
   });
 }
 
 function handleDuplicateProxies(proxies: ProxyNode[], filter: FilterRule) {
   const fields = normalizeDedupeFields(filter.fields || [filter.field || "name"]);
-  if (filter.action === "rename") return renameDuplicateProxies(proxies, fields, filter);
-  return deleteDuplicateProxies(proxies, fields);
+  const keyOf = createDuplicateKey(fields);
+  if (filter.action === "rename") return renameDuplicateProxies(proxies, keyOf, filter);
+  return deleteDuplicateProxies(proxies, keyOf);
 }
 
 function normalizeDedupeFields(fields: unknown) {
@@ -90,20 +97,20 @@ function normalizeDedupeFields(fields: unknown) {
   return normalized.length > 0 ? normalized : ["name"];
 }
 
-function deleteDuplicateProxies(proxies: ProxyNode[], fields: string[]) {
+function deleteDuplicateProxies(proxies: ProxyNode[], keyOf: DuplicateKey) {
   const seen = new Set<string>();
   return proxies.filter((proxy) => {
-    const key = duplicateKey(proxy, fields);
+    const key = keyOf(proxy);
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
 }
 
-function renameDuplicateProxies(proxies: ProxyNode[], fields: string[], filter: FilterRule) {
+function renameDuplicateProxies(proxies: ProxyNode[], keyOf: DuplicateKey, filter: FilterRule) {
   const counters = new Map<string, number>();
   for (const proxy of proxies) {
-    const key = duplicateKey(proxy, fields);
+    const key = keyOf(proxy);
     counters.set(key, (counters.get(key) || 0) + 1);
   }
 
@@ -114,7 +121,7 @@ function renameDuplicateProxies(proxies: ProxyNode[], fields: string[], filter: 
   const position = filter.position === "front" ? "front" : "back";
 
   return proxies.map((proxy) => {
-    const key = duplicateKey(proxy, fields);
+    const key = keyOf(proxy);
     if ((counters.get(key) || 0) <= 1) return proxy;
     const count = (increments.get(key) || 0) + 1;
     increments.set(key, count);
@@ -126,8 +133,21 @@ function renameDuplicateProxies(proxies: ProxyNode[], fields: string[], filter: 
   });
 }
 
-function duplicateKey(proxy: ProxyNode, fields: string[]) {
-  return fields.map((field) => String(getByPath(proxy, field) || "-")).join("\n");
+type DuplicateKey = (proxy: ProxyNode) => string;
+
+function createDuplicateKey(fields: string[]): DuplicateKey {
+  // Resolve dotted paths once per filter application instead of splitting the
+  // same field path for every node, and avoid the per-node array/join churn.
+  const simple = fields.map((field) => !field.includes("."));
+  return (proxy) => {
+    let key = "";
+    for (let index = 0; index < fields.length; index += 1) {
+      if (index > 0) key += "\n";
+      const value = simple[index] ? proxy[fields[index]] : getByPath(proxy, fields[index]);
+      key += String(value || "-");
+    }
+    return key;
+  };
 }
 
 function formatDuplicateNumber(input: number, minLength: number, digits: string[]) {
