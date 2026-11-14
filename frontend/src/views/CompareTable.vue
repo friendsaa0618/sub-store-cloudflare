@@ -360,6 +360,7 @@
   import NodeInfoPanel from '@/components/NodeInfoPanel.vue';
   import PreviewNodeNamesDialog from '@/components/PreviewNodeNamesDialog.vue';
   import { useSubsStore } from '@/store/subs';
+  import { pairCompareNodes } from '@/utils/compareNodes';
   import { extractPreviewNodeInfos, PreviewNodeNameSide } from '@/utils/previewNodeNames';
   import { computed, nextTick, onBeforeUnmount, onMounted, ref, toRaw, watch } from 'vue';
   import { useFocusTrap } from '@/hooks/useFocusTrap';
@@ -429,8 +430,8 @@
     );
   };
 
-  const processedData = computed(() => props.compareData?.processed || []);
-  const originalData = computed(() => props.compareData?.original || []);
+  const processedData = computed<any[]>(() => props.compareData?.processed || []);
+  const originalData = computed<any[]>(() => props.compareData?.original || []);
   const hasProcessedData = computed(() => processedData.value.length > 0);
   const hasOriginalData = computed(() => originalData.value.length > 0);
   /* A failed preview leaves both lists empty; headers alone look broken. */
@@ -455,19 +456,7 @@
       ? processedNodeInfos.value
       : originalNodeInfos.value;
   });
-  const data = computed(() => {
-    const original = originalData.value;
-    const result = [];
-    for (let i = 0; i < processedData.value.length; i++) {
-      const item = [];
-      item.push(processedData.value[i]);
-      const id = processedData.value[i].id;
-      const originalItem = original.find(item => item.id === id);
-      item.push(originalItem);
-      result.push(item);
-    }
-    return result;
-  });
+  const data = computed(() => pairCompareNodes(processedData.value, originalData.value));
 
   const normalizeEndpointPart = (value: unknown) => {
     if (value == null) {
