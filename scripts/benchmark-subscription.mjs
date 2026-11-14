@@ -55,6 +55,10 @@ registerHooks({
     ) {
       const candidate = new URL(`${specifier}.ts`, context.parentURL);
       if (existsSync(fileURLToPath(candidate))) return nextResolve(candidate.href, context);
+      // Directory imports such as `./render` resolve to `./render/index.ts`
+      // the same way the Worker bundler does.
+      const directoryIndex = new URL(`${specifier}/index.ts`, context.parentURL);
+      if (existsSync(fileURLToPath(directoryIndex))) return nextResolve(directoryIndex.href, context);
     }
     return nextResolve(specifier, context);
   },
@@ -83,7 +87,7 @@ if (!existsSync(registryPath)) {
 }
 
 const { buildSubscription, buildSubscriptionResult, convertSubscriptionContent } = await import(
-  new URL("../cloudflare/src/lib/subscription.ts", import.meta.url).href
+  new URL("../cloudflare/src/lib/subscription/index.ts", import.meta.url).href
 );
 const { BUILTIN_TEMPLATES } = await import(new URL("../cloudflare/src/lib/defaults.ts", import.meta.url).href);
 

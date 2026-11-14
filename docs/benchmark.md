@@ -2,7 +2,7 @@
 
 `scripts/benchmark-subscription.mjs` 用可重复的本地合成数据测量订阅构建热路径，覆盖从 URI 解析、过滤器处理、节点重命名到 Mihomo YAML 渲染的完整链路。
 
-它不会访问网络，也不会修改生产代码；脚本直接导入 `cloudflare/src/lib/subscription.ts`，由 Node 内置的 TypeScript 类型擦除执行，并用一个很小的 resolve hook 补齐 Worker 打包器平时处理的省略扩展名导入。
+它不会访问网络，也不会修改生产代码；脚本直接导入 `cloudflare/src/lib/subscription/index.ts`，由 Node 内置的 TypeScript 类型擦除执行，并用一个很小的 resolve hook 补齐 Worker 打包器平时处理的省略扩展名导入。
 
 ## 运行
 
@@ -65,3 +65,20 @@ pnpm run bench:subscription -- --json
 | 5,000 | `convertSubscriptionContent` | 159.67 ms | 189.92 ms | 155.31–203.43 ms | 1.35 MB | +2.64 MB |
 
 同一环境重复运行时，wall median 的常见范围约为 34–36 ms（1,000 节点）和 164–177 ms（5,000 节点）；共享 CPU 被其他任务占用时曾观察到约 57 ms / 260 ms。回归比较应在同一时段进行，并同时参考 CPU median。运行期间的堆峰值约为 30 MB（1,000 节点）和 27 MB（5,000 节点），包含尚未回收的临时对象，因此高于存活堆。
+
+## 热点分析
+
+在 5,000 节点、9 次测量的 CPU profile 中，约 71% 的采样落在 `renderMihomoYaml`，其中绝大部分来自 `yaml` 包为每个代理节点构建 Document 树后再序列化；解析约占 13.5%，过滤约占 3.7%。因此优化集中在 YAML 渲染路径：`render/yaml.ts` 直接按块样式写出订阅文档，跳过 `yaml` 包的中间树，同时保留相同的引号/转义规则。解析侧另将 vmess base64 解码从逐字节回调改为直接循环，并让 `stripUndefined` 在无需删除字段时复用原对象。
+
+## 优化后基线
+
+记录环境与基线相同。优化后在 HEAD 基线 worktree 与优化工作区之间交替运行 3 轮，每轮 9 次测量，下表取三轮 median 的中位数；本基准的输出字节数与原基线完全一致。
+
+| 节点数 | 场景 | wall median | CPU median | 优化前 wall | wall 提升 | 峰值堆 |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| 1,000 | `buildSubscription` | 6.14 ms | 8.23 ms | 34.08 ms | 5.6× | +9.0 MB |
+| 1,000 | `convertSubscriptionContent` | 5.57 ms | 6.11 ms | 33.60 ms | 6.0× | +9.0 MB |
+| 5,000 | `buildSubscription` | 27.57 ms | 32.86 ms | 166.19 ms | 6.0× | +14.9 MB |
+| 5,000 | `convertSubscriptionContent` | 29.15 ms | 31.76 ms | 168.08 ms | 5.8× | +15.9 MB |
+
+优化后 5,000 节点的存活堆仍约为 +2.8 MB；峰值堆从约 27.7 MB 降到约 14.9 MB，说明序列化过程中的临时对象明显减少。

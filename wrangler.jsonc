@@ -28,6 +28,10 @@
       "/404"
     ]
   },
+  // `wrangler preview` refuses to run without a previews block. Previews do
+  // not inherit production bindings, so keep it empty until preview-safe
+  // resources are configured.
+  "previews": {},
   "observability": {
     "enabled": true,
     "head_sampling_rate": 1,

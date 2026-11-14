@@ -78,6 +78,53 @@ describe("built-in rule templates", () => {
     }
   });
 
+  it("round-trips YAML-sensitive names and nested template values", async () => {
+    const names = [
+      "true",
+      "123",
+      "2024-01-01",
+      "a: b",
+      "a # b",
+      "- item",
+      "@name",
+      "%name",
+      "  padded  ",
+      "line\nbreak",
+      "tab\tname",
+      "quote\"name",
+      "back\\slash",
+      "香港 🇭🇰",
+      "x[y]",
+      "a & b",
+      "A#B",
+      "abc:",
+    ];
+    const content = names
+      .map((name, index) => `trojan://password@example.com:${10000 + index}?sni=example.com&type=ws&path=%2Fws&host=example.com#${encodeURIComponent(name)}`)
+      .join("\n");
+    const converted = await convertSubscriptionContent({
+      content,
+      target: "mihomo",
+      template: {
+        config: {
+          proxyGroups: [{ name: "Proxy", type: "select", proxies: ["$all"] }],
+          rules: ["MATCH,Proxy"],
+          dns: { enable: true, nameserver: ["1.1.1.1"], "fake-ip-range": "198.18.0.1/16" },
+          sniffer: { enable: false },
+        },
+      },
+    });
+    const document = parseYaml(converted.content) as {
+      proxies: Array<Record<string, unknown>>;
+      dns?: Record<string, unknown>;
+      sniffer?: Record<string, unknown>;
+    };
+    expect(document.proxies.map((proxy) => proxy.name)).toEqual(names);
+    expect(document.proxies[0]["ws-opts"]).toEqual({ path: "/ws", headers: { Host: "example.com" } });
+    expect(document.dns).toEqual({ enable: true, nameserver: ["1.1.1.1"], "fake-ip-range": "198.18.0.1/16" });
+    expect(document.sniffer).toEqual({ enable: false });
+  });
+
   it("drops dangling group references instead of emitting empty groups", async () => {
     const converted = await convertSubscriptionContent({
       content: SAMPLE,

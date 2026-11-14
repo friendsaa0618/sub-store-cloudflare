@@ -101,6 +101,7 @@ lib/subscription/
   parsing/uri.ts           URI scheme 解析（vless/trojan/ss/ssr/vmess 等）
   parsing/clients.ts       Quantumult X / Surge / Loon 单行节点解析
   render/index.ts          输出目标分发
+  render/yaml.ts           订阅 YAML 的轻量发射器（Mihomo / Stash / Egern）
   render/mihomo.ts         Mihomo / Stash YAML
   render/surge.ts          Surge / Surge Mac / Surfboard
   render/loon.ts           Loon
