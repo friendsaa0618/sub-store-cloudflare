@@ -9,6 +9,7 @@ import {
   listDownloadGrants,
   listRecycleBin,
   restoreDownloadGrantSnapshot,
+  rotateDownloadGrant,
   updateDownloadGrant,
 } from "../../lib/compatibility-resources";
 import { failed, success } from "../../lib/http";
@@ -22,8 +23,8 @@ import {
 } from "../../lib/store";
 import { normalizeTargetAlias } from "../../lib/subscription";
 import { numberValue, stringValue, type JsonMap } from "../../lib/values";
-import type { CollectionRecord, SourceRecord, TemplateRecord } from "../../types";
-import { toRecycleSummary, validateCollection } from "./dto";
+import type { CollectionRecord, DownloadGrantRecord, SourceRecord, TemplateRecord } from "../../types";
+import { toRecycleSummary, validateCollection, type ApiContext } from "./dto";
 import { getPublicBaseUrl } from "./shared";
 
 export const shareRoutes = new Hono<{ Bindings: SubStoreEnv }>();
@@ -45,10 +46,14 @@ shareRoutes.post("/shares", async (c) => {
     ? numberValue(input.expiresAt, 0, Date.now() + 60_000, Date.now() + 365 * 24 * 60 * 60 * 1000)
     : expiresIn > 0 ? Date.now() + expiresIn * 1000 : undefined;
   const created = await createDownloadGrant(c.env, { resourceType, resourceId, target, expiresAt });
-  const path = ["/download", resourceType, encodeURIComponent(resourceId), target].filter(Boolean).join("/");
-  const url = new URL(path, getPublicBaseUrl(c));
-  url.searchParams.set("token", created.token);
-  return success(c, { ...created.grant, token: created.token, url: url.toString() });
+  return success(c, { ...created.grant, token: created.token, url: shareUrl(c, created.grant, created.token) });
+});
+/* A leaked scoped link is replaced in place: the old token stops working at
+   once, and the grant keeps its resource, target, and expiry. */
+shareRoutes.post("/shares/:id/rotate", async (c) => {
+  const rotated = await rotateDownloadGrant(c.env, c.req.param("id"));
+  if (!rotated) return failed(c, "Share not found", 404);
+  return success(c, { ...rotated.grant, token: rotated.token, url: shareUrl(c, rotated.grant, rotated.token) });
 });
 shareRoutes.patch("/shares/:id", async (c) => {
   const input: JsonMap = await c.req.json<JsonMap>().catch(() => ({}));
@@ -106,3 +111,10 @@ shareRoutes.post("/recycle-bin/:id/restore", async (c) => {
     return failed(c, error instanceof Error ? error.message : String(error), 409);
   }
 });
+
+function shareUrl(c: ApiContext, grant: Pick<DownloadGrantRecord, "resourceType" | "resourceId" | "target">, token: string) {
+  const path = ["/download", grant.resourceType, encodeURIComponent(grant.resourceId), grant.target].filter(Boolean).join("/");
+  const url = new URL(path, getPublicBaseUrl(c));
+  url.searchParams.set("token", token);
+  return url.toString();
+}

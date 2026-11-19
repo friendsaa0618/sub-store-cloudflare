@@ -95,7 +95,7 @@ export default {
     },
     shares: {
       title: "独立分享链接",
-      desc: "为单个订阅源或组合创建可撤销、可过期、可限制格式的下载链接。Token 只在创建时显示。",
+      desc: "为单个订阅源或组合创建可撤销、可过期、可限制格式的下载链接。Token 只在创建或重置时显示。",
       resourceType: "资源类型",
       resourceId: "资源 ID",
       resourceIdPlaceholder: "例如 daily-mix",
@@ -118,6 +118,8 @@ export default {
       createdHint: "只在这里显示一次，请立即复制。",
       copyLink: "复制链接",
       dismiss: "关闭",
+      rotate: "重置链接",
+      rotateConfirm: "重置 {name} 的链接？旧链接会立即失效，请把新链接重新填进客户端。",
       meta: "{target}，{expires}"
     },
     recycle: {
@@ -132,6 +134,7 @@ export default {
       converted: "转换完成",
       copied: "已复制",
       shareCreated: "分享链接已创建",
+      shareRotated: "链接已重置",
       failed: "操作失败\n{e}"
     }
   },

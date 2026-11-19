@@ -95,7 +95,7 @@ export default {
     },
     shares: {
       title: "Scoped share links",
-      desc: "Create revocable and expiring links restricted to one source or collection and optional output target. Tokens are shown only once.",
+      desc: "Create revocable and expiring links restricted to one source or collection and optional output target. Tokens are shown only when a link is created or reset.",
       resourceType: "Resource type",
       resourceId: "Resource ID",
       resourceIdPlaceholder: "e.g. daily-mix",
@@ -118,6 +118,8 @@ export default {
       createdHint: "Shown once here — copy it now.",
       copyLink: "Copy link",
       dismiss: "Dismiss",
+      rotate: "Reset link",
+      rotateConfirm: "Reset the link for {name}? The old link stops working immediately; put the new one into the client.",
       meta: "{target}, {expires}"
     },
     recycle: {
@@ -132,6 +134,7 @@ export default {
       converted: "Conversion complete",
       copied: "Copied",
       shareCreated: "Share link created",
+      shareRotated: "Link reset",
       failed: "Operation failed\n{e}"
     }
   },

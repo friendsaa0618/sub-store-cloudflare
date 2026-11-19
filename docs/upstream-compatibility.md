@@ -50,7 +50,7 @@ POST /api/rule/parse
 
 ### 独立分享链接
 
-管理端可以为一个 Source 或 Collection 创建独立下载授权：可限制输出目标、设置有效期、停用和删除。明文 token 只在创建时返回，D1 只保存 SHA-256 token hash。
+管理端可以为一个 Source 或 Collection 创建独立下载授权：可限制输出目标、设置有效期、停用、删除，并在链接泄露后就地重置 token。明文 token 只在创建和重置时返回，D1 只保存 SHA-256 token hash。
 
 这是一套私有下载授权，不是公开分享平台。原来的部署级下载 token 保持兼容。
 

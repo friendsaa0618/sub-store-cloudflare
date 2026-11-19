@@ -50,7 +50,17 @@ export async function createDownloadGrant(
     now,
     now,
   ).run();
-  return { grant: await getDownloadGrant(env, id), token };
+  const grant: DownloadGrantRecord = {
+    id,
+    resourceType: input.resourceType,
+    resourceId: input.resourceId,
+    target: input.target,
+    expiresAt: input.expiresAt || undefined,
+    enabled: true,
+    createdAt: now,
+    updatedAt: now,
+  };
+  return { grant, token };
 }
 
 export async function listDownloadGrants(env: SubStoreEnv) {
@@ -87,6 +97,20 @@ export async function updateDownloadGrant(
     "UPDATE download_grants SET enabled = ?, expires_at = ?, updated_at = ? WHERE id = ?",
   ).bind(enabled ? 1 : 0, expiresAt || null, Date.now(), id).run();
   return getDownloadGrant(env, id);
+}
+
+/** Replaces the grant's secret in place, so a leaked link dies without losing
+    the resource, target, or expiry the grant was created with. */
+export async function rotateDownloadGrant(env: SubStoreEnv, id: string) {
+  const existing = await getDownloadGrant(env, id);
+  if (!existing) return undefined;
+  const token = randomToken();
+  const tokenHash = await sha256Hex(token);
+  const updatedAt = Date.now();
+  await env.DB.prepare(
+    "UPDATE download_grants SET token_hash = ?, updated_at = ? WHERE id = ?",
+  ).bind(tokenHash, updatedAt, id).run();
+  return { grant: { ...existing, updatedAt }, token };
 }
 
 export async function restoreDownloadGrantSnapshot(env: SubStoreEnv, snapshot: Record<string, unknown>) {

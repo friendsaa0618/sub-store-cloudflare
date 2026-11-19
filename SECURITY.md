@@ -45,7 +45,7 @@ What the deployment already does:
 
 Recommended for a private deployment:
 
-1. **Prefer scoped download links.** `POST /api/shares` issues a per-resource token that only unlocks one source or collection, can expire, and can be locked to one output format. The global download token unlocks every collection, so hand it out only when a client cannot use a scoped link.
+1. **Prefer scoped download links.** `POST /api/shares` issues a per-resource token that only unlocks one source or collection, can expire, and can be locked to one output format. A leaked scoped link is reset in place with `POST /api/shares/:id/rotate` (Tools → 独立分享链接 → 重置链接): the old token stops working immediately, the grant keeps its resource, target, and expiry. The global download token unlocks every collection, so hand it out only when a client cannot use a scoped link.
 2. **Put the admin surface behind Cloudflare Access.** Protect the admin hostname and add a Bypass application for `/download` so clients keep working. Set `SUB_STORE_ACCESS_TEAM_DOMAIN` and `SUB_STORE_ACCESS_AUD` to let the Worker trust a verified Access JWT instead of asking for the admin token twice.
 3. **Rotate on suspicion.** `wrangler secret put SUB_STORE_ADMIN_TOKEN` and `… SUB_STORE_PUBLIC_DOWNLOAD_TOKEN` replace a leaked value immediately; existing scoped grants keep working until they are revoked or expire.
 4. **Keep `workers_dev` off** when a custom domain is in use, so there is exactly one entry point to protect.

@@ -719,12 +719,25 @@ describe("Worker and D1 integration", () => {
     const wrongTarget = await workerRequest(`/download/source/shared-source/mihomo?token=${encodeURIComponent(token)}`, {}, false);
     expect(wrongTarget.status).toBe(403);
 
+    const rotate = await workerRequest(`/api/shares/${id}/rotate`, { method: "POST" });
+    expect(rotate.status).toBe(200);
+    const rotated = await jsonObject(rotate);
+    const nextToken = String(getPath(rotated, "data", "token"));
+    expect(nextToken).not.toBe(token);
+    expect(getPath(rotated, "data", "id")).toBe(id);
+    expect(String(getPath(rotated, "data", "url"))).toContain(nextToken);
+
+    const leaked = await workerRequest(`/download/source/shared-source/json?token=${encodeURIComponent(token)}`, {}, false);
+    expect(leaked.status).toBe(403);
+    const rotatedDownload = await workerRequest(`/download/source/shared-source/json?token=${encodeURIComponent(nextToken)}`, {}, false);
+    expect(rotatedDownload.status).toBe(200);
+
     await workerRequest(`/api/shares/${id}`, {
       method: "PATCH",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ enabled: false }),
     });
-    const disabled = await workerRequest(`/download/source/shared-source/json?token=${encodeURIComponent(token)}`, {}, false);
+    const disabled = await workerRequest(`/download/source/shared-source/json?token=${encodeURIComponent(nextToken)}`, {}, false);
     expect(disabled.status).toBe(403);
   });
 

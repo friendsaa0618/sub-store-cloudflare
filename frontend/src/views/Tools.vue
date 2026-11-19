@@ -189,6 +189,9 @@
             </div>
           </div>
           <div class="list-row__actions">
+            <AppButton plain size="mini" @click="rotateShare(share)">
+              {{ t('toolsPage.shares.rotate') }}
+            </AppButton>
             <AppButton plain size="mini" @click="toggleShare(share)">
               {{ share.enabled ? t('toolsPage.shares.disable') : t('toolsPage.shares.enable') }}
             </AppButton>
@@ -400,6 +403,27 @@ const createShare = async () => {
   } finally {
     shareCreating.value = false;
   }
+};
+
+const rotateShare = (share: { id: string; resourceType: string; resourceId: string }) => {
+  showDialog({
+    title: t('toolsPage.shares.rotate'),
+    content: t('toolsPage.shares.rotateConfirm', {
+      name: `${resourceTypeLabel(share.resourceType)}/${share.resourceId}`,
+    }),
+    cancelText: t('myPage.btn.cancel'),
+    okText: t('toolsPage.shares.rotate'),
+    okType: 'danger',
+    onOk: async () => {
+      const response = await api.rotateShare(share.id);
+      /* The new token is only returned here, so show it like a fresh share. */
+      createdShareUrl.value = String((response?.data as any)?.data?.url || '');
+      await nextTick();
+      createdShareEl.value?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      await loadShares();
+      showNotify({ type: 'success', title: t('toolsPage.notify.shareRotated') });
+    },
+  });
 };
 
 const toggleShare = async (share: any) => {

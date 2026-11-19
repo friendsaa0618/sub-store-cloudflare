@@ -50,6 +50,7 @@ export function useCloudflareApi() {
     convertRules: (data: any): AxiosPromise<MyAxiosRes> => request({ url: '/api/rule/parse', method: 'post', data }),
     getShares: (): AxiosPromise<MyAxiosRes> => request({ url: '/api/shares', method: 'get' }),
     createShare: (data: any): AxiosPromise<MyAxiosRes> => request({ url: '/api/shares', method: 'post', data }),
+    rotateShare: (id: string): AxiosPromise<MyAxiosRes> => request({ url: `/api/shares/${encodeURIComponent(id)}/rotate`, method: 'post' }),
     updateShare: (id: string, data: any): AxiosPromise<MyAxiosRes> => request({ url: `/api/shares/${encodeURIComponent(id)}`, method: 'patch', data }),
     deleteShare: (id: string): AxiosPromise<MyAxiosRes> => request({ url: `/api/shares/${encodeURIComponent(id)}`, method: 'delete' }),
     getRecycleBin: (): AxiosPromise<MyAxiosRes> => request({ url: '/api/recycle-bin', method: 'get' }),
