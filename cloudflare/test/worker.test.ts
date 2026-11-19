@@ -307,9 +307,22 @@ describe("Worker and D1 integration", () => {
     const linkResponse = await workerRequest("/api/link/source/patch-source?target=json", {
       headers: { "x-forwarded-host": "attacker.example" },
     });
-    expect(getPath(await jsonObject(linkResponse), "data", "url")).toBe(
-      `https://downloads.example.com/download/source/patch-source/json?token=${DOWNLOAD_TOKEN}`,
-    );
+    const link = getPath(await jsonObject(linkResponse), "data") as { url: string; tokenIncluded: boolean };
+    const linkUrl = new URL(link.url);
+    expect(linkUrl.origin).toBe("https://downloads.example.com");
+    expect(linkUrl.pathname).toBe("/download/source/patch-source/json");
+    expect(link.tokenIncluded).toBe(true);
+    const linkToken = linkUrl.searchParams.get("token") || "";
+    expect(linkToken).not.toBe(DOWNLOAD_TOKEN);
+    expect((await workerRequest(`/download/source/patch-source/json?token=${encodeURIComponent(linkToken)}`, {}, false)).status).toBe(200);
+
+    const reset = await workerRequest("/api/link/source/patch-source/rotate?target=json", { method: "POST" });
+    expect(reset.status).toBe(200);
+    const resetToken = new URL(String(getPath(await jsonObject(reset), "data", "url"))).searchParams.get("token") || "";
+    expect(resetToken).not.toBe(linkToken);
+    expect((await workerRequest(`/download/source/patch-source/json?token=${encodeURIComponent(linkToken)}`, {}, false)).status).toBe(403);
+    expect((await workerRequest(`/download/source/patch-source/json?token=${encodeURIComponent(resetToken)}`, {}, false)).status).toBe(200);
+    expect((await workerRequest(`/download/source/patch-source/json?token=${DOWNLOAD_TOKEN}`, {}, false)).status).toBe(200);
 
     const collectionCreate = await workerRequest("/api/collections", {
       method: "POST",

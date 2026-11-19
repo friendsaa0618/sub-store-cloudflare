@@ -34,6 +34,7 @@ import {
   faFileImport,
   faFileExport,
   faLink,
+  faLinkSlash,
   faMaximize,
   faMinimize,
   faBars,
@@ -83,6 +84,7 @@ library.add(faBan);
 library.add(faPenToSquare);
 library.add(faT);
 library.add(faLink);
+library.add(faLinkSlash);
 library.add(faBars);
 library.add(faEllipsis);
 library.add(faMaximize);

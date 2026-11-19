@@ -111,7 +111,7 @@ Migration 会预置一个包含全部已启用 Source 的 `Daily` Collection。�
 - Quantumult X：`qx`
 - 通用 URI：`uri`
 
-下载链接使用 `SUB_STORE_PUBLIC_DOWNLOAD_TOKEN`。不要把 admin token 放进客户端订阅链接。
+下载链接使用该订阅源/组合自己的 token（由 `SUB_STORE_PUBLIC_DOWNLOAD_TOKEN` 派生），泄露后可在卡片上「重置订阅链接」；旧的全局 token 链接仍然有效。不要把 admin token 放进客户端订阅链接。
 
 ## 最后做两件事
 

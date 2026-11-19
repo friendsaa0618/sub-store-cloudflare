@@ -65,6 +65,31 @@ export const useSubItemActions = (props: SubItemActionsProps, displayName: strin
     }
   };
 
+  /* Every card link carries its own token, so resetting one card kills only
+     the link that was handed out for it. The new token is shown once by the
+     API, so copy it right away; the card's copy button returns the same one. */
+  const resetLink = () => {
+    showDialog({
+      title: t("subPage.resetLink.title"),
+      content: t("subPage.resetLink.desc", { displayName }),
+      cancelText: t("specificWord.cancel"),
+      okText: t("subPage.resetLink.confirm"),
+      okType: "danger",
+      onOk: async () => {
+        const response = await cloudflareApi.resetDownloadLink(props.type, name, readQuickTarget());
+        const url = response?.data?.status === "success" ? String(response.data.data?.url || "") : "";
+        if (url) {
+          try {
+            await writeClipboard(url);
+          } catch {
+            /* The copy button can fetch the same new link again. */
+          }
+        }
+        showNotify({ type: "success", title: t("subPage.resetLink.succeed") });
+      },
+    });
+  };
+
   const openDownload = async () => {
     try {
       window.open(await resolveDownloadUrl(), "_blank");
@@ -182,6 +207,7 @@ export const useSubItemActions = (props: SubItemActionsProps, displayName: strin
   return {
     isEnabled,
     copyLink,
+    resetLink,
     openDownload,
     copyConfig,
     edit,

@@ -20,6 +20,14 @@
     <template v-if="isDesktop">
       <button
         class="sub-item-action"
+        :aria-label="$t('subPage.actions.resetLink')"
+        :title="$t('subPage.actions.resetLink')"
+        @click.stop="emit('reset-link')"
+      >
+        <font-awesome-icon icon="fa-solid fa-link-slash" />
+      </button>
+      <button
+        class="sub-item-action"
         :aria-label="$t('subPage.actions.openPreview')"
         :title="$t('subPage.actions.openPreview')"
         @click.stop="emit('open-preview')"
@@ -133,6 +141,15 @@
             <span>{{ $t('subPage.actions.openDownload') }}</span>
           </button>
           <button
+            type="button"
+            class="sub-item-overflow__item"
+            role="menuitem"
+            @click.stop="runOverflowAction(() => emit('reset-link'))"
+          >
+            <font-awesome-icon icon="fa-solid fa-link-slash" />
+            <span>{{ $t('subPage.actions.resetLink') }}</span>
+          </button>
+          <button
             v-if="type === 'sub'"
             type="button"
             class="sub-item-overflow__item"
@@ -178,6 +195,7 @@ defineProps<{
 
 const emit = defineEmits<{
   (e: "copy-link"): void;
+  (e: "reset-link"): void;
   (e: "open-preview"): void;
   (e: "edit"): void;
   (e: "copy-config"): void;

@@ -54,6 +54,7 @@
             :is-simple-mode="appearanceSetting.isSimpleMode"
             :is-enabled="isEnabled"
             @copy-link="copyLink"
+            @reset-link="resetLink"
             @open-preview="openPreviewPanel"
             @edit="edit"
             @copy-config="copyConfig"
@@ -146,6 +147,7 @@ const { flow, statusDotClass } = useSubItemFlow(props);
 const {
   isEnabled,
   copyLink,
+  resetLink,
   openDownload,
   copyConfig,
   edit,

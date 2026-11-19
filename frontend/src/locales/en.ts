@@ -210,6 +210,7 @@ export default {
       openPreview: "Subscription links",
       copyLink: "Copy subscription link",
       copyLinkShort: "Copy link",
+      resetLink: "Reset subscription link",
       refresh: "Refresh usage info",
       edit: "Edit",
       cloneConfig: "Clone",
@@ -247,6 +248,12 @@ export default {
         confirm: "Delete",
         cancel: "Cancel"
       }
+    },
+    resetLink: {
+      title: "Reset subscription link",
+      desc: "Reset the link for {displayName}? The old link stops working immediately; put the new one into the client.",
+      confirm: "Reset",
+      succeed: "Subscription link reset; the new link was copied"
     },
     copyNotify: {
       succeed: "Successfully copied link!",

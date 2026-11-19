@@ -8,6 +8,7 @@ This project follows semantic versioning where practical.
 
 ### Added
 
+- Each subscription card link now carries a token derived for that source or collection, so `POST /api/link/:kind/:name/rotate` (card action 重置订阅链接) kills a leaked link without touching the others. The version lives in `resource_link_versions`, the token is recomputed on demand, and the deployment token still accepts links handed out earlier.
 - A scoped share link can be reset in place: `POST /api/shares/:id/rotate` replaces the grant's token hash and returns the new URL once, so a leaked link stops working without losing the grant's resource, target, or expiry. Tools → 独立分享链接 lists a `重置链接` action that shows the new URL in the same result card as a fresh share.
 - The subscription page opens with a hero band: `订阅管道` with the live source and collection counts flowing into the client formats the app can emit (five target marks plus a `+8` counter) on a hairline card, so the page explains its own model before the list. One 340ms entrance runs on load and two dots travel the connectors; `prefers-reduced-motion` silences both.
 - Added local Playwright visual snapshots for the admin UI (`pnpm run check:visual`) so layout, overlay, and theme regressions can be compared automatically; the set now includes dark-mode settings and editor captures, and `e2e/interactions.spec.ts` covers the subscription fold toggle and the collapsible request-settings form.

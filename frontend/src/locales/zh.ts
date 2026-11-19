@@ -210,6 +210,7 @@ export default {
       openPreview: "订阅链接",
       copyLink: "复制订阅链接",
       copyLinkShort: "复制链接",
+      resetLink: "重置订阅链接",
       refresh: "刷新流量信息",
       edit: "编辑",
       cloneConfig: "克隆",
@@ -247,6 +248,12 @@ export default {
         confirm: "确认删除",
         cancel: "取消"
       }
+    },
+    resetLink: {
+      title: "重置订阅链接",
+      desc: "重置 {displayName} 的订阅链接？旧链接会立即失效，请把新链接重新填进客户端。",
+      confirm: "重置",
+      succeed: "订阅链接已重置，新链接已复制"
     },
     copyNotify: {
       succeed: "复制订阅链接成功\n请导入代理工具使用",

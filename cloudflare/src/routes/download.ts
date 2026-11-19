@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import type { Context } from "hono";
 import { failed, isTokenValid } from "../lib/http";
 import { authorizeScopedDownload } from "../lib/compatibility-resources";
+import { isResourceLinkToken } from "../lib/link-token";
 import { createOutputCacheContext, readOutputCache, writeOutputCache, type CachedOutput } from "../lib/output-cache";
 import { loadConvertedRuleSet } from "../lib/ruleset";
 import { buildSubscriptionResult, getTargetContentType, normalizeTarget, normalizeTargetAlias } from "../lib/subscription";
@@ -287,6 +288,7 @@ async function authorizeDownload(
 ): Promise<DownloadAuth | Response> {
   const token = getDownloadToken(c);
   if (await isTokenValid(c.env.SUB_STORE_PUBLIC_DOWNLOAD_TOKEN, token)) return { scoped: false };
+  if (await isResourceLinkToken(c.env, resourceType, resourceId, token)) return { scoped: false };
   if (await authorizeScopedDownload(c.env, token, resourceType, resourceId, target)) return { scoped: true };
   return failed(c, "Download token is invalid", 403);
 }

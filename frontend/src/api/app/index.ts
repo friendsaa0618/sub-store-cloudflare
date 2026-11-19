@@ -110,6 +110,18 @@ export function useCloudflareApi() {
         params: target ? { target } : undefined,
       });
     },
+    resetDownloadLink: (
+      type: 'sub' | 'collection',
+      name: string,
+      target?: string,
+    ): AxiosPromise<MyAxiosRes> => {
+      const apiType = type === 'collection' ? 'collection' : 'source';
+      return request({
+        url: `/api/link/${apiType}/${encodeURIComponent(name)}/rotate`,
+        method: 'post',
+        params: target ? { target } : undefined,
+      });
+    },
     createItem: (
       type: string,
       data: Sub | Collection,

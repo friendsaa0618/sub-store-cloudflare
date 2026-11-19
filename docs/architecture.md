@@ -67,6 +67,7 @@ lib/values.ts     请求字段的小型取值工具
 | `templates` | 只保存用户创建的规则模板。内置模板由 Worker 代码维护。 |
 | `app_settings` | 保存远程订阅请求参数、主题和必要的前端默认状态。 |
 | `download_grants` | 保存独立下载授权的 token hash、资源范围、格式限制和有效期。 |
+| `resource_link_versions` | 保存每个订阅源/组合的链接版本；链接 token 由下载 token 和这个版本派生，重置只递增版本。 |
 | `recycle_bin` | 最多保存 50 条被删除配置的快照。 |
 
 ## 输出流程
@@ -74,7 +75,7 @@ lib/values.ts     请求字段的小型取值工具
 ```text
 客户端请求 /download/collection/:id[/:target]
   |
-  |-- 校验下载 token
+  |-- 校验下载 token（全局 / 该资源的独立 token / 独立授权）
   |-- 读取 collection
   |-- 应用请求级临时输入参数 url / content / ua
   |-- 拉取 collection 里的 sources
@@ -101,7 +102,7 @@ lib/values.ts     请求字段的小型取值工具
 
 ### 输出缓存
 
-`/download/source` 和 `/download/collection` 的最终输出会缓存在 Cache API 中，默认 `outputCacheTtl` 为 30 秒（设置项，0 关闭，最大 300）。缓存 key 包含 host、target、全局下载 token 的 SHA-256 和配置指纹，因此配置变化会自动换 key。
+`/download/source` 和 `/download/collection` 的最终输出会缓存在 Cache API 中，默认 `outputCacheTtl` 为 30 秒（设置项，0 关闭，最大 300）。缓存 key 包含 host、target、请求所用下载 token 的 SHA-256 和配置指纹，因此配置变化或重置链接会自动换 key。
 
 以下请求不使用输出缓存：scoped download grant、带 `?url=` / `?content=` / `?ua=` 的临时输入、`refresh=1` / `noCache`，以及 token 出现在路径里的请求（避免 token 被写进输出的 `# Source:` 注释）。`refresh` 请求仍会把新结果写回缓存。响应头 `x-sub-store-output-cache` 为 `hit` / `miss` / `disabled`。
 
